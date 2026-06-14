@@ -39,6 +39,24 @@
       "registerFailed": "Could not create account"
     }
   },
+  "friends": {
+    "title": "Friends",
+    "search": "Search People",
+    "searchPlaceholder": "Search by name...",
+    "noResults": "No users found",
+    "addFriend": "Add Friend",
+    "requestSent": "Request Sent",
+    "pending": "Pending Requests",
+    "noPending": "No pending requests",
+    "noFriends": "No friends yet — search for people to add!",
+    "accept": "Accept",
+    "decline": "Decline",
+    "friends": "Friends",
+    "errors": {
+      "sendFailed": "Could not send friend request",
+      "loadFailed": "Could not load friends"
+    }
+  },
   "language": {
     "select": "Select Language",
     "en": "English",

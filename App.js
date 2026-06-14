@@ -11,12 +11,10 @@ export default function App() {
   const [session, setSession] = useState(undefined);
 
   useEffect(() => {
-    // Get current session on mount
     getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = onAuthStateChange((_event, activeSession) => {
       setSession(activeSession);
     });

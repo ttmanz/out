@@ -3,11 +3,13 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { signOut } from '../../lib/auth';
+import LanguagePicker from '../../components/common/LanguagePicker';
 
 const HomeScreen = () => {
   const { t } = useTranslation();
   return (
     <View style={styles.container}>
+      <LanguagePicker />
       <Text style={styles.title}>{t('common.appName')}</Text>
       <Text style={styles.subtitle}>Welcome!</Text>
       <TouchableOpacity style={styles.logoutBtn} onPress={signOut}>
