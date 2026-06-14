@@ -28,9 +28,14 @@ const LoginScreen = ({ navigation }) => {
     if (error) { setFieldError(error); return; }
     setFieldError('');
     setLoading(true);
-    const { error: authError } = await signInWithEmail(email, password);
-    setLoading(false);
-    if (authError) Alert.alert(t('auth.errors.loginFailed'), authError.message);
+    try {
+      const { error: authError } = await signInWithEmail(email, password);
+      if (authError) Alert.alert(t('auth.errors.loginFailed'), authError.message);
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSocialLogin = async (provider, loginFn) => {

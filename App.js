@@ -1,22 +1,28 @@
-import './src/lib/i18n'; // i18n must be imported before any screen renders
+import './src/lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { onAuthStateChange } from './src/lib/auth';
+import { onAuthStateChange, getSession } from './src/lib/auth';
 import AuthNavigator from './src/navigation/AuthNavigator';
+import MainNavigator from './src/navigation/MainNavigator';
 import { COLORS } from './src/constants/colors';
 
 export default function App() {
-  const [session, setSession] = useState(undefined); // undefined = loading
+  const [session, setSession] = useState(undefined);
 
   useEffect(() => {
+    // Get current session on mount
+    getSession().then(({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+    });
+
+    // Listen for auth changes
     const { data: { subscription } } = onAuthStateChange((_event, activeSession) => {
       setSession(activeSession);
     });
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show spinner while session is being resolved
   if (session === undefined) {
     return (
       <View style={styles.loader}>
@@ -27,9 +33,7 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {/* session === null → not logged in → show auth screens */}
-      {/* session exists → logged in → main app navigator goes here */}
-      <AuthNavigator />
+      {session ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 }

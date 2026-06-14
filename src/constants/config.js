@@ -2,7 +2,7 @@
 export const CONFIG = {
   supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
   supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-  appName: 'Out to Mingle',
+  appName: 'Out-and-Around',
   supportedLanguages: ['en', 'el', 'ru'],
   defaultLanguage: 'en',
 };
