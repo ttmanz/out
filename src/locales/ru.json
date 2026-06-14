@@ -1,0 +1,48 @@
+{
+  "common": {
+    "appName": "Out to Mingle",
+    "loading": "Загрузка...",
+    "error": "Что-то пошло не так",
+    "retry": "Попробовать снова",
+    "cancel": "Отмена",
+    "save": "Сохранить",
+    "or": "или"
+  },
+  "auth": {
+    "login": "Войти",
+    "register": "Зарегистрироваться",
+    "logout": "Выйти",
+    "email": "Email",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "fullName": "Полное имя",
+    "forgotPassword": "Забыли пароль?",
+    "noAccount": "Нет аккаунта?",
+    "hasAccount": "Уже есть аккаунт?",
+    "signUpHere": "Зарегистрируйтесь здесь",
+    "loginHere": "Войдите здесь",
+    "continueWithGoogle": "Продолжить с Google",
+    "continueWithFacebook": "Продолжить с Facebook",
+    "continueWithApple": "Продолжить с Apple",
+    "emailPlaceholder": "Введите ваш email",
+    "passwordPlaceholder": "Введите ваш пароль",
+    "confirmPasswordPlaceholder": "Подтвердите ваш пароль",
+    "fullNamePlaceholder": "Введите ваше полное имя",
+    "loginSuccess": "Добро пожаловать!",
+    "registerSuccess": "Аккаунт создан! Проверьте вашу почту.",
+    "errors": {
+      "invalidEmail": "Пожалуйста, введите корректный email",
+      "passwordTooShort": "Пароль должен содержать не менее 6 символов",
+      "passwordMismatch": "Пароли не совпадают",
+      "fullNameRequired": "Полное имя обязательно",
+      "loginFailed": "Неверный email или пароль",
+      "registerFailed": "Не удалось создать аккаунт"
+    }
+  },
+  "language": {
+    "select": "Выбор языка",
+    "en": "Английский",
+    "el": "Греческий",
+    "ru": "Русский"
+  }
+}

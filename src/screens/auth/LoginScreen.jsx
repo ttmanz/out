@@ -1,0 +1,106 @@
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
+import { signInWithEmail, signInWithGoogle, signInWithFacebook, signInWithApple } from '../../lib/auth';
+import AuthInput from '../../components/auth/AuthInput';
+import SocialButton from '../../components/auth/SocialButton';
+import PrimaryButton from '../../components/common/PrimaryButton';
+import Divider from '../../components/common/Divider';
+
+const validateLogin = (email, password, t) => {
+  if (!email || !/\S+@\S+\.\S+/.test(email)) return t('auth.errors.invalidEmail');
+  if (!password || password.length < 6) return t('auth.errors.passwordTooShort');
+  return null;
+};
+
+const LoginScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fieldError, setFieldError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [socialLoading, setSocialLoading] = useState(null);
+
+  const handleEmailLogin = async () => {
+    const error = validateLogin(email, password, t);
+    if (error) { setFieldError(error); return; }
+    setFieldError('');
+    setLoading(true);
+    const { error: authError } = await signInWithEmail(email, password);
+    setLoading(false);
+    if (authError) Alert.alert(t('auth.errors.loginFailed'), authError.message);
+  };
+
+  const handleSocialLogin = async (provider, loginFn) => {
+    setSocialLoading(provider);
+    const { error } = await loginFn();
+    setSocialLoading(null);
+    if (error) Alert.alert(t('common.error'), error.message);
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+      <Text style={styles.title}>{t('common.appName')}</Text>
+      <Text style={styles.subtitle}>{t('auth.login')}</Text>
+
+      <AuthInput
+        label={t('auth.email')}
+        placeholder={t('auth.emailPlaceholder')}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        error={fieldError}
+      />
+      <AuthInput
+        label={t('auth.password')}
+        placeholder={t('auth.passwordPlaceholder')}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      <PrimaryButton label={t('auth.login')} onPress={handleEmailLogin} loading={loading} />
+
+      <Divider label={t('common.or')} />
+
+      <SocialButton
+        label={t('auth.continueWithGoogle')}
+        color={COLORS.google}
+        onPress={() => handleSocialLogin('google', signInWithGoogle)}
+        loading={socialLoading === 'google'}
+      />
+      <SocialButton
+        label={t('auth.continueWithFacebook')}
+        color={COLORS.facebook}
+        onPress={() => handleSocialLogin('facebook', signInWithFacebook)}
+        loading={socialLoading === 'facebook'}
+      />
+      <SocialButton
+        label={t('auth.continueWithApple')}
+        color={COLORS.apple}
+        onPress={() => handleSocialLogin('apple', signInWithApple)}
+        loading={socialLoading === 'apple'}
+      />
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>{t('auth.noAccount')} </Text>
+        <Text style={styles.link} onPress={() => navigation.navigate(ROUTES.REGISTER)}>
+          {t('auth.signUpHere')}
+        </Text>
+      </View>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: { flexGrow: 1, padding: 24, backgroundColor: COLORS.background, justifyContent: 'center' },
+  title: { fontSize: 32, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 18, color: COLORS.textMuted, textAlign: 'center', marginBottom: 32 },
+  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
+  footerText: { color: COLORS.textMuted, fontSize: 14 },
+  link: { color: COLORS.primary, fontSize: 14, fontWeight: '600' },
+});
+
+export default LoginScreen;

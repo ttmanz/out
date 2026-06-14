@@ -1,0 +1,48 @@
+{
+  "common": {
+    "appName": "Out to Mingle",
+    "loading": "Φόρτωση...",
+    "error": "Κάτι πήγε στραβά",
+    "retry": "Δοκιμάστε ξανά",
+    "cancel": "Ακύρωση",
+    "save": "Αποθήκευση",
+    "or": "ή"
+  },
+  "auth": {
+    "login": "Σύνδεση",
+    "register": "Εγγραφή",
+    "logout": "Αποσύνδεση",
+    "email": "Email",
+    "password": "Κωδικός",
+    "confirmPassword": "Επιβεβαίωση Κωδικού",
+    "fullName": "Ονοματεπώνυμο",
+    "forgotPassword": "Ξεχάσατε τον κωδικό;",
+    "noAccount": "Δεν έχετε λογαριασμό;",
+    "hasAccount": "Έχετε ήδη λογαριασμό;",
+    "signUpHere": "Εγγραφείτε εδώ",
+    "loginHere": "Συνδεθείτε εδώ",
+    "continueWithGoogle": "Συνέχεια με Google",
+    "continueWithFacebook": "Συνέχεια με Facebook",
+    "continueWithApple": "Συνέχεια με Apple",
+    "emailPlaceholder": "Εισάγετε το email σας",
+    "passwordPlaceholder": "Εισάγετε τον κωδικό σας",
+    "confirmPasswordPlaceholder": "Επιβεβαιώστε τον κωδικό σας",
+    "fullNamePlaceholder": "Εισάγετε το ονοματεπώνυμό σας",
+    "loginSuccess": "Καλώς ήρθατε!",
+    "registerSuccess": "Ο λογαριασμός δημιουργήθηκε! Ελέγξτε το email σας.",
+    "errors": {
+      "invalidEmail": "Παρακαλώ εισάγετε έγκυρο email",
+      "passwordTooShort": "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες",
+      "passwordMismatch": "Οι κωδικοί δεν ταιριάζουν",
+      "fullNameRequired": "Το ονοματεπώνυμο είναι υποχρεωτικό",
+      "loginFailed": "Λάθος email ή κωδικός",
+      "registerFailed": "Δεν ήταν δυνατή η δημιουργία λογαριασμού"
+    }
+  },
+  "language": {
+    "select": "Επιλογή Γλώσσας",
+    "en": "Αγγλικά",
+    "el": "Ελληνικά",
+    "ru": "Ρωσικά"
+  }
+}

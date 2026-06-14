@@ -1,0 +1,48 @@
+{
+  "common": {
+    "appName": "Out to Mingle",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "or": "or"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Sign Up",
+    "logout": "Log Out",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUpHere": "Sign up here",
+    "loginHere": "Log in here",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithFacebook": "Continue with Facebook",
+    "continueWithApple": "Continue with Apple",
+    "emailPlaceholder": "Enter your email",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "fullNamePlaceholder": "Enter your full name",
+    "loginSuccess": "Welcome back!",
+    "registerSuccess": "Account created! Please check your email.",
+    "errors": {
+      "invalidEmail": "Please enter a valid email",
+      "passwordTooShort": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "fullNameRequired": "Full name is required",
+      "loginFailed": "Invalid email or password",
+      "registerFailed": "Could not create account"
+    }
+  },
+  "language": {
+    "select": "Select Language",
+    "en": "English",
+    "el": "Greek",
+    "ru": "Russian"
+  }
+}
