@@ -6,12 +6,12 @@ import { CONFIG } from '../../constants/config';
 
 const LANGUAGE_LABELS = { en: 'EN', el: 'EL', ru: 'RU' };
 
-const LanguagePicker = () => {
+const LanguagePicker = ({ style }) => {
   const { i18n } = useTranslation();
   const current = i18n.language;
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, style]}>
       {CONFIG.supportedLanguages.map((lang) => (
         <TouchableOpacity
           key={lang}
@@ -28,18 +28,22 @@ const LanguagePicker = () => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: { flexDirection: 'row', justifyContent: 'center', marginBottom: 24 },
+  wrapper: { flexDirection: 'row', alignItems: 'center' },
   btn: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    marginHorizontal: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    marginRight: 6,
     borderRadius: 20,
     borderWidth: 1,
     borderColor: COLORS.border,
+    backgroundColor: COLORS.surfaceAlt,
   },
-  btnActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  label: { fontSize: 13, fontWeight: '600', color: COLORS.textMuted },
-  labelActive: { color: COLORS.white },
+  btnActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  label: { fontSize: 12, fontWeight: '700', color: COLORS.textMuted },
+  labelActive: { color: COLORS.black },
 });
 
 export default LanguagePicker;

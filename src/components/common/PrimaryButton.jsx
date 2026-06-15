@@ -10,7 +10,7 @@ const PrimaryButton = ({ label, onPress, loading = false, disabled = false }) =>
     activeOpacity={0.8}
   >
     {loading
-      ? <ActivityIndicator color={COLORS.white} />
+      ? <ActivityIndicator color={COLORS.black} />
       : <Text style={styles.label}>{label}</Text>
     }
   </TouchableOpacity>
@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  disabled: { opacity: 0.6 },
-  label: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
+  disabled: { opacity: 0.5 },
+  label: { color: COLORS.black, fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
 });
 
 export default PrimaryButton;

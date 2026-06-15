@@ -19,13 +19,13 @@ const AuthInput = ({ label, error, multiline, ...props }) => (
 
 const styles = StyleSheet.create({
   wrapper: { marginBottom: 16 },
-  label: { fontSize: 14, color: COLORS.text, marginBottom: 6, fontWeight: '600' },
+  label: { fontSize: 13, color: COLORS.textSecondary, marginBottom: 8, fontWeight: '600', letterSpacing: 0.5 },
   input: {
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 13,
+    paddingVertical: 14,
     fontSize: 15,
     color: COLORS.text,
     backgroundColor: COLORS.surface,

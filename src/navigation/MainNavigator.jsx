@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ROUTES } from '../constants/routes';
 import { COLORS } from '../constants/colors';
 import { supabase } from '../lib/supabase';
@@ -76,21 +77,6 @@ const NotificationsStackNavigator = () => (
   </NotificationsStack.Navigator>
 );
 
-const TabIcon = ({ emoji, label, focused }) => (
-  <View style={tabStyles.iconWrap}>
-    <Text style={[tabStyles.emoji, { opacity: focused ? 1 : 0.45 }]}>{emoji}</Text>
-    <Text style={[tabStyles.label, { color: focused ? COLORS.primary : COLORS.textMuted }]}>
-      {label}
-    </Text>
-  </View>
-);
-
-const tabStyles = StyleSheet.create({
-  iconWrap: { alignItems: 'center', justifyContent: 'center' },
-  emoji: { fontSize: 22 },
-  label: { fontSize: 10, fontWeight: '600', marginTop: 2 },
-});
-
 const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
 
@@ -117,18 +103,25 @@ const MainNavigator = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopWidth: 0,
-          shadowColor: COLORS.black,
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.08,
-          shadowRadius: 12,
-          elevation: 10,
-          height: 62,
-          paddingBottom: 6,
+          backgroundColor: '#0A0D16',
+          borderTopWidth: 1,
+          borderTopColor: '#1A1500',
+          height: 64,
+          paddingBottom: 8,
           paddingTop: 6,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.4,
+          shadowRadius: 12,
+          elevation: 20,
+        },
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: '#3A2E10',
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '600',
+          marginTop: 2,
         },
       }}
     >
@@ -136,21 +129,30 @@ const MainNavigator = () => {
         name="HomeTab"
         component={HomeStackNavigator}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="🏠" label="Home" focused={focused} />,
+          tabBarLabel: 'Home',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="FriendsTab"
         component={FriendsStackNavigator}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="👥" label="Friends" focused={focused} />,
+          tabBarLabel: 'Friends',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
+          ),
         }}
       />
       <Tab.Screen
         name="MessagesTab"
         component={MessagesStackNavigator}
         options={{
-          tabBarIcon: ({ focused }) => <TabIcon emoji="💬" label="Messages" focused={focused} />,
+          tabBarLabel: 'Messages',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
+          ),
         }}
       />
       <Tab.Screen
@@ -160,17 +162,18 @@ const MainNavigator = () => {
           tabPress: () => setNotifCount(0),
         })}
         options={{
-          tabBarIcon: ({ focused }) => (
+          tabBarLabel: 'Alerts',
+          tabBarIcon: ({ color, focused }) => (
             <View>
-              <TabIcon emoji="🔔" label="Alerts" focused={focused} />
+              <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
               {notifCount > 0 && (
                 <View style={{
-                  position: 'absolute', top: -2, right: -6,
+                  position: 'absolute', top: -3, right: -7,
                   backgroundColor: COLORS.error,
-                  borderRadius: 9, minWidth: 18, height: 18,
+                  borderRadius: 9, minWidth: 17, height: 17,
                   justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3,
                 }}>
-                  <Text style={{ color: COLORS.white, fontSize: 10, fontWeight: '700' }}>
+                  <Text style={{ color: COLORS.white, fontSize: 9, fontWeight: '800' }}>
                     {notifCount > 99 ? '99+' : notifCount}
                   </Text>
                 </View>

@@ -102,9 +102,9 @@ const LoginScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: 24, backgroundColor: COLORS.surface, justifyContent: 'center' },
-  title: { fontSize: 34, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 4 },
-  subtitle: { fontSize: 16, color: COLORS.textMuted, textAlign: 'center', marginBottom: 36 },
+  container: { flexGrow: 1, padding: 24, backgroundColor: COLORS.background, justifyContent: 'center' },
+  title: { fontSize: 34, fontWeight: '800', color: COLORS.text, textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: COLORS.primary, textAlign: 'center', marginBottom: 36, letterSpacing: 1.5 },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
   footerText: { color: COLORS.textMuted, fontSize: 14 },
   link: { color: COLORS.primary, fontSize: 14, fontWeight: '600' },
