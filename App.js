@@ -1,6 +1,7 @@
 import './src/lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { onAuthStateChange, getSession } from './src/lib/auth';
 import AuthNavigator from './src/navigation/AuthNavigator';
@@ -30,9 +31,11 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      {session ? <MainNavigator /> : <AuthNavigator />}
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        {session ? <MainNavigator /> : <AuthNavigator />}
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
 
