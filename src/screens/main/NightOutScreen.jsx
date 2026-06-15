@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView, Alert,
+  ActivityIndicator, Alert, StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -52,9 +52,11 @@ const NightOutScreen = ({ navigation }) => {
     );
   }
 
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <View>
           <Text style={styles.title}>{t('nightOut.title')}</Text>
         </View>
@@ -115,7 +117,7 @@ const NightOutScreen = ({ navigation }) => {
           );
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -126,21 +128,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.background,
     paddingHorizontal: 20,
-    paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  title: { fontSize: 26, fontWeight: '800', color: COLORS.purple },
+  title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
   createBtn: {
-    backgroundColor: COLORS.purpleBg,
+    backgroundColor: 'rgba(200,128,10,0.12)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
   },
-  createBtnText: { color: COLORS.purple, fontWeight: '700', fontSize: 13 },
+  createBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
   list: { paddingVertical: 12, paddingHorizontal: 16, paddingBottom: 40 },
   emptyWrap: { alignItems: 'center', marginTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
@@ -150,12 +153,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginBottom: 10,
-    borderWidth: 1.5,
-    borderColor: COLORS.purpleBg,
-    shadowColor: COLORS.purple,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
     elevation: 2,
   },
   cardTop: { flexDirection: 'row', marginBottom: 10 },
@@ -163,7 +162,7 @@ const styles = StyleSheet.create({
   cardRight: { alignItems: 'flex-end', justifyContent: 'center', paddingLeft: 8 },
   cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 4 },
   cardMeta: { fontSize: 12, color: COLORS.textMuted, marginBottom: 2 },
-  cardOrganizer: { fontSize: 11, color: COLORS.purple, fontWeight: '600', marginTop: 4 },
+  cardOrganizer: { fontSize: 11, color: COLORS.primary, fontWeight: '600', marginTop: 4 },
   myStatus: { fontSize: 22, marginBottom: 4 },
   goingCount: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600' },
   cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
