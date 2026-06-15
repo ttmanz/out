@@ -3,8 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } fr
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { signOut } from '../../lib/auth';
-import LanguagePicker from '../../components/common/LanguagePicker';
 
 const FEATURES = [
   { emoji: '🎉', titleKey: 'home.whatsHappening', route: ROUTES.WHAT_HAPPENING, watermark: '🎆' },
@@ -34,22 +32,6 @@ const HomeScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-
-        {/* Top bar */}
-        <View style={styles.topBar}>
-          <LanguagePicker style={styles.langOverride} />
-          <View style={styles.topActions}>
-            <TouchableOpacity
-              style={styles.iconBtn}
-              onPress={() => navigation.navigate(ROUTES.PROFILE_SETTINGS)}
-            >
-              <Text style={styles.iconBtnText}>⚙️</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.logoutBtn} onPress={signOut}>
-              <Text style={styles.logoutText}>↗  {t('auth.logout')}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
 
         {/* Title section */}
         <View style={styles.titleSection}>
@@ -84,40 +66,9 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { paddingBottom: 40 },
 
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 10,
-  },
-  langOverride: { marginBottom: 0 },
-  topActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  iconBtn: {
-    width: 40, height: 40,
-    borderRadius: 10,
-    backgroundColor: 'rgba(200,128,10,0.12)',
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  iconBtnText: { fontSize: 18 },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 20,
-    backgroundColor: 'rgba(200,128,10,0.12)',
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
-  },
-  logoutText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
-
   titleSection: {
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 48,
     paddingBottom: 28,
     paddingHorizontal: 24,
   },
