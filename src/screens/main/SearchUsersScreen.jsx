@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, 
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
-import { searchUsers, sendFriendRequest, getSentRequestIds } from '../../lib/friends';
+import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blockMember } from '../../lib/friends';
 import AuthInput from '../../components/auth/AuthInput';
 
 const Avatar = ({ name }) => (
@@ -17,15 +17,21 @@ const SearchUsersScreen = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [sentIds, setSentIds] = useState(new Set());
+  const [blockedIds, setBlockedIds] = useState(new Set());
   const [userId, setUserId] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [blockingId, setBlockingId] = useState(null);
 
   useEffect(() => {
     getSession().then(({ data: { session } }) => {
       if (!session) return;
       setUserId(session.user.id);
-      getSentRequestIds(session.user.id).then(({ data }) => {
-        setSentIds(new Set((data ?? []).map((r) => r.addressee_id)));
+      Promise.all([
+        getSentRequestIds(session.user.id),
+        getMyBlockedIds(session.user.id),
+      ]).then(([sentRes, blockedRes]) => {
+        setSentIds(new Set((sentRes.data ?? []).map((r) => r.addressee_id)));
+        setBlockedIds(new Set((blockedRes.data ?? []).map((r) => r.blocked_id)));
       });
     });
   }, []);
@@ -35,13 +41,43 @@ const SearchUsersScreen = () => {
     setSearching(true);
     const { data, error } = await searchUsers(query.trim(), userId);
     setSearching(false);
-    if (!error) setResults(data ?? []);
+    if (!error) setResults((data ?? []).filter((r) => !blockedIds.has(r.id)));
   };
 
   const handleAdd = async (addresseeId) => {
     const { error } = await sendFriendRequest(userId, addresseeId);
-    if (!error) setSentIds((prev) => new Set([...prev, addresseeId]));
-    else Alert.alert(t('common.error'), t('friends.errors.sendFailed'));
+    if (!error) {
+      setSentIds((prev) => new Set([...prev, addresseeId]));
+    } else if (error.code === 'REQUESTS_CLOSED') {
+      Alert.alert(t('common.error'), t('friends.errors.requestsClosed'));
+    } else {
+      Alert.alert(t('common.error'), t('friends.errors.sendFailed'));
+    }
+  };
+
+  const handleBlock = (targetId, targetName) => {
+    Alert.alert(
+      t('friends.blockConfirm'),
+      t('friends.blockConfirmDesc', { name: targetName }),
+      [
+        { text: t('friends.cancel'), style: 'cancel' },
+        {
+          text: t('friends.block'),
+          style: 'destructive',
+          onPress: async () => {
+            setBlockingId(targetId);
+            const { error } = await blockMember(userId, targetId);
+            setBlockingId(null);
+            if (error) {
+              Alert.alert(t('common.error'), t('friends.errors.blockFailed'));
+            } else {
+              setBlockedIds((prev) => new Set([...prev, targetId]));
+              setResults((prev) => prev.filter((r) => r.id !== targetId));
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -69,18 +105,37 @@ const SearchUsersScreen = () => {
         ListEmptyComponent={query && !searching ? <Text style={styles.empty}>{t('friends.noResults')}</Text> : null}
         renderItem={({ item }) => {
           const sent = sentIds.has(item.id);
+          const requestsClosed = !item.allow_friend_requests;
+          const isBlocking = blockingId === item.id;
+
           return (
             <View style={styles.row}>
               <Avatar name={item.full_name} />
               <Text style={styles.name}>{item.full_name}</Text>
+              {requestsClosed ? (
+                <View style={styles.closedBadge}>
+                  <Text style={styles.closedBadgeText}>{t('friends.requestsClosed')}</Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.addBtn, sent && styles.addBtnSent]}
+                  onPress={() => !sent && handleAdd(item.id)}
+                  disabled={sent}
+                >
+                  <Text style={styles.addBtnText}>
+                    {sent ? t('friends.requestSent') : t('friends.addFriend')}
+                  </Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity
-                style={[styles.addBtn, sent && styles.addBtnSent]}
-                onPress={() => !sent && handleAdd(item.id)}
-                disabled={sent}
+                style={styles.blockBtn}
+                onPress={() => handleBlock(item.id, item.full_name)}
+                disabled={isBlocking}
               >
-                <Text style={styles.addBtnText}>
-                  {sent ? t('friends.requestSent') : t('friends.addFriend')}
-                </Text>
+                {isBlocking
+                  ? <ActivityIndicator size="small" color={COLORS.error} />
+                  : <Text style={styles.blockBtnText}>⊘</Text>
+                }
               </TouchableOpacity>
             </View>
           );
@@ -103,6 +158,10 @@ const styles = StyleSheet.create({
   addBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   addBtnSent: { backgroundColor: COLORS.border },
   addBtnText: { color: COLORS.white, fontWeight: '600', fontSize: 13 },
+  closedBadge: { backgroundColor: COLORS.backgroundDark, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  closedBadgeText: { color: COLORS.textMuted, fontWeight: '600', fontSize: 12 },
+  blockBtn: { paddingHorizontal: 10, paddingVertical: 6, marginLeft: 6 },
+  blockBtnText: { fontSize: 20, color: COLORS.error },
 });
 
 export default SearchUsersScreen;

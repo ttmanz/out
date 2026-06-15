@@ -1,0 +1,209 @@
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+  ActivityIndicator, Alert, ScrollView, TextInput,
+} from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { COLORS } from '../../constants/colors';
+import { getSession } from '../../lib/auth';
+import { getFriends } from '../../lib/friends';
+import { createNightOut, addNightOutMembers } from '../../lib/nightOut';
+
+const Avatar = ({ name, size = 36 }) => (
+  <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
+    <Text style={[styles.avatarText, { fontSize: size * 0.4 }]}>{name?.[0]?.toUpperCase() ?? '?'}</Text>
+  </View>
+);
+
+const CreateNightOutScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+  const [userId, setUserId] = useState(null);
+  const [title, setTitle] = useState('');
+  const [venue, setVenue] = useState('');
+  const [when, setWhen] = useState('');
+  const [description, setDescription] = useState('');
+  const [friends, setFriends] = useState([]);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      setUserId(session.user.id);
+      const { data, error } = await getFriends(session.user.id);
+      if (!error) setFriends(data ?? []);
+    });
+  }, []);
+
+  const friendProfile = (item) =>
+    item.requester_id === userId ? item.addressee : item.requester;
+  const friendId = (item) =>
+    item.requester_id === userId ? item.addressee_id : item.requester_id;
+
+  const toggleFriend = (fid) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(fid)) next.delete(fid); else next.add(fid);
+      return next;
+    });
+  };
+
+  const handleCreate = async () => {
+    if (!title.trim()) {
+      Alert.alert(t('common.error'), t('nightOut.titleRequired'));
+      return;
+    }
+    setSaving(true);
+    const { data, error } = await createNightOut(userId, {
+      title: title.trim(),
+      venue: venue.trim(),
+      planned_at: when.trim(),
+      description: description.trim(),
+    });
+    if (error || !data) {
+      Alert.alert(t('common.error'), t('nightOut.createFailed'));
+      setSaving(false);
+      return;
+    }
+    if (selectedIds.size > 0) {
+      await addNightOutMembers(data.id, [...selectedIds]);
+    }
+    setSaving(false);
+    navigation.goBack();
+  };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Text style={styles.backText}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('nightOut.create')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <Text style={styles.label}>{t('nightOut.labelTitle')} *</Text>
+        <TextInput
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder={t('nightOut.placeholderTitle')}
+          placeholderTextColor={COLORS.textMuted}
+          maxLength={100}
+        />
+
+        <Text style={styles.label}>{t('nightOut.labelVenue')}</Text>
+        <TextInput
+          style={styles.input}
+          value={venue}
+          onChangeText={setVenue}
+          placeholder={t('nightOut.placeholderVenue')}
+          placeholderTextColor={COLORS.textMuted}
+          maxLength={100}
+        />
+
+        <Text style={styles.label}>{t('nightOut.labelWhen')}</Text>
+        <TextInput
+          style={styles.input}
+          value={when}
+          onChangeText={setWhen}
+          placeholder={t('nightOut.placeholderWhen')}
+          placeholderTextColor={COLORS.textMuted}
+          maxLength={80}
+        />
+
+        <Text style={styles.label}>{t('nightOut.labelDescription')}</Text>
+        <TextInput
+          style={[styles.input, styles.inputMulti]}
+          value={description}
+          onChangeText={setDescription}
+          placeholder={t('nightOut.placeholderDescription')}
+          placeholderTextColor={COLORS.textMuted}
+          multiline
+          maxLength={300}
+        />
+
+        {friends.length > 0 && (
+          <>
+            <Text style={styles.label}>{t('nightOut.inviteFriends')}</Text>
+            {friends.map((item) => {
+              const profile = friendProfile(item);
+              const fid = friendId(item);
+              const selected = selectedIds.has(fid);
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.friendRow, selected && styles.friendRowSelected]}
+                  onPress={() => toggleFriend(fid)}
+                  activeOpacity={0.7}
+                >
+                  <Avatar name={profile?.full_name} />
+                  <Text style={styles.friendName}>{profile?.full_name}</Text>
+                  <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                    {selected && <Text style={styles.checkmark}>✓</Text>}
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </>
+        )}
+
+        <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={saving}>
+          {saving
+            ? <ActivityIndicator color={COLORS.white} />
+            : <Text style={styles.submitText}>{t('nightOut.submitCreate')}</Text>
+          }
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  header: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 14,
+    backgroundColor: COLORS.surface,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+  },
+  back: { width: 40, alignItems: 'flex-start' },
+  backText: { fontSize: 30, color: COLORS.purple, lineHeight: 34 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  scroll: { padding: 20, paddingBottom: 48 },
+  label: {
+    fontSize: 12, fontWeight: '700', color: COLORS.textMuted,
+    textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginTop: 16,
+  },
+  input: {
+    borderWidth: 1.5, borderColor: COLORS.border, borderRadius: 12,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
+    color: COLORS.text, backgroundColor: COLORS.surface, marginBottom: 4,
+  },
+  inputMulti: { height: 80, textAlignVertical: 'top' },
+  friendRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.surface, borderRadius: 12,
+    padding: 12, marginBottom: 8,
+    borderWidth: 1.5, borderColor: COLORS.border,
+  },
+  friendRowSelected: { borderColor: COLORS.purple, backgroundColor: COLORS.purpleBg },
+  avatar: { backgroundColor: COLORS.purple, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  avatarText: { color: COLORS.white, fontWeight: '700' },
+  friendName: { flex: 1, fontSize: 15, fontWeight: '500', color: COLORS.text },
+  checkbox: {
+    width: 24, height: 24, borderRadius: 12,
+    borderWidth: 2, borderColor: COLORS.border,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  checkboxSelected: { backgroundColor: COLORS.purple, borderColor: COLORS.purple },
+  checkmark: { color: COLORS.white, fontSize: 14, fontWeight: '700' },
+  submitBtn: {
+    backgroundColor: COLORS.purple, borderRadius: 12,
+    paddingVertical: 15, alignItems: 'center', marginTop: 28,
+  },
+  submitText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+});
+
+export default CreateNightOutScreen;

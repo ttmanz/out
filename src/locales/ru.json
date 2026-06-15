@@ -1,11 +1,7 @@
 {
   "common": {
     "appName": "Out-and-Around",
-    "loading": "Загрузка...",
     "error": "Что-то пошло не так",
-    "retry": "Попробовать снова",
-    "cancel": "Отмена",
-    "save": "Сохранить",
     "or": "или"
   },
   "auth": {
@@ -16,7 +12,6 @@
     "password": "Пароль",
     "confirmPassword": "Подтвердите пароль",
     "fullName": "Полное имя",
-    "forgotPassword": "Забыли пароль?",
     "noAccount": "Нет аккаунта?",
     "hasAccount": "Уже есть аккаунт?",
     "signUpHere": "Зарегистрируйтесь здесь",
@@ -28,7 +23,6 @@
     "passwordPlaceholder": "Введите ваш пароль",
     "confirmPasswordPlaceholder": "Подтвердите ваш пароль",
     "fullNamePlaceholder": "Введите ваше полное имя",
-    "loginSuccess": "Добро пожаловать!",
     "registerSuccess": "Аккаунт создан! Проверьте вашу почту.",
     "errors": {
       "invalidEmail": "Пожалуйста, введите корректный email",
@@ -47,20 +41,179 @@
     "addFriend": "Добавить в друзья",
     "requestSent": "Запрос отправлен",
     "pending": "Входящие запросы",
-    "noPending": "Нет входящих запросов",
     "noFriends": "Друзей пока нет — найдите людей!",
     "accept": "Принять",
     "decline": "Отклонить",
     "friends": "Друзья",
+    "privateProfile": "Приватный профиль",
+    "privateProfileDesc": "У этого участника приватный профиль. Его публикации и активность видны только принятым контактам.",
+    "requestsClosed": "Запросы закрыты",
+    "block": "Заблокировать",
+    "cancel": "Отмена",
+    "blockConfirm": "Заблокировать участника?",
+    "blockConfirmDesc": "{{name}} будет скрыт из ваших поисков и вы из его.",
     "errors": {
       "sendFailed": "Не удалось отправить запрос",
-      "loadFailed": "Не удалось загрузить друзей"
+      "loadFailed": "Не удалось загрузить друзей",
+      "requestsClosed": "Этот участник не принимает запросы в друзья",
+      "blockFailed": "Не удалось заблокировать участника"
     }
   },
-  "language": {
-    "select": "Выбор языка",
-    "en": "Английский",
-    "el": "Греческий",
-    "ru": "Русский"
-  }
+  "home": {
+    "whatsHappening": "Что происходит?",
+    "whereToGo": "Куда пойти",
+    "spurOfMoment": "Спонтанно",
+    "openChat": "Открытый чат",
+    "nightOut": "Планировщик вечеринки"
+  },
+  "openChat": {
+    "title": "Открытый чат",
+    "noPosts": "Постов пока нет — начните разговор!",
+    "labelMessage": "Что у вас на уме?",
+    "labelVenue": "В каком-то месте? (необязательно)",
+    "placeholderMessage": "напр. Иду за мороженым, кто со мной?",
+    "placeholderVenue": "напр. Finos Bar, Лимасол",
+    "post": "Новый пост",
+    "submitPost": "Опубликовать",
+    "viewReplies": "Показать ответы",
+    "hideReplies": "Скрыть ответы",
+    "noReplies": "Ответов пока нет — будьте первым!",
+    "replyPlaceholder": "Ответить...",
+    "send": "Отправить",
+    "blockedFromPost": "Вам заблокирован ответ на этот пост",
+    "errors": {
+      "messageRequired": "Пожалуйста, напишите что-нибудь",
+      "postFailed": "Не удалось опубликовать",
+      "replyFailed": "Не удалось отправить ответ",
+      "blocked": "Вам заблокирован ответ на этот пост",
+      "blockFailed": "Не удалось заблокировать пользователя"
+    }
+  },
+  "spur": {
+    "title": "Спонтанно",
+    "noSpur": "Пока ничего спонтанного — будьте первым!",
+    "goingTo": "Иду в",
+    "forWhat": "на",
+    "joinMe": "присоединишься?",
+    "labelVenue": "Куда идёшь?",
+    "labelActivity": "На что?",
+    "placeholderVenue": "напр. Finos Bar",
+    "placeholderActivity": "напр. кофе, напитки, еда",
+    "post": "Спонтанный пост",
+    "submitPost": "Опубликовать",
+    "viewReplies": "Показать ответы",
+    "hideReplies": "Скрыть ответы",
+    "noReplies": "Ответов пока нет — будьте первым!",
+    "replyPlaceholder": "Скажи, что идёшь...",
+    "send": "Отправить",
+    "errors": {
+      "venueRequired": "Пожалуйста, укажите место",
+      "activityRequired": "Пожалуйста, укажите что за мероприятие",
+      "postFailed": "Не удалось опубликовать",
+      "replyFailed": "Не удалось отправить ответ"
+    }
+  },
+  "profileSettings": {
+    "title": "Настройки профиля",
+    "whoCanFind": "Кто может меня найти?",
+    "everyone": "Все",
+    "everyoneDesc": "Любой участник Out-and-Around может найти и просмотреть ваш профиль",
+    "friends": "Только друзья",
+    "friendsDesc": "Только ваши принятые друзья могут вас найти",
+    "closeFriends": "Близкие друзья",
+    "closeFriendsDesc": "Только участники, отмеченные вами звёздочкой, могут вас найти",
+    "private": "Приватный",
+    "privateDesc": "Скрыт от всех поисков — вы сами решаете, кто может с вами связаться",
+    "privateNote": "Ваш профиль не будет отображаться в результатах поиска. Вы по-прежнему можете отправлять запросы на связь другим участникам.",
+    "markCloseFriends": "Отметьте близких друзей звёздочкой",
+    "noFriendsYet": "Сначала добавьте друзей, затем отметьте их здесь",
+    "whoCanRequest": "Кто может отправить мне запрос в друзья?",
+    "requestsEveryone": "Все",
+    "requestsEveryoneDesc": "Любой участник может отправить вам запрос в друзья",
+    "requestsNobody": "Никто",
+    "requestsNobodyDesc": "Запросы в друзья закрыты — никто не может вас добавить",
+    "save": "Сохранить настройки",
+    "saveFailed": "Не удалось сохранить настройки"
+  },
+  "venues": {
+    "title": "Куда пойти",
+    "loading": "Ищем места рядом с вами...",
+    "noVenues": "Поблизости нет мест",
+    "membersHere": "участников идут сюда",
+    "locationDenied": "Включите геолокацию для поиска мест"
+  },
+  "messages": {
+    "title": "Сообщения",
+    "noConversations": "Нет переписок — напишите другу из списка контактов!",
+    "noMessages": "Сообщений пока нет — поздоровайтесь!",
+    "messagePlaceholder": "Напишите сообщение...",
+    "sendMessage": "Написать",
+    "unknownMember": "Участник"
+  },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Уведомлений пока нет!",
+    "someone": "Кто-то",
+    "friendRequest": "{{name}} отправил вам запрос в друзья",
+    "reply": "{{name}} ответил на ваш пост: {{post}}",
+    "nightOutInvite": "{{name}} пригласил вас на: {{plan}}"
+  },
+  "nightOut": {
+    "title": "Планировщик вечеринки",
+    "create": "Новый план",
+    "empty": "Планов пока нет — создайте и пригласите друзей!",
+    "labelTitle": "Название плана",
+    "labelVenue": "Место (необязательно)",
+    "labelWhen": "Когда? (необязательно)",
+    "labelDescription": "Подробности (необязательно)",
+    "placeholderTitle": "напр. Пятничная ночь",
+    "placeholderVenue": "напр. Finos Bar, Лимасол",
+    "placeholderWhen": "напр. Пятница 18 июля, 21:00",
+    "placeholderDescription": "Дополнительные детали...",
+    "inviteFriends": "Пригласить друзей",
+    "submitCreate": "Создать план",
+    "titleRequired": "Пожалуйста, добавьте название",
+    "createFailed": "Не удалось создать план",
+    "going": "идут",
+    "youOrganized": "Вы организовали это",
+    "by": "Организовано",
+    "yourRsvp": "Ваш ответ",
+    "rsvpGoing": "Иду",
+    "rsvpMaybe": "Возможно",
+    "rsvpDeclined": "Не иду",
+    "rsvpFailed": "Не удалось обновить ответ",
+    "guestList": "Список гостей",
+    "noGuests": "Гостей пока нет",
+    "delete": "Удалить",
+    "deleteTitle": "Удалить план?",
+    "deleteDesc": "Это удалит план для всех участников. Отменить невозможно."
+  },
+  "profile": {
+    "activity": "Последняя активность",
+    "noPosts": "Постов пока нет"
+  },
+  "happenings": {
+    "title": "Что происходит?",
+    "today": "Сегодня",
+    "tomorrow": "Завтра",
+    "thisWeekend": "На выходных",
+    "nearby": "Рядом со мной",
+    "noHappenings": "Пока ничего не запланировано — будьте первым!",
+    "post": "Опубликовать план",
+    "labelTitle": "Какой план?",
+    "labelVenue": "Где?",
+    "labelWhen": "Когда?",
+    "labelDescription": "Подробности",
+    "placeholderTitle": "напр. Выпить в Finos Bar",
+    "placeholderVenue": "напр. Finos Bar, Лимасол",
+    "placeholderDescription": "Необязательная заметка для друзей",
+    "locationNote": "Ваша локация будет добавлена к публикации",
+    "submitPost": "Опубликовать",
+    "errors": {
+      "titleRequired": "Пожалуйста, добавьте заголовок",
+      "whenRequired": "Пожалуйста, выберите когда",
+      "locationDenied": "Доступ к геолокации запрещён",
+      "postFailed": "Не удалось опубликовать"
+    }
+  },
 }

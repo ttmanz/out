@@ -1,11 +1,7 @@
 {
   "common": {
     "appName": "Out-and-Around",
-    "loading": "Loading...",
     "error": "Something went wrong",
-    "retry": "Try Again",
-    "cancel": "Cancel",
-    "save": "Save",
     "or": "or"
   },
   "auth": {
@@ -16,7 +12,6 @@
     "password": "Password",
     "confirmPassword": "Confirm Password",
     "fullName": "Full Name",
-    "forgotPassword": "Forgot Password?",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "signUpHere": "Sign up here",
@@ -28,7 +23,6 @@
     "passwordPlaceholder": "Enter your password",
     "confirmPasswordPlaceholder": "Confirm your password",
     "fullNamePlaceholder": "Enter your full name",
-    "loginSuccess": "Welcome back!",
     "registerSuccess": "Account created! Please check your email.",
     "errors": {
       "invalidEmail": "Please enter a valid email",
@@ -47,20 +41,179 @@
     "addFriend": "Add Friend",
     "requestSent": "Request Sent",
     "pending": "Pending Requests",
-    "noPending": "No pending requests",
     "noFriends": "No friends yet — search for people to add!",
     "accept": "Accept",
     "decline": "Decline",
     "friends": "Friends",
+    "privateProfile": "Private Profile",
+    "privateProfileDesc": "This member has a private profile. Their posts and activity are only visible to accepted connections.",
+    "requestsClosed": "Requests Off",
+    "block": "Block",
+    "cancel": "Cancel",
+    "blockConfirm": "Block this member?",
+    "blockConfirmDesc": "{{name}} will be hidden from your searches and you from theirs.",
     "errors": {
       "sendFailed": "Could not send friend request",
-      "loadFailed": "Could not load friends"
+      "loadFailed": "Could not load friends",
+      "requestsClosed": "This member is not accepting friend requests",
+      "blockFailed": "Could not block member"
     }
   },
-  "language": {
-    "select": "Select Language",
-    "en": "English",
-    "el": "Greek",
-    "ru": "Russian"
-  }
+  "home": {
+    "whatsHappening": "What's Happening",
+    "whereToGo": "Where to Go",
+    "spurOfMoment": "Spur of the Moment",
+    "openChat": "Open Chat",
+    "nightOut": "Night Out Planner"
+  },
+  "openChat": {
+    "title": "Open Chat",
+    "noPosts": "No posts yet — start a conversation!",
+    "labelMessage": "What's on your mind?",
+    "labelVenue": "At a venue? (optional)",
+    "placeholderMessage": "e.g. Going for ice cream, anyone coming?",
+    "placeholderVenue": "e.g. Finos Bar, Limassol",
+    "post": "New Post",
+    "submitPost": "Post",
+    "viewReplies": "View replies",
+    "hideReplies": "Hide replies",
+    "noReplies": "No replies yet — be the first!",
+    "replyPlaceholder": "Reply...",
+    "send": "Send",
+    "blockedFromPost": "You have been blocked from replying to this post",
+    "errors": {
+      "messageRequired": "Please write something",
+      "postFailed": "Could not post",
+      "replyFailed": "Could not send reply",
+      "blocked": "You have been blocked from replying to this post",
+      "blockFailed": "Could not block user"
+    }
+  },
+  "spur": {
+    "title": "Spur of the Moment",
+    "noSpur": "Nothing spontaneous yet — be the first!",
+    "goingTo": "Going to",
+    "forWhat": "for",
+    "joinMe": "join me?",
+    "labelVenue": "Where are you going?",
+    "labelActivity": "What for?",
+    "placeholderVenue": "e.g. Finos Bar",
+    "placeholderActivity": "e.g. coffee, drinks, food",
+    "post": "Post Spur",
+    "submitPost": "Post",
+    "viewReplies": "View replies",
+    "hideReplies": "Hide replies",
+    "noReplies": "No replies yet — be the first to say you're in!",
+    "replyPlaceholder": "Say you're in...",
+    "send": "Send",
+    "errors": {
+      "venueRequired": "Please add a venue",
+      "activityRequired": "Please add what for",
+      "postFailed": "Could not post",
+      "replyFailed": "Could not send reply"
+    }
+  },
+  "profileSettings": {
+    "title": "Profile Settings",
+    "whoCanFind": "Who can find me?",
+    "everyone": "Everyone",
+    "everyoneDesc": "Any Out-and-Around member can find and view your profile",
+    "friends": "Friends Only",
+    "friendsDesc": "Only your accepted friends can find you",
+    "closeFriends": "Close Friends",
+    "closeFriendsDesc": "Only members you have starred as close friends can find you",
+    "private": "Private",
+    "privateDesc": "Hidden from all searches — you control who connects with you",
+    "privateNote": "Your profile will not appear in any search results. You can still send connection requests to others and they can accept or decline.",
+    "markCloseFriends": "Star your close friends",
+    "noFriendsYet": "Add friends first, then you can star them as close friends here",
+    "whoCanRequest": "Who can send me a friend request?",
+    "requestsEveryone": "Everyone",
+    "requestsEveryoneDesc": "Any member can send you a friend request",
+    "requestsNobody": "Nobody",
+    "requestsNobodyDesc": "Friend requests are closed — no one can add you",
+    "save": "Save Settings",
+    "saveFailed": "Could not save settings"
+  },
+  "venues": {
+    "title": "Where to Go",
+    "loading": "Finding venues near you...",
+    "noVenues": "No venues found nearby",
+    "membersHere": "members going here",
+    "locationDenied": "Enable location to find nearby venues"
+  },
+  "messages": {
+    "title": "Messages",
+    "noConversations": "No conversations yet — message a friend from your Friends list!",
+    "noMessages": "No messages yet — say hello!",
+    "messagePlaceholder": "Type a message...",
+    "sendMessage": "Send Message",
+    "unknownMember": "Member"
+  },
+  "notifications": {
+    "title": "Alerts",
+    "empty": "No alerts yet — you're all caught up!",
+    "someone": "Someone",
+    "friendRequest": "{{name}} sent you a friend request",
+    "reply": "{{name}} replied to your post: {{post}}",
+    "nightOutInvite": "{{name}} invited you to {{plan}}"
+  },
+  "nightOut": {
+    "title": "Night Out Planner",
+    "create": "New Plan",
+    "empty": "No plans yet — create one and invite your friends!",
+    "labelTitle": "Plan name",
+    "labelVenue": "Venue (optional)",
+    "labelWhen": "When? (optional)",
+    "labelDescription": "Details (optional)",
+    "placeholderTitle": "e.g. Friday Night Out",
+    "placeholderVenue": "e.g. Finos Bar, Limassol",
+    "placeholderWhen": "e.g. Friday 18 July, 9pm",
+    "placeholderDescription": "Any extra details for your crew...",
+    "inviteFriends": "Invite friends",
+    "submitCreate": "Create Plan",
+    "titleRequired": "Please add a plan name",
+    "createFailed": "Could not create plan",
+    "going": "going",
+    "youOrganized": "You organised this",
+    "by": "Organised by",
+    "yourRsvp": "Your RSVP",
+    "rsvpGoing": "Going",
+    "rsvpMaybe": "Maybe",
+    "rsvpDeclined": "Declined",
+    "rsvpFailed": "Could not update RSVP",
+    "guestList": "Guest list",
+    "noGuests": "No guests invited yet",
+    "delete": "Delete",
+    "deleteTitle": "Delete this plan?",
+    "deleteDesc": "This will remove the plan for everyone. This cannot be undone."
+  },
+  "profile": {
+    "activity": "Recent activity",
+    "noPosts": "No posts yet"
+  },
+  "happenings": {
+    "title": "What's Happening",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "thisWeekend": "This Weekend",
+    "nearby": "Nearby Activities",
+    "noHappenings": "Nothing planned yet — be the first to post!",
+    "post": "Post a Plan",
+    "labelTitle": "What's the plan?",
+    "labelVenue": "Where?",
+    "labelWhen": "When?",
+    "labelDescription": "More details",
+    "placeholderTitle": "e.g. Drinks at Finos Bar",
+    "placeholderVenue": "e.g. Finos Bar, Limassol",
+    "placeholderDescription": "Optional note for your friends",
+    "locationNote": "Your location will be tagged to this post",
+    "submitPost": "Post",
+    "errors": {
+      "titleRequired": "Please add a title for your plan",
+      "whenRequired": "Please select when",
+      "locationDenied": "Location permission denied — needed for Nearby posts",
+      "postFailed": "Could not post your plan"
+    }
+  },
 }

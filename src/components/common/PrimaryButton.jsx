@@ -19,8 +19,8 @@ const PrimaryButton = ({ label, onPress, loading = false, disabled = false }) =>
 const styles = StyleSheet.create({
   button: {
     backgroundColor: COLORS.primary,
-    borderRadius: 10,
-    paddingVertical: 14,
+    borderRadius: 12,
+    paddingVertical: 15,
     alignItems: 'center',
     marginBottom: 12,
   },

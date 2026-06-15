@@ -1,0 +1,81 @@
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
+
+const CATEGORIES = [
+  { key: 'today',       emoji: '🗓️' },
+  { key: 'tomorrow',    emoji: '☀️' },
+  { key: 'thisWeekend', emoji: '🎊' },
+  { key: 'nearby',      emoji: '📍' },
+];
+
+const CategoryCard = ({ emoji, title, onPress }) => (
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+    <Text style={styles.cardEmoji}>{emoji}</Text>
+    <Text style={styles.cardTitle}>{title}</Text>
+    <Text style={styles.chevron}>›</Text>
+  </TouchableOpacity>
+);
+
+const WhatHappeningScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+  return (
+    <SafeAreaView style={styles.safe}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Text style={styles.backText}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('happenings.title')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll}>
+        {CATEGORIES.map(({ key, emoji }) => (
+          <CategoryCard
+            key={key}
+            emoji={emoji}
+            title={t(`happenings.${key}`).toUpperCase()}
+            onPress={() => navigation.navigate(ROUTES.HAPPENING_FEED, { filter: key })}
+          />
+        ))}
+      </ScrollView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  back: { width: 40, alignItems: 'flex-start' },
+  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  scroll: { padding: 20, paddingTop: 24 },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#24c6fb',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 14,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  cardEmoji: { fontSize: 32, marginRight: 12 },
+  cardTitle: { flex: 1, fontSize: 17, fontWeight: '700', color: COLORS.white, textAlign: 'center' },
+  chevron: { fontSize: 26, color: COLORS.white, marginLeft: 8 },
+});
+
+export default WhatHappeningScreen;
