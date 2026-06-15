@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ROUTES } from '../constants/routes';
 import { COLORS } from '../constants/colors';
 import { supabase } from '../lib/supabase';
@@ -79,6 +80,7 @@ const NotificationsStackNavigator = () => (
 
 const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     let channel;
@@ -107,8 +109,8 @@ const MainNavigator = () => {
           backgroundColor: '#0A0D16',
           borderTopWidth: 1,
           borderTopColor: '#1A1500',
-          height: 96,
-          paddingBottom: 34,
+          height: 54 + insets.bottom,
+          paddingBottom: insets.bottom,
           paddingTop: 10,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -4 },
