@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
-  ActivityIndicator, Alert, ScrollView, TextInput,
+  View, Text, StyleSheet, TouchableOpacity,
+  ActivityIndicator, Alert, ScrollView, TextInput, StatusBar,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -25,6 +25,8 @@ const CreateNightOutScreen = ({ navigation }) => {
   const [friends, setFriends] = useState([]);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [saving, setSaving] = useState(false);
+
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
@@ -73,8 +75,8 @@ const CreateNightOutScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
@@ -151,12 +153,12 @@ const CreateNightOutScreen = ({ navigation }) => {
 
         <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={saving}>
           {saving
-            ? <ActivityIndicator color={COLORS.white} />
+            ? <ActivityIndicator color={COLORS.black} />
             : <Text style={styles.submitText}>{t('nightOut.submitCreate')}</Text>
           }
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -164,20 +166,20 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14,
-    backgroundColor: COLORS.surface,
+    paddingHorizontal: 16, paddingBottom: 14,
+    backgroundColor: COLORS.background,
     borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.purple, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 20, paddingBottom: 48 },
   label: {
-    fontSize: 12, fontWeight: '700', color: COLORS.textMuted,
+    fontSize: 12, fontWeight: '700', color: COLORS.primary,
     textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 8, marginTop: 16,
   },
   input: {
-    borderWidth: 1.5, borderColor: COLORS.border, borderRadius: 12,
+    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 12, fontSize: 15,
     color: COLORS.text, backgroundColor: COLORS.surface, marginBottom: 4,
   },
@@ -186,10 +188,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.surface, borderRadius: 12,
     padding: 12, marginBottom: 8,
-    borderWidth: 1.5, borderColor: COLORS.border,
+    borderWidth: 1, borderColor: COLORS.border,
   },
-  friendRowSelected: { borderColor: COLORS.purple, backgroundColor: COLORS.purpleBg },
-  avatar: { backgroundColor: COLORS.purple, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
+  friendRowSelected: { borderColor: COLORS.borderAccent, backgroundColor: 'rgba(200,128,10,0.08)' },
+  avatar: { backgroundColor: COLORS.primaryDark, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   avatarText: { color: COLORS.white, fontWeight: '700' },
   friendName: { flex: 1, fontSize: 15, fontWeight: '500', color: COLORS.text },
   checkbox: {
@@ -197,13 +199,13 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: COLORS.border,
     justifyContent: 'center', alignItems: 'center',
   },
-  checkboxSelected: { backgroundColor: COLORS.purple, borderColor: COLORS.purple },
-  checkmark: { color: COLORS.white, fontSize: 14, fontWeight: '700' },
+  checkboxSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  checkmark: { color: COLORS.black, fontSize: 14, fontWeight: '700' },
   submitBtn: {
-    backgroundColor: COLORS.purple, borderRadius: 12,
+    backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 15, alignItems: 'center', marginTop: 28,
   },
-  submitText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+  submitText: { color: COLORS.black, fontWeight: '800', fontSize: 16 },
 });
 
 export default CreateNightOutScreen;
