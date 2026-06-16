@@ -13,8 +13,9 @@ import { useUser } from '../../contexts/UserContext';
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 const INTERESTS = [
   '🍸 Cocktail Bars', '🎵 Live Music', '💃 Dancing', '🍔 Food & Drinks',
-  '🎮 Gaming', '🎭 Events', '🏖️ Outdoor', '🎨 Arts & Culture',
+  '🎮 Gaming', '🎭 Events', '🏖️ Outdoor', '🎨 Arts & Culture', '✏️ Other',
 ];
+const OTHER_KEY = '✏️ Other';
 
 const CompleteProfileScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -32,6 +33,7 @@ const CompleteProfileScreen = ({ navigation }) => {
   const [city, setCity] = useState('');
   const [bio, setBio] = useState('');
   const [selectedInterests, setSelectedInterests] = useState([]);
+  const [otherInterests, setOtherInterests] = useState('');
   const [phone, setPhone] = useState('');
   const [instagram, setInstagram] = useState('');
 
@@ -46,7 +48,16 @@ const CompleteProfileScreen = ({ navigation }) => {
         setGender(data.gender ?? '');
         setCity(data.city ?? '');
         setBio(data.bio ?? '');
-        setSelectedInterests(data.interests ?? []);
+        const saved = data.interests ?? [];
+        const presetKeys = new Set(INTERESTS);
+        const custom = saved.filter((i) => !presetKeys.has(i));
+        const preset = saved.filter((i) => presetKeys.has(i));
+        if (custom.length) {
+          setSelectedInterests([...preset, OTHER_KEY]);
+          setOtherInterests(custom.join(', '));
+        } else {
+          setSelectedInterests(preset);
+        }
         setPhone(data.phone ?? '');
         setInstagram(data.instagram ?? '');
       }
@@ -93,7 +104,12 @@ const CompleteProfileScreen = ({ navigation }) => {
       gender,
       city: city.trim(),
       bio: bio.trim(),
-      interests: selectedInterests,
+      interests: [
+        ...selectedInterests.filter((i) => i !== OTHER_KEY),
+        ...(selectedInterests.includes(OTHER_KEY)
+          ? otherInterests.split(',').map((s) => s.trim()).filter(Boolean)
+          : []),
+      ],
       phone: phone.trim(),
       instagram: instagram.trim().replace(/^@/, ''),
     });
@@ -206,6 +222,15 @@ const CompleteProfileScreen = ({ navigation }) => {
               );
             })}
           </View>
+          {selectedInterests.includes(OTHER_KEY) && (
+            <TextInput
+              style={[styles.input, { marginTop: 10 }]}
+              value={otherInterests}
+              onChangeText={setOtherInterests}
+              placeholder="Type your interests, separated by commas"
+              placeholderTextColor={COLORS.textMuted}
+            />
+          )}
         </Field>
 
         <Field label="Phone">

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blockMember } from '../../lib/friends';
+import { useUser } from '../../contexts/UserContext';
 import AuthInput from '../../components/auth/AuthInput';
 import AdBanner from '../../components/common/AdBanner';
 
@@ -13,8 +14,11 @@ const Avatar = ({ name }) => (
   </View>
 );
 
+const sharedCount = (a = [], b = []) => a.filter((i) => b.includes(i)).length;
+
 const SearchUsersScreen = () => {
   const { t } = useTranslation();
+  const { profile } = useUser();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [sentIds, setSentIds] = useState(new Set());
@@ -42,7 +46,13 @@ const SearchUsersScreen = () => {
     setSearching(true);
     const { data, error } = await searchUsers(query.trim(), userId);
     setSearching(false);
-    if (!error) setResults((data ?? []).filter((r) => !blockedIds.has(r.id)));
+    if (error) return;
+    const myInterests = profile?.interests ?? [];
+    const filtered = (data ?? []).filter((r) => !blockedIds.has(r.id));
+    const sorted = filtered.sort(
+      (a, b) => sharedCount(b.interests, myInterests) - sharedCount(a.interests, myInterests)
+    );
+    setResults(sorted);
   };
 
   const handleAdd = async (addresseeId) => {
@@ -81,6 +91,8 @@ const SearchUsersScreen = () => {
     );
   };
 
+  const myInterests = profile?.interests ?? [];
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{t('friends.search')}</Text>
@@ -109,11 +121,17 @@ const SearchUsersScreen = () => {
           const sent = sentIds.has(item.id);
           const requestsClosed = !item.allow_friend_requests;
           const isBlocking = blockingId === item.id;
+          const shared = sharedCount(item.interests, myInterests);
 
           return (
             <View style={styles.row}>
               <Avatar name={item.full_name} />
-              <Text style={styles.name}>{item.full_name}</Text>
+              <View style={styles.nameWrap}>
+                <Text style={styles.name}>{item.full_name}</Text>
+                {shared > 0 && (
+                  <Text style={styles.sharedBadge}>✦ {shared} shared interest{shared > 1 ? 's' : ''}</Text>
+                )}
+              </View>
               {requestsClosed ? (
                 <View style={styles.closedBadge}>
                   <Text style={styles.closedBadgeText}>{t('friends.requestsClosed')}</Text>
@@ -156,11 +174,13 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
-  name: { flex: 1, fontSize: 15, color: COLORS.text, fontWeight: '500' },
+  nameWrap: { flex: 1 },
+  name: { fontSize: 15, color: COLORS.text, fontWeight: '500' },
+  sharedBadge: { fontSize: 11, color: COLORS.primary, fontWeight: '700', marginTop: 2 },
   addBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   addBtnSent: { backgroundColor: COLORS.border },
   addBtnText: { color: COLORS.white, fontWeight: '600', fontSize: 13 },
-  closedBadge: { backgroundColor: COLORS.backgroundDark, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  closedBadge: { backgroundColor: COLORS.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
   closedBadgeText: { color: COLORS.textMuted, fontWeight: '600', fontSize: 12 },
   blockBtn: { paddingHorizontal: 10, paddingVertical: 6, marginLeft: 6 },
   blockBtnText: { fontSize: 20, color: COLORS.error },
