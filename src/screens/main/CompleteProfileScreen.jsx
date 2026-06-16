@@ -4,7 +4,6 @@ import {
   TextInput, Image, ActivityIndicator, Alert, StatusBar,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getProfile, updateFullProfile, uploadAvatar } from '../../lib/profile';
@@ -18,7 +17,6 @@ const INTERESTS = [
 const OTHER_KEY = '✏️ Other';
 
 const CompleteProfileScreen = ({ navigation }) => {
-  const { t } = useTranslation();
   const { refreshProfile } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
