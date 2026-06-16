@@ -141,9 +141,7 @@
   "venues": {
     "title": "Where to Go",
     "loading": "Finding venues near you...",
-    "noVenues": "No venues found nearby",
-    "membersHere": "members going here",
-    "locationDenied": "Enable location to find nearby venues"
+    "membersHere": "members going here"
   },
   "messages": {
     "title": "Messages",

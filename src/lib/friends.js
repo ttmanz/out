@@ -73,12 +73,9 @@ export const getPendingRequests = (userId) =>
 export const getSentRequestIds = (userId) =>
   supabase.from('friendships').select('addressee_id').eq('requester_id', userId);
 
-// Block / unblock a member
+// Block a member
 export const blockMember = (blockerId, blockedId) =>
   supabase.from('member_blocks').insert({ blocker_id: blockerId, blocked_id: blockedId });
-
-export const unblockMember = (blockerId, blockedId) =>
-  supabase.from('member_blocks').delete().eq('blocker_id', blockerId).eq('blocked_id', blockedId);
 
 export const getMyBlockedIds = (userId) =>
   supabase.from('member_blocks').select('blocked_id').eq('blocker_id', userId);
