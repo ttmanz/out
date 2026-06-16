@@ -2,13 +2,16 @@ import { supabase } from './supabase';
 import { createHappening } from './happenings';
 export { getSpurReplies as getOpenChatReplies, createSpurReply as createOpenChatReply } from './spur';
 
-export const getOpenChatPosts = () =>
-  supabase
+export const getOpenChatPosts = () => {
+  const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  return supabase
     .from('happenings')
     .select('*, profiles:user_id(full_name)')
     .eq('happening_at', 'open_chat')
+    .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
     .limit(50);
+};
 
 export const createOpenChatPost = (userId, { message, venue }) =>
   createHappening(userId, {
