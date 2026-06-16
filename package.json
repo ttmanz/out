@@ -8,6 +8,7 @@
     "@react-navigation/native-stack": "^6.11.0",
     "@supabase/supabase-js": "^2.108.1",
     "expo": "~54.0.0",
+    "expo-av": "~16.0.8",
     "expo-localization": "~17.0.9",
     "expo-location": "~19.0.8",
     "expo-secure-store": "~15.0.8",
