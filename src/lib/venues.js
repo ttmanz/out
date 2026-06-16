@@ -1,3 +1,22 @@
+import { supabase } from './supabase';
+
+export const logVenueSearch = (userId, venueName) =>
+  supabase.from('venue_searches').insert({ user_id: userId, venue_name: venueName.trim() });
+
+export const getRecentVenueSearches = () => {
+  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+  return supabase
+    .from('venue_searches')
+    .select('venue_name')
+    .gte('created_at', cutoff);
+};
+
+export const getTopVenues = () =>
+  supabase
+    .from('top_venues')
+    .select('id, name, description, address, rank')
+    .order('rank', { ascending: true });
+
 export const fetchNearbyVenues = async (latitude, longitude, radiusMeters = 1500) => {
   const query = `
     [out:json][timeout:15];

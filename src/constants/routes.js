@@ -22,4 +22,9 @@ export const ROUTES = {
   CREATE_NIGHT_OUT: 'CreateNightOut',
   NIGHT_OUT_DETAIL: 'NightOutDetail',
   CLUB_GROUPS: 'ClubGroups',
+  VENUE_HUB: 'VenueHub',
+  VENUE_SEARCH: 'VenueSearch',
+  MEMBERS_AT: 'MembersAt',
+  TRENDING_VENUES: 'TrendingVenues',
+  TOP_VENUES: 'TopVenues',
 };

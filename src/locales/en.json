@@ -66,7 +66,8 @@
     "openChat": "Open Chat",
     "nightOut": "Night Out Planner",
     "tagline": "Explore. Connect. Experience.",
-    "clubGroups": "Club Groups"
+    "clubGroups": "Club Groups",
+    "venue": "Venues"
   },
   "openChat": {
     "title": "Open Chat",
@@ -189,6 +190,23 @@
     "delete": "Delete",
     "deleteTitle": "Delete this plan?",
     "deleteDesc": "This will remove the plan for everyone. This cannot be undone."
+  },
+  "venueHub": {
+    "search": "Search Venues",
+    "searchDesc": "Find a venue and open it in Maps",
+    "membersAt": "Members At",
+    "membersAtDesc": "See how many members are at a venue",
+    "trending": "Trending",
+    "trendingDesc": "Most searched venues this week",
+    "topVenues": "Top Venues",
+    "topVenuesDesc": "Admin curated top picks",
+    "searchPlaceholder": "Enter venue name...",
+    "openMaps": "Open in Maps",
+    "noTrending": "No trending venues yet — start searching!",
+    "noTop": "No top venues listed yet.",
+    "noMembers": "No recent activity at this venue.",
+    "membersRecent": "members recently here",
+    "recentPosts": "Recent posts mentioning this venue"
   },
   "profile": {
     "activity": "Recent activity",
