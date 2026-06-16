@@ -11,6 +11,7 @@ import { getSession } from '../../lib/auth';
 import { getConversations } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const Avatar = ({ name }) => (
   <View style={styles.avatar}>
@@ -68,7 +69,12 @@ const MessagesScreen = ({ navigation }) => {
         data={conversations}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListHeaderComponent={() => <AdBanner page="Messages" />}
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="Messages" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
             <Text style={styles.emptyIcon}>💬</Text>

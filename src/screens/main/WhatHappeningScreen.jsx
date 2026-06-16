@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const CATEGORIES = [
   { key: 'today',       emoji: '🗓️' },
@@ -34,6 +35,7 @@ const WhatHappeningScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <AdBanner page="WhatHappening" />
+        <ProfileBanner navigation={navigation} />
         {CATEGORIES.map(({ key, emoji }) => (
           <CategoryCard
             key={key}

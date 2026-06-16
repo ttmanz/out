@@ -10,6 +10,7 @@ import { ROUTES } from '../../constants/routes';
 import { getProfile, updateProfileSettings } from '../../lib/profile';
 import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend } from '../../lib/friends';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const VISIBILITY_OPTIONS = [
   { key: 'everyone',      emoji: '🌍', labelKey: 'profileSettings.everyone',     descKey: 'profileSettings.everyoneDesc' },
@@ -94,6 +95,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <AdBanner page="ProfileSettings" />
+        <ProfileBanner navigation={navigation} />
 
         <TouchableOpacity
           style={styles.editProfileBtn}

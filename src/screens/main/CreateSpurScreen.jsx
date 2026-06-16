@@ -9,6 +9,7 @@ import AuthInput from '../../components/auth/AuthInput';
 import { createSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const ACCENT = '#ffd700';
 
@@ -57,6 +58,7 @@ const CreateSpurScreen = ({ navigation }) => {
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <AdBanner page="CreateSpur" />
+          <ProfileBanner navigation={navigation} />
           <Text style={styles.preview}>
             {t('spur.goingTo')} {venue.trim() || '___'} {t('spur.forWhat')} {activity.trim() || '___'}, {t('spur.joinMe')}
           </Text>

@@ -7,6 +7,7 @@ import { getSession } from '../../lib/auth';
 import { getFriends, getPendingRequests, acceptFriendRequest, declineFriendRequest, blockMember, removeFriend, getMyBlockedIds } from '../../lib/friends';
 import { getOrCreateConversation } from '../../lib/messages';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const Avatar = ({ name, size = 44 }) => (
   <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -117,6 +118,7 @@ const FriendsScreen = ({ navigation }) => {
         ListHeaderComponent={() => pending.length > 0 ? (
           <View>
             <AdBanner page="Friends" />
+            <ProfileBanner navigation={navigation} />
             <Text style={styles.sectionTitle}>{t('friends.pending')}</Text>
             {pending.map((item) => {
               const requester = item.requester;
@@ -161,6 +163,7 @@ const FriendsScreen = ({ navigation }) => {
         ) : (
           <View>
             <AdBanner page="Friends" />
+            <ProfileBanner navigation={navigation} />
             <Text style={styles.sectionTitle}>{t('friends.friends')}</Text>
           </View>
         )}

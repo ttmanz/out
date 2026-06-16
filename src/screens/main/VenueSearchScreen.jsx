@@ -8,6 +8,7 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { logVenueSearch } from '../../lib/venues';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const VenueSearchScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ const VenueSearchScreen = ({ navigation }) => {
       </View>
 
       <AdBanner page="VenueSearch" />
+      <ProfileBanner navigation={navigation} />
       <View style={styles.body}>
         <Text style={styles.label}>{t('venueHub.searchPlaceholder')}</Text>
         <TextInput

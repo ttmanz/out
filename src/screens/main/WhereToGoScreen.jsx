@@ -11,6 +11,7 @@ import { COLORS } from '../../constants/colors';
 import { fetchNearbyVenues } from '../../lib/venues';
 import { getHappenings } from '../../lib/happenings';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const ACCENT = '#02fefb';
 
@@ -74,6 +75,7 @@ const WhereToGoScreen = ({ navigation }) => {
       </View>
 
       <AdBanner page="WhereToGo" />
+      <ProfileBanner navigation={navigation} />
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={ACCENT} />

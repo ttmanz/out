@@ -14,6 +14,7 @@ import {
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const ACCENT = '#8e8e8d';
 
@@ -234,7 +235,12 @@ const OpenChatScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={ACCENT} />
         }
-        ListHeaderComponent={() => <AdBanner page="OpenChat" />}
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="OpenChat" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
         ListEmptyComponent={<Text style={styles.empty}>{t('openChat.noPosts')}</Text>}
         renderItem={renderPost}
       />

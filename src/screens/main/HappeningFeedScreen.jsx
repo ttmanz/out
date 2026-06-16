@@ -11,6 +11,7 @@ import { ROUTES } from '../../constants/routes';
 import { getHappenings } from '../../lib/happenings';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const distanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -123,7 +124,12 @@ const HappeningFeedScreen = ({ navigation, route }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
-        ListHeaderComponent={() => <AdBanner page="HappeningFeed" />}
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="HappeningFeed" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
         ListEmptyComponent={
           <Text style={styles.empty}>{t('happenings.noHappenings')}</Text>
         }

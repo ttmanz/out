@@ -11,6 +11,7 @@ import { getSpurPosts, getSpurReplies, createSpurReply } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const SpurOfMomentScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -155,7 +156,12 @@ const SpurOfMomentScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
-        ListHeaderComponent={() => <AdBanner page="SpurOfMoment" />}
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="SpurOfMoment" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
         ListEmptyComponent={<Text style={styles.empty}>{t('spur.noSpur')}</Text>}
         renderItem={renderPost}
       />

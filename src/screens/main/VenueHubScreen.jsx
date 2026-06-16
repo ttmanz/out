@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const OPTIONS = [
   { emoji: '🔍', titleKey: 'venueHub.search',     descKey: 'venueHub.searchDesc',     route: ROUTES.VENUE_SEARCH,    watermark: '🗺️' },
@@ -28,6 +29,7 @@ const VenueHubScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <AdBanner page="VenueHub" />
+        <ProfileBanner navigation={navigation} />
         {OPTIONS.map((opt) => (
           <TouchableOpacity
             key={opt.route}

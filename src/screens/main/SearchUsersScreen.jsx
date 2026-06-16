@@ -7,6 +7,7 @@ import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blo
 import { useUser } from '../../contexts/UserContext';
 import AuthInput from '../../components/auth/AuthInput';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const Avatar = ({ name }) => (
   <View style={styles.avatar}>
@@ -16,7 +17,7 @@ const Avatar = ({ name }) => (
 
 const sharedCount = (a = [], b = []) => a.filter((i) => b.includes(i)).length;
 
-const SearchUsersScreen = () => {
+const SearchUsersScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
   const [query, setQuery] = useState('');
@@ -115,7 +116,12 @@ const SearchUsersScreen = () => {
       <FlatList
         data={results}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={() => <AdBanner page="SearchUsers" />}
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="SearchUsers" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
         ListEmptyComponent={query && !searching ? <Text style={styles.empty}>{t('friends.noResults')}</Text> : null}
         renderItem={({ item }) => {
           const sent = sentIds.has(item.id);

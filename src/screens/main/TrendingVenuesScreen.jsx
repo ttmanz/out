@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getRecentVenueSearches } from '../../lib/venues';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const TrendingVenuesScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -54,7 +55,12 @@ const TrendingVenuesScreen = ({ navigation }) => {
         data={trending}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        ListHeaderComponent={() => <AdBanner page="TrendingVenues" />}
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="TrendingVenues" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
         ListEmptyComponent={<Text style={styles.empty}>{t('venueHub.noTrending')}</Text>}
         renderItem={({ item, index }) => (
           <View style={styles.row}>

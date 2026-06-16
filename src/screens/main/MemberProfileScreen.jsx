@@ -13,6 +13,7 @@ import { getMemberHappenings } from '../../lib/happenings';
 import { getOrCreateConversation } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const POST_TYPE_LABEL = {
   spur: '⚡ Spur',
@@ -94,6 +95,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
         ListHeaderComponent={() => (
           <View style={styles.profileCard}>
             <AdBanner page="MemberProfile" />
+            <ProfileBanner navigation={navigation} />
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>
                 {(profile?.full_name ?? fullName)?.[0]?.toUpperCase() ?? '?'}

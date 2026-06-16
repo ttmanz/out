@@ -8,6 +8,7 @@ import { COLORS } from '../../constants/colors';
 import { getHappenings } from '../../lib/happenings';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
 
 const MembersAtScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -83,6 +84,7 @@ const MembersAtScreen = ({ navigation }) => {
         ListHeaderComponent={() => (
           <View>
             <AdBanner page="MembersAt" />
+            <ProfileBanner navigation={navigation} />
             {results.length > 0 && <Text style={styles.sectionLabel}>{t('venueHub.recentPosts')}</Text>}
           </View>
         )}
