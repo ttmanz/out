@@ -6,6 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
+import { ROUTES } from '../../constants/routes';
 import { getProfile, updateProfileSettings } from '../../lib/profile';
 import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend } from '../../lib/friends';
 import AdBanner from '../../components/common/AdBanner';
@@ -93,6 +94,20 @@ const ProfileSettingsScreen = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <AdBanner page="ProfileSettings" />
+
+        <TouchableOpacity
+          style={styles.editProfileBtn}
+          onPress={() => navigation.navigate(ROUTES.COMPLETE_PROFILE)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileEmoji}>👤</Text>
+          <View style={styles.editProfileText}>
+            <Text style={styles.editProfileLabel}>Edit My Profile</Text>
+            <Text style={styles.editProfileDesc}>Photo, bio, interests, city & more</Text>
+          </View>
+          <Text style={styles.editProfileChevron}>›</Text>
+        </TouchableOpacity>
+
         <Text style={styles.sectionLabel}>{t('profileSettings.whoCanFind')}</Text>
 
         {VISIBILITY_OPTIONS.map(({ key, emoji, labelKey, descKey }) => {
@@ -264,6 +279,18 @@ const styles = StyleSheet.create({
   starText: { fontSize: 20, color: COLORS.textMuted },
   starTextActive: { color: COLORS.black },
   emptyText: { fontSize: 14, color: COLORS.textMuted, textAlign: 'center', marginBottom: 16 },
+  editProfileBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderRadius: 14, padding: 16, marginBottom: 20,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  editProfileEmoji: { fontSize: 26, marginRight: 14 },
+  editProfileText: { flex: 1 },
+  editProfileLabel: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
+  editProfileDesc: { fontSize: 12, color: COLORS.textMuted },
+  editProfileChevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
+
   saveBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 15, alignItems: 'center', marginTop: 24,

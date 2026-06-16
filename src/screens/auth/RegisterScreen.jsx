@@ -37,7 +37,11 @@ const RegisterScreen = ({ navigation }) => {
     if (authError) {
       Alert.alert(t('auth.errors.registerFailed'), authError.message);
     } else {
-      Alert.alert(t('common.appName'), t('auth.registerSuccess'));
+      Alert.alert(
+        'Welcome! 🎉',
+        'Your account is ready.\n\nTo unlock full access, please complete your profile — it only takes a minute.',
+        [{ text: 'Complete Profile', style: 'default' }]
+      );
       navigation.navigate(ROUTES.LOGIN);
     }
   };

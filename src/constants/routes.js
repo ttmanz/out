@@ -27,4 +27,5 @@ export const ROUTES = {
   MEMBERS_AT: 'MembersAt',
   TRENDING_VENUES: 'TrendingVenues',
   TOP_VENUES: 'TopVenues',
+  COMPLETE_PROFILE: 'CompleteProfile',
 };

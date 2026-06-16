@@ -40,6 +40,7 @@ const HomeScreen = ({ navigation }) => {
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const isRestricted = profile?.status === 'restricted';
+  const needsProfile = profile && !profile.profile_completed;
   const visibleFeatures = isRestricted
     ? FEATURES.filter((f) => RESTRICTED_ROUTES.has(f.route))
     : FEATURES;
@@ -77,6 +78,17 @@ const HomeScreen = ({ navigation }) => {
             <View style={styles.dividerLine} />
           </View>
         </View>
+
+        {needsProfile && (
+          <TouchableOpacity
+            style={styles.profileBanner}
+            onPress={() => navigation.navigate(ROUTES.COMPLETE_PROFILE)}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.profileBannerText}>✦  Complete your profile for full access</Text>
+            <Text style={styles.profileBannerCta}>Tap to finish →</Text>
+          </TouchableOpacity>
+        )}
 
         <View style={styles.cards}>
           {visibleFeatures.map((f) => (
@@ -173,6 +185,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginHorizontal: 10,
   },
+
+  profileBanner: {
+    marginHorizontal: 28,
+    marginBottom: 14,
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  profileBannerText: { fontSize: 13, fontWeight: '700', color: COLORS.primary, marginBottom: 2 },
+  profileBannerCta: { fontSize: 12, color: COLORS.textMuted },
 
   cards: { paddingHorizontal: 28 },
   card: {

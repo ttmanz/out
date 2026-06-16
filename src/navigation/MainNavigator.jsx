@@ -37,6 +37,7 @@ import MessagesScreen from '../screens/main/MessagesScreen';
 import ChatScreen from '../screens/main/ChatScreen';
 import NotificationsScreen from '../screens/main/NotificationsScreen';
 import AdminScreen from '../screens/main/AdminScreen';
+import CompleteProfileScreen from '../screens/main/CompleteProfileScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -66,7 +67,8 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.VENUE_SEARCH}     component={VenueSearchScreen} />
     <HomeStack.Screen name={ROUTES.MEMBERS_AT}       component={MembersAtScreen} />
     <HomeStack.Screen name={ROUTES.TRENDING_VENUES}  component={TrendingVenuesScreen} />
-    <HomeStack.Screen name={ROUTES.TOP_VENUES}       component={TopVenuesScreen} />
+    <HomeStack.Screen name={ROUTES.TOP_VENUES}        component={TopVenuesScreen} />
+    <HomeStack.Screen name={ROUTES.COMPLETE_PROFILE}  component={CompleteProfileScreen} />
   </HomeStack.Navigator>
 );
 
