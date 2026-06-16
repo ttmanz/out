@@ -21,4 +21,5 @@ export const ROUTES = {
   NIGHT_OUT: 'NightOut',
   CREATE_NIGHT_OUT: 'CreateNightOut',
   NIGHT_OUT_DETAIL: 'NightOutDetail',
+  CLUB_GROUPS: 'ClubGroups',
 };

@@ -24,6 +24,7 @@ import MemberProfileScreen from '../screens/main/MemberProfileScreen';
 import NightOutScreen from '../screens/main/NightOutScreen';
 import CreateNightOutScreen from '../screens/main/CreateNightOutScreen';
 import NightOutDetailScreen from '../screens/main/NightOutDetailScreen';
+import ClubGroupsScreen from '../screens/main/ClubGroupsScreen';
 import FriendsScreen from '../screens/main/FriendsScreen';
 import SearchUsersScreen from '../screens/main/SearchUsersScreen';
 import MessagesScreen from '../screens/main/MessagesScreen';
@@ -52,6 +53,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.NIGHT_OUT} component={NightOutScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_NIGHT_OUT} component={CreateNightOutScreen} />
     <HomeStack.Screen name={ROUTES.NIGHT_OUT_DETAIL} component={NightOutDetailScreen} />
+    <HomeStack.Screen name={ROUTES.CLUB_GROUPS} component={ClubGroupsScreen} />
   </HomeStack.Navigator>
 );
 

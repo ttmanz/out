@@ -12,6 +12,7 @@ const FEATURES = [
   { emoji: '⚡', titleKey: 'home.spurOfMoment', route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
   { emoji: '💬', titleKey: 'home.openChat', route: ROUTES.OPEN_CHAT, watermark: '💭' },
   { emoji: '🌙', titleKey: 'home.nightOut', route: ROUTES.NIGHT_OUT, watermark: '🌃' },
+  { emoji: '🏛️', titleKey: 'home.clubGroups', route: ROUTES.CLUB_GROUPS, watermark: '🎭' },
 ];
 
 const FeatureCard = ({ emoji, title, watermark, onPress }) => (
