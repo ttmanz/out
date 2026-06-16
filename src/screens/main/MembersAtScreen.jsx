@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getHappenings } from '../../lib/happenings';
 import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
 
 const MembersAtScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -79,11 +80,12 @@ const MembersAtScreen = ({ navigation }) => {
             ? <Text style={styles.empty}>{t('venueHub.noMembers')}</Text>
             : null
         }
-        ListHeaderComponent={
-          results.length > 0
-            ? <Text style={styles.sectionLabel}>{t('venueHub.recentPosts')}</Text>
-            : null
-        }
+        ListHeaderComponent={() => (
+          <View>
+            <AdBanner page="MembersAt" />
+            {results.length > 0 && <Text style={styles.sectionLabel}>{t('venueHub.recentPosts')}</Text>}
+          </View>
+        )}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <View style={styles.avatar}>

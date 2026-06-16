@@ -5,6 +5,7 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blockMember } from '../../lib/friends';
 import AuthInput from '../../components/auth/AuthInput';
+import AdBanner from '../../components/common/AdBanner';
 
 const Avatar = ({ name }) => (
   <View style={styles.avatar}>
@@ -102,6 +103,7 @@ const SearchUsersScreen = () => {
       <FlatList
         data={results}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={() => <AdBanner page="SearchUsers" />}
         ListEmptyComponent={query && !searching ? <Text style={styles.empty}>{t('friends.noResults')}</Text> : null}
         renderItem={({ item }) => {
           const sent = sentIds.has(item.id);

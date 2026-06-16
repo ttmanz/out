@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import AdBanner from '../../components/common/AdBanner';
 
 const ClubGroupsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -17,6 +18,7 @@ const ClubGroupsScreen = ({ navigation }) => {
         <View style={{ width: 40 }} />
       </View>
 
+      <AdBanner page="ClubGroups" />
       <View style={styles.center}>
         <Text style={styles.icon}>🏛️</Text>
         <Text style={styles.comingSoon}>Coming Soon</Text>

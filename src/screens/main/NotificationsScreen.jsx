@@ -10,6 +10,7 @@ import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { getNotifications, markAllNotificationsRead } from '../../lib/notifications';
 import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
 
 const TYPE_ICON = {
   friend_request: '👥',
@@ -72,6 +73,7 @@ const NotificationsScreen = ({ navigation }) => {
         data={notifications}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={() => <AdBanner page="Notifications" />}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
             <Text style={styles.emptyIcon}>🔔</Text>

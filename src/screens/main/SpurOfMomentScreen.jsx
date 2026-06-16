@@ -10,6 +10,7 @@ import { ROUTES } from '../../constants/routes';
 import { getSpurPosts, getSpurReplies, createSpurReply } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
 
 const SpurOfMomentScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -154,6 +155,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
+        ListHeaderComponent={() => <AdBanner page="SpurOfMoment" />}
         ListEmptyComponent={<Text style={styles.empty}>{t('spur.noSpur')}</Text>}
         renderItem={renderPost}
       />

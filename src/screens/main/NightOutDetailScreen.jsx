@@ -9,6 +9,7 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getNightOut, updateRsvp } from '../../lib/nightOut';
 import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
 
 const RSVP_OPTIONS = [
   { status: 'going', emoji: '✅', labelKey: 'nightOut.rsvpGoing' },
@@ -67,6 +68,7 @@ const NightOutDetailScreen = ({ navigation, route }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        <AdBanner page="NightOutDetail" />
         <View style={styles.infoCard}>
           <Text style={styles.planTitle}>{plan.title}</Text>
           {!!plan.venue && <Text style={styles.planMeta}>📍 {plan.venue}</Text>}

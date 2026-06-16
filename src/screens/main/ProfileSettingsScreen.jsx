@@ -8,6 +8,7 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getProfile, updateProfileSettings } from '../../lib/profile';
 import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend } from '../../lib/friends';
+import AdBanner from '../../components/common/AdBanner';
 
 const VISIBILITY_OPTIONS = [
   { key: 'everyone',      emoji: '🌍', labelKey: 'profileSettings.everyone',     descKey: 'profileSettings.everyoneDesc' },
@@ -91,6 +92,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <AdBanner page="ProfileSettings" />
         <Text style={styles.sectionLabel}>{t('profileSettings.whoCanFind')}</Text>
 
         {VISIBILITY_OPTIONS.map(({ key, emoji, labelKey, descKey }) => {

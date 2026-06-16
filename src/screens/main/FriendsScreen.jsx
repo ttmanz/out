@@ -6,6 +6,7 @@ import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { getFriends, getPendingRequests, acceptFriendRequest, declineFriendRequest, blockMember, removeFriend, getMyBlockedIds } from '../../lib/friends';
 import { getOrCreateConversation } from '../../lib/messages';
+import AdBanner from '../../components/common/AdBanner';
 
 const Avatar = ({ name, size = 44 }) => (
   <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -115,6 +116,7 @@ const FriendsScreen = ({ navigation }) => {
         contentContainerStyle={styles.list}
         ListHeaderComponent={() => pending.length > 0 ? (
           <View>
+            <AdBanner page="Friends" />
             <Text style={styles.sectionTitle}>{t('friends.pending')}</Text>
             {pending.map((item) => {
               const requester = item.requester;
@@ -157,7 +159,10 @@ const FriendsScreen = ({ navigation }) => {
             <Text style={styles.sectionTitle}>{t('friends.friends')}</Text>
           </View>
         ) : (
-          <Text style={styles.sectionTitle}>{t('friends.friends')}</Text>
+          <View>
+            <AdBanner page="Friends" />
+            <Text style={styles.sectionTitle}>{t('friends.friends')}</Text>
+          </View>
         )}
         ListEmptyComponent={<Text style={styles.empty}>{t('friends.noFriends')}</Text>}
         renderItem={({ item }) => {

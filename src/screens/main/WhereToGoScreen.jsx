@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { fetchNearbyVenues } from '../../lib/venues';
 import { getHappenings } from '../../lib/happenings';
+import AdBanner from '../../components/common/AdBanner';
 
 const ACCENT = '#02fefb';
 
@@ -72,6 +73,7 @@ const WhereToGoScreen = ({ navigation }) => {
         <View style={{ width: 40 }} />
       </View>
 
+      <AdBanner page="WhereToGo" />
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={ACCENT} />

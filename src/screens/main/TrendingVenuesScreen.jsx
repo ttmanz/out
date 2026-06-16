@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getRecentVenueSearches } from '../../lib/venues';
+import AdBanner from '../../components/common/AdBanner';
 
 const TrendingVenuesScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -53,6 +54,7 @@ const TrendingVenuesScreen = ({ navigation }) => {
         data={trending}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={() => <AdBanner page="TrendingVenues" />}
         ListEmptyComponent={<Text style={styles.empty}>{t('venueHub.noTrending')}</Text>}
         renderItem={({ item, index }) => (
           <View style={styles.row}>

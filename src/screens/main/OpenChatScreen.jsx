@@ -13,6 +13,7 @@ import {
 } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
 
 const ACCENT = '#8e8e8d';
 
@@ -233,6 +234,7 @@ const OpenChatScreen = ({ navigation }) => {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={ACCENT} />
         }
+        ListHeaderComponent={() => <AdBanner page="OpenChat" />}
         ListEmptyComponent={<Text style={styles.empty}>{t('openChat.noPosts')}</Text>}
         renderItem={renderPost}
       />

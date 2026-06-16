@@ -10,6 +10,7 @@ import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { getMyNightOuts, deleteNightOut } from '../../lib/nightOut';
 import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
 
 const STATUS_EMOJI = { going: '✅', maybe: '🤔', declined: '❌', invited: '⏳' };
 
@@ -72,6 +73,7 @@ const NightOutScreen = ({ navigation }) => {
         data={plans}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={() => <AdBanner page="NightOut" />}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>
             <Text style={styles.emptyIcon}>🌙</Text>

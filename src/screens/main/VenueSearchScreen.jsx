@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { logVenueSearch } from '../../lib/venues';
+import AdBanner from '../../components/common/AdBanner';
 
 const VenueSearchScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -40,6 +41,7 @@ const VenueSearchScreen = ({ navigation }) => {
         <View style={{ width: 40 }} />
       </View>
 
+      <AdBanner page="VenueSearch" />
       <View style={styles.body}>
         <Text style={styles.label}>{t('venueHub.searchPlaceholder')}</Text>
         <TextInput

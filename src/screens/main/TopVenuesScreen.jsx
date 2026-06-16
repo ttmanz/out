@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getTopVenues } from '../../lib/venues';
+import AdBanner from '../../components/common/AdBanner';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -49,6 +50,7 @@ const TopVenuesScreen = ({ navigation }) => {
         data={venues}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={() => <AdBanner page="TopVenues" />}
         ListEmptyComponent={<Text style={styles.empty}>{t('venueHub.noTop')}</Text>}
         renderItem={({ item, index }) => (
           <TouchableOpacity style={styles.card} onPress={() => openMaps(item)} activeOpacity={0.8}>

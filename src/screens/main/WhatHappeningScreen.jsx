@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } fr
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
+import AdBanner from '../../components/common/AdBanner';
 
 const CATEGORIES = [
   { key: 'today',       emoji: '🗓️' },
@@ -32,6 +33,7 @@ const WhatHappeningScreen = ({ navigation }) => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        <AdBanner page="WhatHappening" />
         {CATEGORIES.map(({ key, emoji }) => (
           <CategoryCard
             key={key}
