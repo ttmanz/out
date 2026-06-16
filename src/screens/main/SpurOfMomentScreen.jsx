@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView, RefreshControl, TextInput, Alert,
+  ActivityIndicator, RefreshControl, TextInput, Alert, StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -11,14 +11,14 @@ import { getSpurPosts, getSpurReplies, createSpurReply } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 
-const ACCENT = '#ffd700';
-
 const SpurOfMomentScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
+
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -35,10 +35,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
 
   const toggleReplies = async (postId) => {
     const cur = replyState[postId] ?? {};
-    if (cur.expanded) {
-      patchPost(postId, { expanded: false });
-      return;
-    }
+    if (cur.expanded) { patchPost(postId, { expanded: false }); return; }
     patchPost(postId, { expanded: true, loading: true });
     const { data, error } = await getSpurReplies(postId);
     patchPost(postId, { loading: false, replies: error ? [] : (data ?? []) });
@@ -47,10 +44,8 @@ const SpurOfMomentScreen = ({ navigation }) => {
   const handleReply = async (postId) => {
     const text = (replyState[postId]?.text ?? '').trim();
     if (!text) return;
-
     const { data: { session } } = await getSession();
     if (!session) return;
-
     patchPost(postId, { sending: true });
     const { error } = await createSpurReply(session.user.id, postId, text);
     if (error) {
@@ -65,7 +60,6 @@ const SpurOfMomentScreen = ({ navigation }) => {
   const renderPost = ({ item }) => {
     const ps = replyState[item.id] ?? {};
     const replyCount = ps.replies?.length ?? 0;
-
     return (
       <View style={styles.card}>
         <View style={styles.cardHeader}>
@@ -82,7 +76,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
           </View>
         </View>
 
-        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.cardTitle}>{item.title}</Text>
 
         <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
           <Text style={styles.replyToggleText}>
@@ -93,7 +87,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
         {ps.expanded && (
           <View style={styles.repliesSection}>
             {ps.loading ? (
-              <ActivityIndicator size="small" color={ACCENT} style={{ marginVertical: 8 }} />
+              <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
             ) : (
               <>
                 {(ps.replies ?? []).length === 0 && (
@@ -110,6 +104,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
                   <TextInput
                     style={styles.replyInput}
                     placeholder={t('spur.replyPlaceholder')}
+                    placeholderTextColor={COLORS.textMuted}
                     value={ps.text ?? ''}
                     onChangeText={(v) => patchPost(item.id, { text: v })}
                     returnKeyType="send"
@@ -121,7 +116,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
                     disabled={ps.sending}
                   >
                     {ps.sending
-                      ? <ActivityIndicator size="small" color={COLORS.text} />
+                      ? <ActivityIndicator size="small" color={COLORS.black} />
                       : <Text style={styles.sendBtnText}>{t('spur.send')}</Text>
                     }
                   </TouchableOpacity>
@@ -137,14 +132,14 @@ const SpurOfMomentScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={ACCENT} />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
@@ -157,11 +152,9 @@ const SpurOfMomentScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={ACCENT} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
-        ListEmptyComponent={
-          <Text style={styles.empty}>{t('spur.noSpur')}</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>{t('spur.noSpur')}</Text>}
         renderItem={renderPost}
       />
 
@@ -171,7 +164,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -183,93 +176,69 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   list: { padding: 16, paddingBottom: 100 },
-  empty: {
-    textAlign: 'center',
-    color: COLORS.textMuted,
-    fontSize: 15,
-    marginTop: 60,
-    paddingHorizontal: 32,
-    lineHeight: 22,
-  },
+  empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: ACCENT,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: COLORS.primaryDark,
+    justifyContent: 'center', alignItems: 'center', marginRight: 10,
   },
-  avatarText: { color: COLORS.text, fontWeight: '700', fontSize: 15 },
-  posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
+  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
+  posterName: { fontWeight: '700', fontSize: 14, color: COLORS.primary },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
-  title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 12, lineHeight: 22 },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 12, lineHeight: 22 },
   replyToggle: { alignSelf: 'flex-start' },
-  replyToggleText: { fontSize: 13, color: ACCENT, fontWeight: '700' },
+  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   replyRow: { marginBottom: 10 },
-  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.text },
+  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
   replyText: { fontSize: 13, color: COLORS.text, marginTop: 1 },
   replyTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
   replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   replyInput: {
     flex: 1,
-    borderWidth: 1.5,
-    borderColor: ACCENT,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surfaceAlt,
     color: COLORS.text,
   },
   sendBtn: {
-    backgroundColor: ACCENT,
+    backgroundColor: COLORS.primary,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 9,
   },
-  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.text },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: ACCENT,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
+    bottom: 24, right: 24,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center', alignItems: 'center',
     elevation: 6,
   },
-  fabText: { color: COLORS.text, fontSize: 28, lineHeight: 32, fontWeight: '400' },
+  fabText: { color: COLORS.black, fontSize: 28, lineHeight: 32, fontWeight: '400' },
 });
 
 export default SpurOfMomentScreen;

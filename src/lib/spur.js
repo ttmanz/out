@@ -1,13 +1,16 @@
 import { supabase } from './supabase';
 import { createHappening } from './happenings';
 
-export const getSpurPosts = () =>
-  supabase
+export const getSpurPosts = () => {
+  const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  return supabase
     .from('happenings')
     .select('*, profiles:user_id(full_name)')
     .eq('happening_at', 'spur')
+    .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
     .limit(30);
+};
 
 export const createSpurPost = (userId, { venue, activity }) =>
   createHappening(userId, {
