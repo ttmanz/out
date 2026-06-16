@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView,
+  ActivityIndicator, StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -56,9 +56,11 @@ const MessagesScreen = ({ navigation }) => {
     );
   }
 
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
+
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <Text style={styles.title}>{t('messages.title')}</Text>
       </View>
       <FlatList
@@ -89,7 +91,7 @@ const MessagesScreen = ({ navigation }) => {
           );
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -97,9 +99,8 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   header: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.background,
     paddingHorizontal: 20,
-    paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,

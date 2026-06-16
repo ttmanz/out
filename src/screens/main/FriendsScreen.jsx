@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, StatusBar } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
@@ -94,14 +94,15 @@ const FriendsScreen = ({ navigation }) => {
     </View>
   );
 
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const visibleFriends = friends.filter((item) => {
     const fid = item.requester_id === userId ? item.addressee_id : item.requester_id;
     return !blockedIds.has(fid);
   });
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <Text style={styles.title}>{t('friends.title')}</Text>
         <TouchableOpacity style={styles.searchBtn} onPress={() => navigation.navigate(ROUTES.SEARCH_USERS)}>
           <Text style={styles.searchBtnText}>🔍 {t('friends.search')}</Text>
@@ -197,7 +198,7 @@ const FriendsScreen = ({ navigation }) => {
           );
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -208,19 +209,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.background,
     paddingHorizontal: 20,
-    paddingTop: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
   searchBtn: {
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: 'rgba(200,128,10,0.12)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
   },
   searchBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
   list: { paddingBottom: 40 },
