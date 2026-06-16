@@ -4,17 +4,20 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { signOut } from '../../lib/auth';
+import { useUser } from '../../contexts/UserContext';
 import LanguagePicker from '../../components/common/LanguagePicker';
 
 const FEATURES = [
   { emoji: '🎉', titleKey: 'home.whatsHappening', route: ROUTES.WHAT_HAPPENING, watermark: '🎆' },
-  { emoji: '🗺️', titleKey: 'home.whereToGo', route: ROUTES.WHERE_TO_GO, watermark: '🏙️' },
-  { emoji: '⚡', titleKey: 'home.spurOfMoment', route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
-  { emoji: '💬', titleKey: 'home.openChat', route: ROUTES.OPEN_CHAT, watermark: '💭' },
-  { emoji: '🌙', titleKey: 'home.nightOut', route: ROUTES.NIGHT_OUT, watermark: '🌃' },
-  { emoji: '🏛️', titleKey: 'home.clubGroups', route: ROUTES.CLUB_GROUPS,  watermark: '🎭' },
-  { emoji: '🍸', titleKey: 'home.venue',      route: ROUTES.VENUE_HUB,   watermark: '📍' },
+  { emoji: '🗺️', titleKey: 'home.whereToGo',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️' },
+  { emoji: '⚡', titleKey: 'home.spurOfMoment',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
+  { emoji: '💬', titleKey: 'home.openChat',        route: ROUTES.OPEN_CHAT,      watermark: '💭' },
+  { emoji: '🌙', titleKey: 'home.nightOut',        route: ROUTES.NIGHT_OUT,      watermark: '🌃' },
+  { emoji: '🏛️', titleKey: 'home.clubGroups',      route: ROUTES.CLUB_GROUPS,    watermark: '🎭' },
+  { emoji: '🍸', titleKey: 'home.venue',           route: ROUTES.VENUE_HUB,      watermark: '📍' },
 ];
+
+const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
 const FeatureCard = ({ emoji, title, watermark, onPress }) => (
   <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
@@ -33,32 +36,41 @@ const FeatureCard = ({ emoji, title, watermark, onPress }) => (
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { profile } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
+
+  const isRestricted = profile?.status === 'restricted';
+  const visibleFeatures = isRestricted
+    ? FEATURES.filter((f) => RESTRICTED_ROUTES.has(f.route))
+    : FEATURES;
 
   return (
     <View style={styles.safe}>
       <ScrollView contentContainerStyle={[styles.scroll, { paddingTop: statusBarHeight + 16 }]} showsVerticalScrollIndicator={false}>
 
-        {/* Top bar — sits below status bar */}
         <View style={styles.topBar}>
           <LanguagePicker style={styles.langOverride} />
           <View style={styles.topActions}>
-            <TouchableOpacity
-              style={styles.iconBtn}
-              onPress={() => navigation.navigate(ROUTES.PROFILE_SETTINGS)}
-            >
-              <Text style={styles.iconBtnText}>⚙️</Text>
-            </TouchableOpacity>
+            {!isRestricted && (
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => navigation.navigate(ROUTES.PROFILE_SETTINGS)}
+              >
+                <Text style={styles.iconBtnText}>⚙️</Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.logoutBtn} onPress={signOut}>
               <Text style={styles.logoutText}>↗  {t('auth.logout')}</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Title section */}
         <View style={styles.titleSection}>
           <Text style={styles.appName}>{t('common.appName')}</Text>
           <Text style={styles.tagline}>{t('home.tagline')}</Text>
+          {isRestricted && (
+            <Text style={styles.restrictedNote}>Limited access</Text>
+          )}
           <View style={styles.dividerRow}>
             <View style={styles.dividerLine} />
             <Text style={styles.dividerDiamond}>✦</Text>
@@ -66,9 +78,8 @@ const HomeScreen = ({ navigation }) => {
           </View>
         </View>
 
-        {/* Feature cards */}
         <View style={styles.cards}>
-          {FEATURES.map((f) => (
+          {visibleFeatures.map((f) => (
             <FeatureCard
               key={f.route}
               emoji={f.emoji}
@@ -137,6 +148,13 @@ const styles = StyleSheet.create({
     marginTop: 6,
     letterSpacing: 1.5,
     fontWeight: '500',
+  },
+  restrictedNote: {
+    fontSize: 11,
+    color: '#f39c12',
+    marginTop: 4,
+    letterSpacing: 1,
+    fontWeight: '600',
   },
   dividerRow: {
     flexDirection: 'row',

@@ -9,6 +9,7 @@ import { COLORS } from '../constants/colors';
 import { supabase } from '../lib/supabase';
 import { getSession } from '../lib/auth';
 import { getUnreadNotificationCount } from '../lib/notifications';
+import { useUser } from '../contexts/UserContext';
 
 import HomeScreen from '../screens/main/HomeScreen';
 import WhatHappeningScreen from '../screens/main/WhatHappeningScreen';
@@ -35,12 +36,14 @@ import SearchUsersScreen from '../screens/main/SearchUsersScreen';
 import MessagesScreen from '../screens/main/MessagesScreen';
 import ChatScreen from '../screens/main/ChatScreen';
 import NotificationsScreen from '../screens/main/NotificationsScreen';
+import AdminScreen from '../screens/main/AdminScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
 const FriendsStack = createNativeStackNavigator();
 const MessagesStack = createNativeStackNavigator();
 const NotificationsStack = createNativeStackNavigator();
+const AdminStack = createNativeStackNavigator();
 
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
@@ -90,11 +93,22 @@ const NotificationsStackNavigator = () => (
   </NotificationsStack.Navigator>
 );
 
+const AdminStackNavigator = () => (
+  <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+    <AdminStack.Screen name="Admin" component={AdminScreen} />
+  </AdminStack.Navigator>
+);
+
 const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
   const insets = useSafeAreaInsets();
+  const { profile } = useUser();
+
+  const isRestricted = profile?.status === 'restricted';
+  const isAdmin = profile?.is_admin === true;
 
   useEffect(() => {
+    if (isRestricted) return;
     let channel;
     getSession().then(({ data: { session } }) => {
       if (!session) return;
@@ -111,7 +125,7 @@ const MainNavigator = () => {
         .subscribe();
     });
     return () => { if (channel) supabase.removeChannel(channel); };
-  }, []);
+  }, [isRestricted]);
 
   return (
     <Tab.Navigator
@@ -149,53 +163,75 @@ const MainNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen
-        name="FriendsTab"
-        component={FriendsStackNavigator}
-        options={{
-          tabBarLabel: 'Friends',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="MessagesTab"
-        component={MessagesStackNavigator}
-        options={{
-          tabBarLabel: 'Messages',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="NotificationsTab"
-        component={NotificationsStackNavigator}
-        listeners={() => ({
-          tabPress: () => setNotifCount(0),
-        })}
-        options={{
-          tabBarLabel: 'Alerts',
-          tabBarIcon: ({ color, focused }) => (
-            <View>
-              <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
-              {notifCount > 0 && (
-                <View style={{
-                  position: 'absolute', top: -3, right: -7,
-                  backgroundColor: COLORS.error,
-                  borderRadius: 9, minWidth: 17, height: 17,
-                  justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3,
-                }}>
-                  <Text style={{ color: COLORS.white, fontSize: 9, fontWeight: '800' }}>
-                    {notifCount > 99 ? '99+' : notifCount}
-                  </Text>
-                </View>
-              )}
-            </View>
-          ),
-        }}
-      />
+
+      {!isRestricted && (
+        <Tab.Screen
+          name="FriendsTab"
+          component={FriendsStackNavigator}
+          options={{
+            tabBarLabel: 'Friends',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
+            ),
+          }}
+        />
+      )}
+
+      {!isRestricted && (
+        <Tab.Screen
+          name="MessagesTab"
+          component={MessagesStackNavigator}
+          options={{
+            tabBarLabel: 'Messages',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
+            ),
+          }}
+        />
+      )}
+
+      {!isRestricted && (
+        <Tab.Screen
+          name="NotificationsTab"
+          component={NotificationsStackNavigator}
+          listeners={() => ({
+            tabPress: () => setNotifCount(0),
+          })}
+          options={{
+            tabBarLabel: 'Alerts',
+            tabBarIcon: ({ color, focused }) => (
+              <View>
+                <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
+                {notifCount > 0 && (
+                  <View style={{
+                    position: 'absolute', top: -3, right: -7,
+                    backgroundColor: COLORS.error,
+                    borderRadius: 9, minWidth: 17, height: 17,
+                    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3,
+                  }}>
+                    <Text style={{ color: COLORS.white, fontSize: 9, fontWeight: '800' }}>
+                      {notifCount > 99 ? '99+' : notifCount}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ),
+          }}
+        />
+      )}
+
+      {isAdmin && (
+        <Tab.Screen
+          name="AdminTab"
+          component={AdminStackNavigator}
+          options={{
+            tabBarLabel: 'Admin',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'shield' : 'shield-outline'} size={24} color={color} />
+            ),
+          }}
+        />
+      )}
     </Tab.Navigator>
   );
 };

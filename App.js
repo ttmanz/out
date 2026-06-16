@@ -7,6 +7,7 @@ import { onAuthStateChange, getSession } from './src/lib/auth';
 import AuthNavigator from './src/navigation/AuthNavigator';
 import MainNavigator from './src/navigation/MainNavigator';
 import { COLORS } from './src/constants/colors';
+import { UserProvider } from './src/contexts/UserContext';
 
 export default function App() {
   const [session, setSession] = useState(undefined);
@@ -33,7 +34,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        {session ? <MainNavigator /> : <AuthNavigator />}
+        {session
+          ? <UserProvider><MainNavigator /></UserProvider>
+          : <AuthNavigator />
+        }
       </NavigationContainer>
     </SafeAreaProvider>
   );
