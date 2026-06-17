@@ -1,24 +1,15 @@
 import { supabase } from './supabase';
 
+const CLUB_FIELDS = 'id, name, description, photo_url, admin_id, created_at, admin:profiles!clubs_admin_id_fkey(full_name)';
+
 export const getClubs = () =>
-  supabase
-    .from('clubs')
-    .select('id, name, description, photo_url, admin_id, created_at, admin:profiles!clubs_admin_id_fkey(full_name)')
-    .order('created_at', { ascending: false });
+  supabase.from('clubs').select(CLUB_FIELDS).order('created_at', { ascending: false });
 
 export const getMyClubs = (userId) =>
-  supabase
-    .from('club_members')
-    .select('club:clubs(id, name, description, photo_url, admin_id, created_at, admin:profiles!clubs_admin_id_fkey(full_name))')
-    .eq('user_id', userId)
-    .eq('status', 'approved');
+  supabase.from('club_members').select('club_id').eq('user_id', userId).eq('status', 'approved');
 
 export const getClub = (clubId) =>
-  supabase
-    .from('clubs')
-    .select('id, name, description, photo_url, admin_id, created_at, admin:profiles!clubs_admin_id_fkey(full_name)')
-    .eq('id', clubId)
-    .single();
+  supabase.from('clubs').select(CLUB_FIELDS).eq('id', clubId).single();
 
 export const getClubMembers = (clubId) =>
   supabase

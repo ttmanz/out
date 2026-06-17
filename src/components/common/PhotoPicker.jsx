@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-na
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../constants/colors';
 
-const PhotoPicker = ({ uri, onChange }) => {
+const PhotoPicker = ({ uri, onChange, aspect = [16, 9] }) => {
   const pick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -13,7 +13,7 @@ const PhotoPicker = ({ uri, onChange }) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [16, 9],
+      aspect,
       quality: 0.8,
     });
     if (!result.canceled && result.assets?.[0]?.uri) {

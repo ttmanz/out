@@ -29,14 +29,15 @@ const CreateOpenChatScreen = ({ navigation }) => {
     setMessageError('');
     setLoading(true);
 
-    const { flagged, reason } = await moderateContent(message.trim());
+    const [{ flagged, reason }, { data: { session } }] = await Promise.all([
+      moderateContent(message.trim()),
+      getSession(),
+    ]);
     if (flagged) {
       setLoading(false);
       Alert.alert('Post not allowed', `Your message was flagged for: ${reason}.\nPlease revise it before posting.`);
       return;
     }
-
-    const { data: { session } } = await getSession();
     if (!session) { setLoading(false); return; }
 
     let photo_url = null;

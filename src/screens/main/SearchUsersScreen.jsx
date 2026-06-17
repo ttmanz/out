@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { getSession } from '../../lib/auth';
 import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blockMember } from '../../lib/friends';
 import { useUser } from '../../contexts/UserContext';
 import AuthInput from '../../components/auth/AuthInput';
@@ -20,27 +19,24 @@ const sharedCount = (a = [], b = []) => a.filter((i) => b.includes(i)).length;
 const SearchUsersScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
+  const userId = profile?.id ?? null;
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [sentIds, setSentIds] = useState(new Set());
   const [blockedIds, setBlockedIds] = useState(new Set());
-  const [userId, setUserId] = useState(null);
   const [searching, setSearching] = useState(false);
   const [blockingId, setBlockingId] = useState(null);
 
   useEffect(() => {
-    getSession().then(({ data: { session } }) => {
-      if (!session) return;
-      setUserId(session.user.id);
-      Promise.all([
-        getSentRequestIds(session.user.id),
-        getMyBlockedIds(session.user.id),
-      ]).then(([sentRes, blockedRes]) => {
-        setSentIds(new Set((sentRes.data ?? []).map((r) => r.addressee_id)));
-        setBlockedIds(new Set((blockedRes.data ?? []).map((r) => r.blocked_id)));
-      });
+    if (!userId) return;
+    Promise.all([
+      getSentRequestIds(userId),
+      getMyBlockedIds(userId),
+    ]).then(([sentRes, blockedRes]) => {
+      setSentIds(new Set((sentRes.data ?? []).map((r) => r.addressee_id)));
+      setBlockedIds(new Set((blockedRes.data ?? []).map((r) => r.blocked_id)));
     });
-  }, []);
+  }, [userId]);
 
   const handleSearch = async () => {
     if (!query.trim()) return;

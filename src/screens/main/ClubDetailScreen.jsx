@@ -9,8 +9,6 @@ import { getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember,
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 
-const STATUS_LABEL = { pending: '⏳ Pending', approved: '✅ Member' };
-
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
   const statusBarHeight = StatusBar.currentHeight ?? 44;
@@ -25,18 +23,17 @@ const ClubDetailScreen = ({ navigation, route }) => {
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-    const { data: { session } } = await getSession();
-    const uid = session?.user?.id ?? null;
-    setUserId(uid);
-
-    const [clubRes, membersRes, statusRes] = await Promise.all([
+    const [{ data: { session } }, clubRes, membersRes] = await Promise.all([
+      getSession(),
       getClub(clubId),
       getClubMembers(clubId),
-      uid ? getMemberStatus(clubId, uid) : Promise.resolve({ data: null }),
     ]);
-
+    const uid = session?.user?.id ?? null;
+    setUserId(uid);
     setClub(clubRes.data ?? null);
     setMembers(membersRes.data ?? []);
+
+    const statusRes = uid ? await getMemberStatus(clubId, uid) : { data: null };
     setMyStatus(statusRes.data?.status ?? null);
     setLoading(false);
     setRefreshing(false);

@@ -37,17 +37,16 @@ const ClubGroupsScreen = ({ navigation }) => {
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-    const { data: { session } } = await getSession();
+    const [{ data: { session } }, clubsRes] = await Promise.all([
+      getSession(),
+      getClubs(),
+    ]);
     const uid = session?.user?.id ?? null;
     setUserId(uid);
-
-    const [clubsRes, myRes] = await Promise.all([
-      getClubs(),
-      uid ? getMyClubs(uid) : Promise.resolve({ data: [] }),
-    ]);
-
     setAllClubs(clubsRes.data ?? []);
-    const ids = new Set((myRes.data ?? []).map((r) => r.club?.id).filter(Boolean));
+
+    const myRes = uid ? await getMyClubs(uid) : { data: [] };
+    const ids = new Set((myRes.data ?? []).map((r) => r.club_id).filter(Boolean));
     setMyClubIds(ids);
     setLoading(false);
     setRefreshing(false);

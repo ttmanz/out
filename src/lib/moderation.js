@@ -5,8 +5,6 @@ import { supabase } from './supabase';
 //   'claude'  — Claude Haiku via Supabase Edge Function, more nuanced
 const PROVIDER = 'claude';
 
-const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
-
 // Consistent return shape for every provider:
 // { flagged: boolean, reason: string | null, score: number | null }
 
@@ -16,11 +14,11 @@ const providers = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OPENAI_KEY}`,
+        Authorization: `Bearer ${process.env.EXPO_PUBLIC_OPENAI_KEY}`,
       },
       body: JSON.stringify({ input: text }),
     });
-    if (!res.ok) return { flagged: false, reason: null, score: null };
+    if (!res.ok) throw new Error(`OpenAI moderation ${res.status}`);
     const json = await res.json();
     const result = json.results?.[0];
     if (!result) return { flagged: false, reason: null, score: null };
