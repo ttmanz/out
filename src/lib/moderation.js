@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 // Change this one line to switch moderation provider:
 //   'openai'  — free, no cost, good for obvious violations
 //   'claude'  — Claude Haiku via Supabase Edge Function, more nuanced
-const PROVIDER = 'openai';
+const PROVIDER = 'claude';
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 
