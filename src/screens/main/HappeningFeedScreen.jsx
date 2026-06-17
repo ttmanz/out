@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView, RefreshControl,
+  ActivityIndicator, StatusBar, RefreshControl,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
@@ -52,6 +52,8 @@ const HappeningCard = ({ item, distKm, navigation }) => (
 const HappeningFeedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const filter = route.params?.filter ?? 'nearby';
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
+
   const [happenings, setHappenings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -106,8 +108,8 @@ const HappeningFeedScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
@@ -144,7 +146,7 @@ const HappeningFeedScreen = ({ navigation, route }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -156,13 +158,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   list: { padding: 16, paddingBottom: 100 },
   empty: {
     textAlign: 'center',
@@ -173,38 +175,28 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 40, height: 40, borderRadius: 20,
     backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center', alignItems: 'center',
     marginRight: 10,
   },
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
   distance: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#24c6fb',
-    backgroundColor: '#e8f9ff',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    fontSize: 12, fontWeight: '700',
+    color: COLORS.primary,
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    paddingHorizontal: 8, paddingVertical: 3,
     borderRadius: 10,
   },
   title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 6 },
@@ -212,21 +204,17 @@ const styles = StyleSheet.create({
   desc: { fontSize: 13, color: COLORS.text, marginTop: 6, lineHeight: 18 },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#24c6fb',
-    justifyContent: 'center',
-    alignItems: 'center',
+    bottom: 24, right: 24,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center', alignItems: 'center',
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 6,
   },
-  fabText: { color: COLORS.white, fontSize: 28, lineHeight: 32, fontWeight: '400' },
+  fabText: { color: COLORS.black, fontSize: 28, lineHeight: 32, fontWeight: '700' },
 });
 
 export default HappeningFeedScreen;
