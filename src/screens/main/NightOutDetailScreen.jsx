@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+  View, Text, Image, StyleSheet, TouchableOpacity, StatusBar,
   ActivityIndicator, ScrollView, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -22,6 +22,7 @@ const STATUS_LABEL = { going: '✅ Going', maybe: '🤔 Maybe', declined: '❌ D
 const NightOutDetailScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { nightOutId } = route.params;
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [myId, setMyId] = useState(null);
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -59,8 +60,8 @@ const NightOutDetailScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
@@ -76,6 +77,7 @@ const NightOutDetailScreen = ({ navigation, route }) => {
           {!!plan.venue && <Text style={styles.planMeta}>📍 {plan.venue}</Text>}
           {!!plan.planned_at && <Text style={styles.planMeta}>🕐 {plan.planned_at}</Text>}
           {!!plan.description && <Text style={styles.planDesc}>{plan.description}</Text>}
+          {!!plan.photo_url && <Image source={{ uri: plan.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
           <Text style={styles.planOrganizer}>
             {isOrganizer
               ? t('nightOut.youOrganized')
@@ -123,7 +125,7 @@ const NightOutDetailScreen = ({ navigation, route }) => {
           <Text style={styles.empty}>{t('nightOut.noGuests')}</Text>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -132,7 +134,7 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingVertical: 14,
+    paddingHorizontal: 16, paddingBottom: 14,
     backgroundColor: COLORS.surface,
     borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
@@ -151,6 +153,7 @@ const styles = StyleSheet.create({
   planDesc: { fontSize: 14, color: COLORS.text, marginTop: 8, marginBottom: 8, lineHeight: 20 },
   planOrganizer: { fontSize: 12, color: COLORS.purple, fontWeight: '600', marginTop: 8 },
   planTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 4 },
+  postPhoto: { width: '100%', height: 180, borderRadius: 10, marginTop: 12 },
   rsvpSection: {
     backgroundColor: COLORS.surface, borderRadius: 16, padding: 16, marginBottom: 14,
     borderWidth: 1, borderColor: COLORS.border,

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  SafeAreaView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, StatusBar,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
+import PhotoPicker from '../../components/common/PhotoPicker';
 import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
+import { uploadPostPhoto } from '../../lib/storage';
 
 const WHEN_OPTIONS = [
   { key: 'today',       emoji: '🗓️' },
@@ -19,10 +21,12 @@ const WHEN_OPTIONS = [
 
 const CreateHappeningScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [title, setTitle] = useState('');
   const [venue, setVenue] = useState('');
   const [when, setWhen] = useState(null);
   const [description, setDescription] = useState('');
+  const [photoUri, setPhotoUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [titleError, setTitleError] = useState('');
   const [whenError, setWhenError] = useState('');
@@ -55,6 +59,17 @@ const CreateHappeningScreen = ({ navigation }) => {
     const { data: { session } } = await getSession();
     if (!session) { setLoading(false); return; }
 
+    let photo_url = null;
+    if (photoUri) {
+      const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
+      if (error) {
+        Alert.alert(t('common.error'), 'Photo upload failed. Post without photo?');
+        setLoading(false);
+        return;
+      }
+      photo_url = url;
+    }
+
     const { error } = await createHappening(session.user.id, {
       title: title.trim(),
       venue: venue.trim() || null,
@@ -62,6 +77,7 @@ const CreateHappeningScreen = ({ navigation }) => {
       description: description.trim() || null,
       latitude,
       longitude,
+      photo_url,
     });
     setLoading(false);
     if (error) {
@@ -72,9 +88,9 @@ const CreateHappeningScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
@@ -128,61 +144,50 @@ const CreateHappeningScreen = ({ navigation }) => {
             autoCapitalize="sentences"
           />
 
+          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading
-              ? <ActivityIndicator color={COLORS.white} />
+              ? <ActivityIndicator color={COLORS.black} />
               : <Text style={styles.postBtnText}>{t('happenings.submitPost')}</Text>
             }
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingBottom: 14,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   whenLabel: { fontSize: 14, color: COLORS.text, fontWeight: '500', marginBottom: 10 },
   whenGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
   whenBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '47%',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#24c6fb',
-    backgroundColor: COLORS.white,
-    gap: 8,
+    flexDirection: 'row', alignItems: 'center',
+    width: '47%', paddingVertical: 12, paddingHorizontal: 14,
+    borderRadius: 12, borderWidth: 1.5,
+    borderColor: COLORS.borderAccent, backgroundColor: COLORS.surface, gap: 8,
   },
-  whenBtnActive: { backgroundColor: '#24c6fb' },
+  whenBtnActive: { backgroundColor: COLORS.primary },
   whenEmoji: { fontSize: 18 },
-  whenText: { fontSize: 12, fontWeight: '700', color: '#24c6fb', letterSpacing: 0.4 },
-  whenTextActive: { color: COLORS.white },
+  whenText: { fontSize: 12, fontWeight: '700', color: COLORS.primary, letterSpacing: 0.4 },
+  whenTextActive: { color: COLORS.black },
   error: { fontSize: 12, color: COLORS.error, marginBottom: 8, marginTop: 2 },
   locationNote: { fontSize: 12, color: COLORS.textMuted, marginBottom: 16, marginTop: 4 },
   postBtn: {
-    backgroundColor: '#24c6fb',
-    borderRadius: 12,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 16,
+    backgroundColor: COLORS.primary, borderRadius: 12,
+    paddingVertical: 15, alignItems: 'center', marginTop: 8,
   },
-  postBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+  postBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 16 },
 });
 
 export default CreateHappeningScreen;

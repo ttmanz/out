@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  SafeAreaView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, StatusBar,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
-import { createSpurPost } from '../../lib/spur';
-import { getSession } from '../../lib/auth';
+import PhotoPicker from '../../components/common/PhotoPicker';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
-
-const ACCENT = '#ffd700';
+import { createSpurPost } from '../../lib/spur';
+import { getSession } from '../../lib/auth';
+import { uploadPostPhoto } from '../../lib/storage';
 
 const CreateSpurScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
+  const [photoUri, setPhotoUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [venueError, setVenueError] = useState('');
   const [activityError, setActivityError] = useState('');
@@ -33,9 +35,21 @@ const CreateSpurScreen = ({ navigation }) => {
     const { data: { session } } = await getSession();
     if (!session) { setLoading(false); return; }
 
+    let photo_url = null;
+    if (photoUri) {
+      const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
+      if (error) {
+        Alert.alert(t('common.error'), 'Photo upload failed. Post without photo?');
+        setLoading(false);
+        return;
+      }
+      photo_url = url;
+    }
+
     const { error } = await createSpurPost(session.user.id, {
       venue: venue.trim(),
       activity: activity.trim(),
+      photo_url,
     });
     setLoading(false);
     if (error) {
@@ -46,9 +60,9 @@ const CreateSpurScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
@@ -59,6 +73,7 @@ const CreateSpurScreen = ({ navigation }) => {
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <AdBanner page="CreateSpur" />
           <ProfileBanner navigation={navigation} />
+
           <Text style={styles.preview}>
             {t('spur.goingTo')} {venue.trim() || '___'} {t('spur.forWhat')} {activity.trim() || '___'}, {t('spur.joinMe')}
           </Text>
@@ -80,6 +95,8 @@ const CreateSpurScreen = ({ navigation }) => {
             autoCapitalize="sentences"
           />
 
+          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading
               ? <ActivityIndicator color={COLORS.text} />
@@ -88,45 +105,32 @@ const CreateSpurScreen = ({ navigation }) => {
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingBottom: 14,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   preview: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
-    backgroundColor: '#fff9c4',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-    lineHeight: 24,
-    borderLeftWidth: 4,
-    borderLeftColor: ACCENT,
+    fontSize: 16, fontWeight: '700', color: COLORS.text,
+    backgroundColor: 'rgba(200,128,10,0.08)',
+    borderRadius: 12, padding: 16, marginBottom: 24, lineHeight: 24,
+    borderLeftWidth: 4, borderLeftColor: COLORS.primary,
   },
   postBtn: {
-    backgroundColor: ACCENT,
-    borderRadius: 12,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 16,
+    backgroundColor: COLORS.primary, borderRadius: 12,
+    paddingVertical: 15, alignItems: 'center', marginTop: 8,
   },
-  postBtnText: { color: COLORS.text, fontWeight: '700', fontSize: 16 },
+  postBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 16 },
 });
 
 export default CreateSpurScreen;

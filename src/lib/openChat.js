@@ -13,7 +13,7 @@ export const getOpenChatPosts = () => {
     .limit(50);
 };
 
-export const createOpenChatPost = (userId, { message, venue }) =>
+export const createOpenChatPost = (userId, { message, venue, photo_url = null }) =>
   createHappening(userId, {
     title: message,
     venue: venue || null,
@@ -21,6 +21,7 @@ export const createOpenChatPost = (userId, { message, venue }) =>
     description: null,
     latitude: null,
     longitude: null,
+    photo_url,
   });
 
 export const getPostBlocks = (postId) =>

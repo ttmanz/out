@@ -8,6 +8,8 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getFriends } from '../../lib/friends';
 import { createNightOut, addNightOutMembers } from '../../lib/nightOut';
+import { uploadPostPhoto } from '../../lib/storage';
+import PhotoPicker from '../../components/common/PhotoPicker';
 
 const Avatar = ({ name, size = 36 }) => (
   <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -17,16 +19,16 @@ const Avatar = ({ name, size = 36 }) => (
 
 const CreateNightOutScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [userId, setUserId] = useState(null);
   const [title, setTitle] = useState('');
   const [venue, setVenue] = useState('');
   const [when, setWhen] = useState('');
   const [description, setDescription] = useState('');
+  const [photoUri, setPhotoUri] = useState(null);
   const [friends, setFriends] = useState([]);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [saving, setSaving] = useState(false);
-
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
@@ -56,11 +58,24 @@ const CreateNightOutScreen = ({ navigation }) => {
       return;
     }
     setSaving(true);
+
+    let photo_url = null;
+    if (photoUri) {
+      const { url, error } = await uploadPostPhoto(userId, photoUri);
+      if (error) {
+        Alert.alert(t('common.error'), 'Photo upload failed. Create without photo?');
+        setSaving(false);
+        return;
+      }
+      photo_url = url;
+    }
+
     const { data, error } = await createNightOut(userId, {
       title: title.trim(),
       venue: venue.trim(),
       planned_at: when.trim(),
       description: description.trim(),
+      photo_url,
     });
     if (error || !data) {
       Alert.alert(t('common.error'), t('nightOut.createFailed'));
@@ -125,6 +140,9 @@ const CreateNightOutScreen = ({ navigation }) => {
           multiline
           maxLength={300}
         />
+
+        <Text style={styles.label}>Photo</Text>
+        <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
 
         {friends.length > 0 && (
           <>

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet,
+  View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, StatusBar, RefreshControl, TextInput, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -140,6 +140,7 @@ const OpenChatScreen = ({ navigation }) => {
 
         <Text style={styles.title}>{item.title}</Text>
         {!!item.venue && <Text style={styles.venue}>📍 {item.venue}</Text>}
+        {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
 
         <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
           <Text style={styles.replyToggleText}>
@@ -298,6 +299,7 @@ const styles = StyleSheet.create({
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
   title: { fontSize: 16, fontWeight: '600', color: COLORS.text, marginBottom: 6, lineHeight: 22 },
   venue: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
+  postPhoto: { width: '100%', height: 180, borderRadius: 10, marginBottom: 10 },
   replyToggle: { alignSelf: 'flex-start' },
   replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },

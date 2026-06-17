@@ -1,9 +1,9 @@
 import { supabase } from './supabase';
 
-export const createNightOut = (organizerId, { title, venue, planned_at, description }) =>
+export const createNightOut = (organizerId, { title, venue, planned_at, description, photo_url = null }) =>
   supabase
     .from('night_outs')
-    .insert({ organizer_id: organizerId, title, venue: venue || null, planned_at: planned_at || null, description: description || null })
+    .insert({ organizer_id: organizerId, title, venue: venue || null, planned_at: planned_at || null, description: description || null, photo_url })
     .select('id')
     .single();
 

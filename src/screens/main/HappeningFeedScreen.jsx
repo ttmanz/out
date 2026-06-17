@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet,
+  View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, StatusBar, RefreshControl,
 } from 'react-native';
 import * as Location from 'expo-location';
@@ -46,6 +46,7 @@ const HappeningCard = ({ item, distKm, navigation }) => (
     <Text style={styles.title}>{item.title}</Text>
     {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
     {!!item.description && <Text style={styles.desc}>{item.description}</Text>}
+    {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
   </View>
 );
 
@@ -200,6 +201,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 6 },
+  postPhoto: { width: '100%', height: 180, borderRadius: 10, marginTop: 8 },
   meta: { fontSize: 13, color: COLORS.textMuted, marginBottom: 3 },
   desc: { fontSize: 13, color: COLORS.text, marginTop: 6, lineHeight: 18 },
   fab: {

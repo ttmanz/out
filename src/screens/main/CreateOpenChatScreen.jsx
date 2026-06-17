@@ -6,15 +6,18 @@ import {
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
+import PhotoPicker from '../../components/common/PhotoPicker';
 import { createOpenChatPost } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { moderateContent } from '../../lib/moderation';
+import { uploadPostPhoto } from '../../lib/storage';
 
 const CreateOpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [message, setMessage] = useState('');
   const [venue, setVenue] = useState('');
+  const [photoUri, setPhotoUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messageError, setMessageError] = useState('');
 
@@ -29,19 +32,28 @@ const CreateOpenChatScreen = ({ navigation }) => {
     const { flagged, reason } = await moderateContent(message.trim());
     if (flagged) {
       setLoading(false);
-      Alert.alert(
-        'Post not allowed',
-        `Your message was flagged for: ${reason}.\nPlease revise it before posting.`
-      );
+      Alert.alert('Post not allowed', `Your message was flagged for: ${reason}.\nPlease revise it before posting.`);
       return;
     }
 
     const { data: { session } } = await getSession();
     if (!session) { setLoading(false); return; }
 
+    let photo_url = null;
+    if (photoUri) {
+      const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
+      if (error) {
+        Alert.alert(t('common.error'), 'Photo upload failed. Post without photo?');
+        setLoading(false);
+        return;
+      }
+      photo_url = url;
+    }
+
     const { error } = await createOpenChatPost(session.user.id, {
       message: message.trim(),
       venue: venue.trim(),
+      photo_url,
     });
     setLoading(false);
     if (error) {
@@ -79,6 +91,7 @@ const CreateOpenChatScreen = ({ navigation }) => {
             onChangeText={setVenue}
             autoCapitalize="words"
           />
+          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading
@@ -95,24 +108,17 @@ const CreateOpenChatScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingBottom: 14,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   postBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 15,
-    alignItems: 'center',
-    marginTop: 16,
+    backgroundColor: COLORS.primary, borderRadius: 12,
+    paddingVertical: 15, alignItems: 'center', marginTop: 8,
   },
   postBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 16 },
 });

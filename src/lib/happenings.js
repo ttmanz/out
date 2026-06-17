@@ -9,10 +9,10 @@ export const getHappenings = () =>
     .limit(50);
 
 // Post a new happening
-export const createHappening = (userId, { title, venue, happening_at, description, latitude, longitude }) =>
+export const createHappening = (userId, { title, venue, happening_at, description, latitude, longitude, photo_url = null }) =>
   supabase
     .from('happenings')
-    .insert({ user_id: userId, title, venue, happening_at, description, latitude, longitude });
+    .insert({ user_id: userId, title, venue, happening_at, description, latitude, longitude, photo_url });
 
 // All posts by a specific member for their profile page
 export const getMemberHappenings = (userId) =>

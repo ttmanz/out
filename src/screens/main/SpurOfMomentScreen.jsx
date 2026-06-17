@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet,
+  View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert, StatusBar,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -79,6 +79,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
         </View>
 
         <Text style={styles.cardTitle}>{item.title}</Text>
+        {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
 
         <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
           <Text style={styles.replyToggleText}>
@@ -210,7 +211,8 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.primary },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 12, lineHeight: 22 },
+  cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 8, lineHeight: 22 },
+  postPhoto: { width: '100%', height: 180, borderRadius: 10, marginBottom: 10 },
   replyToggle: { alignSelf: 'flex-start' },
   replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
