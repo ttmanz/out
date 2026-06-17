@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  SafeAreaView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, StatusBar,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import { createOpenChatPost } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
-
-const ACCENT = '#8e8e8d';
+import { moderateContent } from '../../lib/moderation';
 
 const CreateOpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [message, setMessage] = useState('');
   const [venue, setVenue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,16 @@ const CreateOpenChatScreen = ({ navigation }) => {
     }
     setMessageError('');
     setLoading(true);
+
+    const { flagged, reason } = await moderateContent(message.trim());
+    if (flagged) {
+      setLoading(false);
+      Alert.alert(
+        'Post not allowed',
+        `Your message was flagged for: ${reason}.\nPlease revise it before posting.`
+      );
+      return;
+    }
 
     const { data: { session } } = await getSession();
     if (!session) { setLoading(false); return; }
@@ -42,9 +52,9 @@ const CreateOpenChatScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
             <Text style={styles.backText}>‹</Text>
           </TouchableOpacity>
@@ -72,13 +82,13 @@ const CreateOpenChatScreen = ({ navigation }) => {
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading
-              ? <ActivityIndicator color={COLORS.white} />
+              ? <ActivityIndicator color={COLORS.black} />
               : <Text style={styles.postBtnText}>{t('openChat.submitPost')}</Text>
             }
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -89,22 +99,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   postBtn: {
-    backgroundColor: ACCENT,
+    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 15,
     alignItems: 'center',
     marginTop: 16,
   },
-  postBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+  postBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 16 },
 });
 
 export default CreateOpenChatScreen;

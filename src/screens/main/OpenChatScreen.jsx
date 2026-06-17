@@ -13,6 +13,7 @@ import {
 } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import { moderateContent } from '../../lib/moderation';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 
@@ -64,6 +65,15 @@ const OpenChatScreen = ({ navigation }) => {
       Alert.alert(t('common.error'), t('openChat.errors.blocked'));
       return;
     }
+    const { flagged, reason } = await moderateContent(text);
+    if (flagged) {
+      Alert.alert(
+        'Reply not allowed',
+        `Your reply was flagged for: ${reason}.\nPlease revise it.`
+      );
+      return;
+    }
+
     patchPost(postId, { sending: true });
     const { error } = await createOpenChatReply(userId, postId, text);
     if (error) {
