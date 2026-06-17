@@ -22,6 +22,8 @@ export const ROUTES = {
   CREATE_NIGHT_OUT: 'CreateNightOut',
   NIGHT_OUT_DETAIL: 'NightOutDetail',
   CLUB_GROUPS: 'ClubGroups',
+  CLUB_DETAIL: 'ClubDetail',
+  CREATE_CLUB: 'CreateClub',
   VENUE_HUB: 'VenueHub',
   VENUE_SEARCH: 'VenueSearch',
   MEMBERS_AT: 'MembersAt',

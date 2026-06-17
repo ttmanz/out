@@ -1,13 +1,71 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useCallback } from 'react';
+import {
+  View, Text, FlatList, TouchableOpacity, StyleSheet,
+  ActivityIndicator, StatusBar, RefreshControl, Image,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
+import { getClubs, getMyClubs } from '../../lib/clubs';
+import { getSession } from '../../lib/auth';
+import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 
+const ClubCard = ({ club, onPress }) => (
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+    {club.photo_url
+      ? <Image source={{ uri: club.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
+      : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🏛️</Text></View>
+    }
+    <View style={styles.cardBody}>
+      <Text style={styles.cardName}>{club.name}</Text>
+      {!!club.description && <Text style={styles.cardDesc} numberOfLines={2}>{club.description}</Text>}
+      <Text style={styles.cardMeta}>by {club.admin?.full_name ?? 'Unknown'} · {formatAgo(club.created_at)}</Text>
+    </View>
+  </TouchableOpacity>
+);
+
 const ClubGroupsScreen = ({ navigation }) => {
-  const { t } = useTranslation();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
+  const [userId, setUserId] = useState(null);
+  const [allClubs, setAllClubs] = useState([]);
+  const [myClubIds, setMyClubIds] = useState(new Set());
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState('all');
+
+  const load = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    const { data: { session } } = await getSession();
+    const uid = session?.user?.id ?? null;
+    setUserId(uid);
+
+    const [clubsRes, myRes] = await Promise.all([
+      getClubs(),
+      uid ? getMyClubs(uid) : Promise.resolve({ data: [] }),
+    ]);
+
+    setAllClubs(clubsRes.data ?? []);
+    const ids = new Set((myRes.data ?? []).map((r) => r.club?.id).filter(Boolean));
+    setMyClubIds(ids);
+    setLoading(false);
+    setRefreshing(false);
+  }, []);
+
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const displayed = tab === 'mine'
+    ? allClubs.filter((c) => myClubIds.has(c.id) || c.admin_id === userId)
+    : allClubs;
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.safe}>
@@ -15,39 +73,109 @@ const ClubGroupsScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('home.clubGroups')}</Text>
+        <Text style={styles.headerTitle}>Club Groups</Text>
         <View style={{ width: 40 }} />
       </View>
 
-      <AdBanner page="ClubGroups" />
-      <ProfileBanner navigation={navigation} />
-      <View style={styles.center}>
-        <Text style={styles.icon}>🏛️</Text>
-        <Text style={styles.comingSoon}>Coming Soon</Text>
-        <Text style={styles.sub}>Club Groups are on their way.</Text>
+      <View style={styles.tabs}>
+        <TouchableOpacity
+          style={[styles.tab, tab === 'all' && styles.tabActive]}
+          onPress={() => setTab('all')}
+        >
+          <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>All Clubs</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, tab === 'mine' && styles.tabActive]}
+          onPress={() => setTab('mine')}
+        >
+          <Text style={[styles.tabText, tab === 'mine' && styles.tabTextActive]}>My Clubs</Text>
+        </TouchableOpacity>
       </View>
+
+      <FlatList
+        data={displayed}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.list}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
+        }
+        ListHeaderComponent={() => (
+          <>
+            <AdBanner page="ClubGroups" />
+            <ProfileBanner navigation={navigation} />
+          </>
+        )}
+        ListEmptyComponent={
+          <Text style={styles.empty}>
+            {tab === 'mine' ? 'You haven\'t joined any clubs yet.' : 'No clubs yet. Be the first to start one!'}
+          </Text>
+        }
+        renderItem={({ item }) => (
+          <ClubCard
+            club={item}
+            onPress={() => navigation.navigate(ROUTES.CLUB_DETAIL, { clubId: item.id })}
+          />
+        )}
+      />
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate(ROUTES.CREATE_CLUB)}
+      >
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingBottom: 14,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
   headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 },
-  icon: { fontSize: 56, marginBottom: 16 },
-  comingSoon: { fontSize: 22, fontWeight: '800', color: COLORS.text, marginBottom: 8 },
-  sub: { fontSize: 14, color: COLORS.textMuted, textAlign: 'center' },
+  tabs: {
+    flexDirection: 'row',
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+    paddingHorizontal: 16,
+  },
+  tab: { flex: 1, paddingVertical: 12, alignItems: 'center' },
+  tabActive: { borderBottomWidth: 2, borderBottomColor: COLORS.primary },
+  tabText: { fontSize: 14, fontWeight: '600', color: COLORS.textMuted },
+  tabTextActive: { color: COLORS.primary },
+  list: { padding: 16, paddingBottom: 100 },
+  empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
+  card: {
+    backgroundColor: COLORS.surface, borderRadius: 14,
+    marginBottom: 14, overflow: 'hidden',
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  cardPhoto: { width: '100%', height: 140 },
+  cardPhotoPlaceholder: {
+    width: '100%', height: 100,
+    backgroundColor: 'rgba(200,128,10,0.08)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  cardPhotoEmoji: { fontSize: 40 },
+  cardBody: { padding: 14 },
+  cardName: { fontSize: 17, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
+  cardDesc: { fontSize: 13, color: COLORS.textMuted, marginBottom: 6, lineHeight: 18 },
+  cardMeta: { fontSize: 11, color: COLORS.textMuted },
+  fab: {
+    position: 'absolute', bottom: 24, right: 24,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center', alignItems: 'center',
+    elevation: 6,
+    shadowColor: COLORS.black, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8,
+  },
+  fabText: { color: COLORS.black, fontSize: 28, lineHeight: 32, fontWeight: '700' },
 });
 
 export default ClubGroupsScreen;
