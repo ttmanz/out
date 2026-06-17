@@ -109,6 +109,12 @@ const RegisterScreen = ({ navigation }) => {
         onPress={() => handleSocialLogin('apple', signInWithApple)}
         loading={socialLoading === 'apple'}
       />
+      <SocialButton
+        label="📱  Continue with Phone"
+        color={COLORS.primary}
+        textColor={COLORS.black}
+        onPress={() => navigation.navigate(ROUTES.PHONE_LOGIN)}
+      />
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.hasAccount')} </Text>

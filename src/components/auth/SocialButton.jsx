@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { COLORS } from '../../constants/colors';
 
-const SocialButton = ({ label, color, onPress, loading = false }) => (
+const SocialButton = ({ label, color, onPress, loading = false, textColor = COLORS.white }) => (
   <TouchableOpacity
     style={[styles.button, { backgroundColor: color }]}
     onPress={onPress}
@@ -10,8 +10,8 @@ const SocialButton = ({ label, color, onPress, loading = false }) => (
     activeOpacity={0.8}
   >
     {loading
-      ? <ActivityIndicator color={COLORS.white} />
-      : <Text style={styles.label}>{label}</Text>
+      ? <ActivityIndicator color={textColor} />
+      : <Text style={[styles.label, { color: textColor }]}>{label}</Text>
     }
   </TouchableOpacity>
 );
@@ -24,7 +24,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   label: {
-    color: COLORS.white,
     fontSize: 15,
     fontWeight: '600',
   },
