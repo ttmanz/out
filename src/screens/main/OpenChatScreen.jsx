@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView, RefreshControl, TextInput, Alert,
+  ActivityIndicator, StatusBar, RefreshControl, TextInput, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -16,10 +16,9 @@ import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 
-const ACCENT = '#8e8e8d';
-
 const OpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [userId, setUserId] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +64,6 @@ const OpenChatScreen = ({ navigation }) => {
       Alert.alert(t('common.error'), t('openChat.errors.blocked'));
       return;
     }
-
     patchPost(postId, { sending: true });
     const { error } = await createOpenChatReply(userId, postId, text);
     if (error) {
@@ -144,13 +142,12 @@ const OpenChatScreen = ({ navigation }) => {
         {ps.expanded && (
           <View style={styles.repliesSection}>
             {ps.loading ? (
-              <ActivityIndicator size="small" color={ACCENT} style={{ marginVertical: 8 }} />
+              <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
             ) : (
               <>
                 {(ps.replies ?? []).length === 0 && !isBlocked && (
                   <Text style={styles.noReplies}>{t('openChat.noReplies')}</Text>
                 )}
-
                 {(ps.replies ?? []).map((r) => {
                   const isBeingBlocked = ps.blocking === r.user_id;
                   return (
@@ -175,7 +172,6 @@ const OpenChatScreen = ({ navigation }) => {
                     </View>
                   );
                 })}
-
                 {isBlocked ? (
                   <View style={styles.blockedNotice}>
                     <Text style={styles.blockedText}>{t('openChat.blockedFromPost')}</Text>
@@ -185,6 +181,7 @@ const OpenChatScreen = ({ navigation }) => {
                     <TextInput
                       style={styles.replyInput}
                       placeholder={t('openChat.replyPlaceholder')}
+                      placeholderTextColor={COLORS.textMuted}
                       value={ps.text ?? ''}
                       onChangeText={(v) => patchPost(item.id, { text: v })}
                       returnKeyType="send"
@@ -196,7 +193,7 @@ const OpenChatScreen = ({ navigation }) => {
                       disabled={ps.sending}
                     >
                       {ps.sending
-                        ? <ActivityIndicator size="small" color={COLORS.white} />
+                        ? <ActivityIndicator size="small" color={COLORS.black} />
                         : <Text style={styles.sendBtnText}>{t('openChat.send')}</Text>
                       }
                     </TouchableOpacity>
@@ -213,14 +210,14 @@ const OpenChatScreen = ({ navigation }) => {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color={ACCENT} />
+        <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
@@ -233,7 +230,7 @@ const OpenChatScreen = ({ navigation }) => {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={ACCENT} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
         ListHeaderComponent={() => (
           <>
@@ -251,7 +248,7 @@ const OpenChatScreen = ({ navigation }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -263,41 +260,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   list: { padding: 16, paddingBottom: 100 },
   empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderRadius: 14,
     padding: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: ACCENT,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center', alignItems: 'center', marginRight: 10,
   },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
+  avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
   title: { fontSize: 16, fontWeight: '600', color: COLORS.text, marginBottom: 6, lineHeight: 22 },
   venue: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   replyToggle: { alignSelf: 'flex-start' },
-  replyToggleText: { fontSize: 13, color: ACCENT, fontWeight: '700' },
+  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   replyRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
@@ -307,36 +299,33 @@ const styles = StyleSheet.create({
   blockBtn: { paddingHorizontal: 8, paddingVertical: 4, marginLeft: 8, marginTop: 2 },
   blockBtnText: { fontSize: 18, color: COLORS.error },
   blockedNotice: {
-    backgroundColor: '#ffeaea',
-    borderRadius: 10,
-    padding: 12,
-    marginTop: 4,
+    backgroundColor: 'rgba(231,76,60,0.1)',
+    borderRadius: 10, padding: 12, marginTop: 4,
+    borderWidth: 1, borderColor: COLORS.error,
   },
   blockedText: { fontSize: 13, color: COLORS.error, textAlign: 'center' },
   replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   replyInput: {
     flex: 1,
-    borderWidth: 1.5,
-    borderColor: ACCENT,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 13,
-    backgroundColor: COLORS.white,
-    color: COLORS.text,
+    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    fontSize: 13, backgroundColor: COLORS.surface, color: COLORS.text,
   },
-  sendBtn: { backgroundColor: ACCENT, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
-  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.white },
+  sendBtn: {
+    backgroundColor: COLORS.primary, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 9,
+  },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
   fab: {
     position: 'absolute', bottom: 24, right: 24,
     width: 56, height: 56, borderRadius: 28,
-    backgroundColor: ACCENT,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center', alignItems: 'center',
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
   },
-  fabText: { color: COLORS.white, fontSize: 28, lineHeight: 32, fontWeight: '400' },
+  fabText: { color: COLORS.black, fontSize: 28, lineHeight: 32, fontWeight: '700' },
 });
 
 export default OpenChatScreen;

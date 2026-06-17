@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, SafeAreaView,
+  ActivityIndicator, StatusBar,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -13,8 +13,6 @@ import { getHappenings } from '../../lib/happenings';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 
-const ACCENT = '#02fefb';
-
 const DEFAULT_REGION = {
   latitude: 34.9,
   longitude: 33.1,
@@ -24,6 +22,7 @@ const DEFAULT_REGION = {
 
 const WhereToGoScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [venues, setVenues] = useState([]);
   const [happenings, setHappenings] = useState([]);
@@ -65,8 +64,8 @@ const WhereToGoScreen = ({ navigation }) => {
     ).length;
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <View style={styles.safe}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
@@ -76,9 +75,10 @@ const WhereToGoScreen = ({ navigation }) => {
 
       <AdBanner page="WhereToGo" />
       <ProfileBanner navigation={navigation} />
+
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={ACCENT} />
+          <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>{t('venues.loading')}</Text>
         </View>
       ) : (
@@ -94,7 +94,7 @@ const WhereToGoScreen = ({ navigation }) => {
               <Marker
                 key={venue.id}
                 coordinate={{ latitude: venue.latitude, longitude: venue.longitude }}
-                pinColor={ACCENT}
+                pinColor={COLORS.primary}
                 onPress={() => setSelected(venue)}
               />
             ))}
@@ -116,7 +116,7 @@ const WhereToGoScreen = ({ navigation }) => {
           )}
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -127,29 +127,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingBottom: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.text },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { color: COLORS.textMuted, fontSize: 14 },
   map: { flex: 1 },
   card: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: COLORS.white,
+    bottom: 0, left: 0, right: 0,
+    backgroundColor: COLORS.surface,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
+    borderTopWidth: 1,
+    borderColor: COLORS.borderAccent,
     padding: 24,
     paddingBottom: 36,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.12,
+    shadowOpacity: 0.2,
     shadowRadius: 12,
     elevation: 10,
   },
@@ -159,12 +159,14 @@ const styles = StyleSheet.create({
   venueType: { fontSize: 13, color: COLORS.textMuted, textTransform: 'capitalize', marginBottom: 16 },
   badge: {
     alignSelf: 'flex-start',
-    backgroundColor: ACCENT,
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
     borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 14,
   },
-  badgeText: { fontSize: 14, fontWeight: '700', color: COLORS.text },
+  badgeText: { fontSize: 14, fontWeight: '700', color: COLORS.primary },
 });
 
 export default WhereToGoScreen;
