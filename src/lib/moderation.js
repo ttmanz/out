@@ -1,5 +1,8 @@
-// To upgrade to a paid/smarter provider, change PROVIDER and implement the
-// corresponding entry in `providers` below. The return shape never changes.
+import { supabase } from './supabase';
+
+// Change this one line to switch moderation provider:
+//   'openai'  — free, no cost, good for obvious violations
+//   'claude'  — Claude Haiku via Supabase Edge Function, more nuanced
 const PROVIDER = 'openai';
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
@@ -38,11 +41,19 @@ const providers = {
     };
   },
 
-  // Placeholder — swap PROVIDER to 'claude' once the Edge Function is ready
-  claude: async (_text) => {
-    // TODO: POST to Supabase Edge Function `moderate-content`
-    // which calls Claude with a structured classification prompt
-    return { flagged: false, reason: null, score: null };
+  // Claude Haiku via Supabase Edge Function — API key stays server-side.
+  // To activate: deploy supabase/functions/moderate-content, set the
+  // ANTHROPIC_API_KEY secret, then change PROVIDER above to 'claude'.
+  claude: async (text) => {
+    const { data, error } = await supabase.functions.invoke('moderate-content', {
+      body: { text },
+    });
+    if (error || !data) return { flagged: false, reason: null, score: null };
+    return {
+      flagged: data.flagged ?? false,
+      reason: data.reason ?? null,
+      score: data.score ?? null,
+    };
   },
 };
 
