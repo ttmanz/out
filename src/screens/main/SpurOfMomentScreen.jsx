@@ -12,6 +12,7 @@ import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 
 const SpurOfMomentScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -80,6 +81,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
 
         <Text style={styles.cardTitle}>{item.title}</Text>
         {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+        {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
 
         <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
           <Text style={styles.replyToggleText}>

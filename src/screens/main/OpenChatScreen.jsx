@@ -16,6 +16,7 @@ import { formatAgo } from '../../utils/format';
 import { moderateContent } from '../../lib/moderation';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 
 const OpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -141,6 +142,7 @@ const OpenChatScreen = ({ navigation }) => {
         <Text style={styles.title}>{item.title}</Text>
         {!!item.venue && <Text style={styles.venue}>📍 {item.venue}</Text>}
         {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+        {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
 
         <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
           <Text style={styles.replyToggleText}>

@@ -12,6 +12,7 @@ import { getHappenings } from '../../lib/happenings';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 
 const distanceKm = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -47,6 +48,7 @@ const HappeningCard = ({ item, distKm, navigation }) => (
     {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
     {!!item.description && <Text style={styles.desc}>{item.description}</Text>}
     {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+    {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
   </View>
 );
 

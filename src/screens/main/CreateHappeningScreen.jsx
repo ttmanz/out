@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import LinkInput from '../../components/common/LinkInput';
 import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -27,6 +28,7 @@ const CreateHappeningScreen = ({ navigation }) => {
   const [when, setWhen] = useState(null);
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
+  const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [titleError, setTitleError] = useState('');
   const [whenError, setWhenError] = useState('');
@@ -78,6 +80,10 @@ const CreateHappeningScreen = ({ navigation }) => {
       latitude,
       longitude,
       photo_url,
+      link_url: linkPreview?.url ?? null,
+      link_title: linkPreview?.title ?? null,
+      link_image: linkPreview?.image ?? null,
+      link_domain: linkPreview?.domain ?? null,
     });
     setLoading(false);
     if (error) {
@@ -145,6 +151,7 @@ const CreateHappeningScreen = ({ navigation }) => {
           />
 
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading

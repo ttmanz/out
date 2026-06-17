@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import LinkInput from '../../components/common/LinkInput';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import { createSpurPost } from '../../lib/spur';
@@ -19,6 +20,7 @@ const CreateSpurScreen = ({ navigation }) => {
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
+  const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [venueError, setVenueError] = useState('');
   const [activityError, setActivityError] = useState('');
@@ -50,6 +52,10 @@ const CreateSpurScreen = ({ navigation }) => {
       venue: venue.trim(),
       activity: activity.trim(),
       photo_url,
+      link_url: linkPreview?.url ?? null,
+      link_title: linkPreview?.title ?? null,
+      link_image: linkPreview?.image ?? null,
+      link_domain: linkPreview?.domain ?? null,
     });
     setLoading(false);
     if (error) {
@@ -96,6 +102,7 @@ const CreateSpurScreen = ({ navigation }) => {
           />
 
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading

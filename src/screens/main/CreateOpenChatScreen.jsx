@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import LinkInput from '../../components/common/LinkInput';
 import { createOpenChatPost } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { moderateContent } from '../../lib/moderation';
@@ -18,6 +19,7 @@ const CreateOpenChatScreen = ({ navigation }) => {
   const [message, setMessage] = useState('');
   const [venue, setVenue] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
+  const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [messageError, setMessageError] = useState('');
 
@@ -55,6 +57,10 @@ const CreateOpenChatScreen = ({ navigation }) => {
       message: message.trim(),
       venue: venue.trim(),
       photo_url,
+      link_url: linkPreview?.url ?? null,
+      link_title: linkPreview?.title ?? null,
+      link_image: linkPreview?.image ?? null,
+      link_domain: linkPreview?.domain ?? null,
     });
     setLoading(false);
     if (error) {
@@ -93,6 +99,7 @@ const CreateOpenChatScreen = ({ navigation }) => {
             autoCapitalize="words"
           />
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading

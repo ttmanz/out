@@ -12,7 +12,7 @@ export const getSpurPosts = () => {
     .limit(30);
 };
 
-export const createSpurPost = (userId, { venue, activity, photo_url = null }) =>
+export const createSpurPost = (userId, { venue, activity, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
   createHappening(userId, {
     title: `Going to ${venue} for ${activity}, join me?`,
     venue,
@@ -21,6 +21,10 @@ export const createSpurPost = (userId, { venue, activity, photo_url = null }) =>
     latitude: null,
     longitude: null,
     photo_url,
+    link_url,
+    link_title,
+    link_image,
+    link_domain,
   });
 
 export const getSpurReplies = (spurId) =>
