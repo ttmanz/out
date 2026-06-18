@@ -3,53 +3,344 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Legal — Find-Mee</title>
+  <meta name="description" content="Find-Mee — the social app for going out. See who's nearby, plan your night, discover venues, and connect with people around you." />
+  <meta property="og:title" content="Find-Mee" />
+  <meta property="og:description" content="Explore. Connect. Experience. The social app for going out." />
+  <meta property="og:url" content="https://find-mee.com" />
+  <title>Find-Mee — Explore. Connect. Experience.</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d0a03; color: #e8e0cc; line-height: 1.7; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
-    h1 { font-size: 2.4rem; font-weight: 800; color: #c8800a; letter-spacing: -0.5px; margin-bottom: 6px; }
-    .tagline { color: #9a8060; font-size: 0.9rem; margin-bottom: 48px; }
-    .cards { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 480px; }
-    a.card { display: flex; align-items: center; gap: 18px; background: #1a1200; border: 1px solid #2a1e00; border-radius: 16px; padding: 20px 22px; text-decoration: none; transition: border-color 0.15s; }
-    a.card:hover { border-color: #c8800a; }
-    .card-icon { font-size: 2rem; flex-shrink: 0; }
-    .card-title { font-size: 1rem; font-weight: 700; color: #e8e0cc; margin-bottom: 2px; }
-    .card-desc { font-size: 0.82rem; color: #6a5a40; }
-    .chevron { font-size: 1.4rem; color: #3a2a10; margin-left: auto; }
-    footer { margin-top: 48px; color: #3a2a10; font-size: 0.8rem; }
+    :root {
+      --gold: #c8800a;
+      --gold-light: #e09a20;
+      --bg: #0d0a03;
+      --surface: #140f02;
+      --surface2: #1a1200;
+      --border: #2a1e00;
+      --border-accent: #3a2800;
+      --text: #e8e0cc;
+      --text-muted: #9a8060;
+      --text-dim: #5a4a30;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; overflow-x: hidden; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(13,10,3,0.88); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 1.2rem; font-weight: 800; color: var(--gold); letter-spacing: -0.3px; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: var(--text-muted); font-size: 0.88rem; text-decoration: none; transition: color 0.15s; }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-cta { background: var(--gold); color: #0d0a03; font-weight: 700; padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; text-decoration: none; transition: background 0.15s; }
+    .nav-cta:hover { background: var(--gold-light); color: #0d0a03; }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 120px 24px 80px; position: relative; overflow: hidden; }
+    .hero-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%); width: 600px; height: 600px; background: radial-gradient(circle, rgba(200,128,10,0.12) 0%, transparent 70%); pointer-events: none; }
+    .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(200,128,10,0.12); border: 1px solid rgba(200,128,10,0.3); border-radius: 20px; padding: 6px 14px; font-size: 0.8rem; color: var(--gold); margin-bottom: 28px; }
+    .hero h1 { font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 800; color: var(--text); letter-spacing: -2px; line-height: 1.05; margin-bottom: 20px; }
+    .hero h1 span { color: var(--gold); }
+    .hero p { font-size: clamp(1rem, 2.5vw, 1.2rem); color: var(--text-muted); max-width: 560px; margin-bottom: 44px; line-height: 1.65; }
+    .hero-tagline { font-size: 0.85rem; letter-spacing: 3px; color: var(--gold); font-weight: 600; margin-bottom: 16px; text-transform: uppercase; }
+    .store-btns { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+    .store-btn { display: flex; align-items: center; gap: 10px; background: var(--surface2); border: 1px solid var(--border-accent); border-radius: 14px; padding: 12px 22px; text-decoration: none; transition: border-color 0.2s, transform 0.15s; }
+    .store-btn:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .store-btn-icon { font-size: 1.6rem; }
+    .store-btn-text { text-align: left; }
+    .store-btn-sub { font-size: 0.68rem; color: var(--text-muted); display: block; }
+    .store-btn-name { font-size: 0.92rem; font-weight: 700; color: var(--text); display: block; }
+    .hero-note { font-size: 0.78rem; color: var(--text-dim); }
+    .scroll-hint { margin-top: 60px; color: var(--text-dim); font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .scroll-arrow { font-size: 1.2rem; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(6px)} }
+
+    /* SECTION BASE */
+    section { padding: 96px 24px; }
+    .section-label { font-size: 0.75rem; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 14px; }
+    .section-title { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; color: var(--text); letter-spacing: -0.5px; line-height: 1.15; margin-bottom: 16px; }
+    .section-sub { color: var(--text-muted); font-size: 1.05rem; max-width: 520px; }
+    .centered { text-align: center; display: flex; flex-direction: column; align-items: center; }
+
+    /* FEATURES */
+    .features { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .features-inner { max-width: 1100px; margin: 0 auto; }
+    .features-header { margin-bottom: 56px; }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .feature-card { background: var(--bg); border: 1px solid var(--border); border-radius: 18px; padding: 28px; transition: border-color 0.2s, transform 0.2s; }
+    .feature-card:hover { border-color: var(--border-accent); transform: translateY(-3px); }
+    .feature-icon { font-size: 2.4rem; margin-bottom: 16px; }
+    .feature-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .feature-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; }
+
+    /* HOW IT WORKS */
+    .how { max-width: 900px; margin: 0 auto; }
+    .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 32px; margin-top: 56px; }
+    .step { text-align: center; }
+    .step-num { width: 52px; height: 52px; border-radius: 50%; background: rgba(200,128,10,0.12); border: 1px solid rgba(200,128,10,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 800; color: var(--gold); margin: 0 auto 18px; }
+    .step-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .step-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* STATS */
+    .stats-band { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 56px 24px; }
+    .stats-inner { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 24px; text-align: center; }
+    .stat-num { font-size: 2.4rem; font-weight: 800; color: var(--gold); letter-spacing: -1px; }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* LOCATION HIGHLIGHT */
+    .location-highlight { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+    .location-visual { background: var(--surface2); border: 1px solid var(--border); border-radius: 24px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 6rem; position: relative; overflow: hidden; }
+    .location-visual::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(200,128,10,0.15) 0%, transparent 70%); }
+    .location-visual-inner { position: relative; z-index: 1; text-align: center; }
+    .location-visual-inner p { font-size: 0.8rem; color: var(--text-muted); margin-top: 12px; }
+    .location-text .section-sub { margin-bottom: 28px; }
+    .check { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
+    .check-icon { color: var(--gold); font-size: 1rem; margin-top: 2px; flex-shrink: 0; }
+    .check p { font-size: 0.9rem; color: var(--text-muted); }
+
+    /* CTA */
+    .cta-section { text-align: center; max-width: 600px; margin: 0 auto; }
+    .cta-section .section-title { margin-bottom: 12px; }
+    .cta-section .section-sub { margin-bottom: 40px; }
+    .cta-btns { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn-primary { background: var(--gold); color: #0d0a03; font-weight: 800; padding: 16px 32px; border-radius: 14px; font-size: 1rem; text-decoration: none; transition: background 0.15s, transform 0.15s; }
+    .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+    .btn-secondary { background: transparent; color: var(--gold); font-weight: 700; padding: 16px 32px; border-radius: 14px; font-size: 1rem; text-decoration: none; border: 1px solid rgba(200,128,10,0.4); transition: border-color 0.15s; }
+    .btn-secondary:hover { border-color: var(--gold); }
+
+    /* FOOTER */
+    footer { background: var(--surface); border-top: 1px solid var(--border); padding: 48px 32px 36px; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 48px; margin-bottom: 40px; }
+    .footer-brand h3 { font-size: 1.3rem; font-weight: 800; color: var(--gold); margin-bottom: 8px; }
+    .footer-brand p { font-size: 0.88rem; color: var(--text-dim); max-width: 280px; line-height: 1.6; }
+    .footer-col h4 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; }
+    .footer-col a { display: block; color: var(--text-dim); font-size: 0.88rem; text-decoration: none; margin-bottom: 10px; transition: color 0.15s; }
+    .footer-col a:hover { color: var(--gold); }
+    .footer-bottom { border-top: 1px solid var(--border); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: gap; gap: 12px; }
+    .footer-bottom p { color: var(--text-dim); font-size: 0.8rem; }
+    .footer-bottom a { color: var(--text-dim); font-size: 0.8rem; text-decoration: none; }
+    .footer-bottom a:hover { color: var(--gold); }
+
+    /* RESPONSIVE */
+    @media (max-width: 720px) {
+      nav { padding: 14px 20px; }
+      .nav-links { display: none; }
+      .location-highlight { grid-template-columns: 1fr; }
+      .location-visual { display: none; }
+      .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
   </style>
 </head>
 <body>
-  <h1>Find-Mee</h1>
-  <p class="tagline">Explore. Connect. Experience.</p>
 
-  <div class="cards">
-    <a href="privacy-policy.html" class="card">
-      <span class="card-icon">🔒</span>
-      <div>
-        <div class="card-title">Privacy Policy</div>
-        <div class="card-desc">How we collect, use, and protect your data</div>
-      </div>
-      <span class="chevron">›</span>
+<!-- NAV -->
+<nav>
+  <span class="nav-logo">Find-Mee</span>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="legal.html">Legal</a>
+    <a href="mailto:support@find-mee.com">Support</a>
+    <a href="#download" class="nav-cta">Download</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">✦ Now available on iOS &amp; Android</div>
+  <p class="hero-tagline">Explore · Connect · Experience</p>
+  <h1>Go out.<br><span>Find your people.</span></h1>
+  <p>Find-Mee is the social app for going out. See who's nearby, plan your night, discover venues, and connect with members around you — in real time.</p>
+  <div class="store-btns" id="download">
+    <a href="#" class="store-btn">
+      <span class="store-btn-icon">🍎</span>
+      <span class="store-btn-text">
+        <span class="store-btn-sub">Download on the</span>
+        <span class="store-btn-name">App Store</span>
+      </span>
     </a>
-    <a href="terms-and-conditions.html" class="card">
-      <span class="card-icon">📋</span>
-      <div>
-        <div class="card-title">Terms &amp; Conditions</div>
-        <div class="card-desc">The rules governing your use of Find-Mee</div>
-      </div>
-      <span class="chevron">›</span>
-    </a>
-    <a href="community-guidelines.html" class="card">
-      <span class="card-icon">🤝</span>
-      <div>
-        <div class="card-title">Community Guidelines</div>
-        <div class="card-desc">How to treat each other and keep Find-Mee safe</div>
-      </div>
-      <span class="chevron">›</span>
+    <a href="#" class="store-btn">
+      <span class="store-btn-icon">▶</span>
+      <span class="store-btn-text">
+        <span class="store-btn-sub">Get it on</span>
+        <span class="store-btn-name">Google Play</span>
+      </span>
     </a>
   </div>
+  <p class="hero-note">Free · Cyprus &amp; Greece · Ages 17+</p>
+  <div class="scroll-hint">
+    <span>Scroll to explore</span>
+    <span class="scroll-arrow">↓</span>
+  </div>
+</section>
 
-  <footer>&copy; 2026 T&amp;T Leisureland</footer>
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="centered features-header">
+      <p class="section-label">Everything in one place</p>
+      <h2 class="section-title">Built for your night out</h2>
+      <p class="section-sub">Every feature is designed around the way people actually go out — spontaneous, social, and local.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <div class="feature-title">At Venue</div>
+        <div class="feature-desc">Check in at your location and see a live map of other Find-Mee members within 300 metres. Tap any pin to view their profile and connect.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎉</div>
+        <div class="feature-title">What's Happening</div>
+        <div class="feature-desc">Share your plans and itinerary with nearby members. Whether it's tonight's venue or the weekend's agenda — let people know.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Spur of the Moment</div>
+        <div class="feature-desc">Post a spontaneous invite right now. "Going for drinks at Finos — anyone coming?" Instant, casual, no planning required.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <div class="feature-title">Open Chat</div>
+        <div class="feature-desc">A public chat feed for your area. Start a conversation, reply to others, and discover what's going on around you tonight.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌙</div>
+        <div class="feature-title">Night Out Planner</div>
+        <div class="feature-desc">Create a night out, invite your friends, and manage RSVPs all in one place. No more group chats, no more confusion.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⭐</div>
+        <div class="feature-title">Venue Reviews</div>
+        <div class="feature-desc">Quick, honest star ratings and thoughts from people who were actually there last night — not six months ago.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🍸</div>
+        <div class="feature-title">Venue Hub</div>
+        <div class="feature-desc">Explore venues near you, see trending spots, find out who's there, and open any venue directly in Maps.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🏛️</div>
+        <div class="feature-title">Club Groups</div>
+        <div class="feature-desc">Create or join interest-based groups — bar crawls, running clubs, brunch squads. Build your social circle around what you love.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div>
+      <div class="stat-num">300m</div>
+      <div class="stat-label">At Venue proximity radius</div>
+    </div>
+    <div>
+      <div class="stat-num">3h</div>
+      <div class="stat-label">Location visibility window</div>
+    </div>
+    <div>
+      <div class="stat-num">24h</div>
+      <div class="stat-label">Auto-delete for photo posts</div>
+    </div>
+    <div>
+      <div class="stat-num">3</div>
+      <div class="stat-label">Languages — EN, EL, RU</div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="how centered">
+    <p class="section-label">Simple by design</p>
+    <h2 class="section-title">How Find-Mee works</h2>
+    <p class="section-sub">From download to meeting people nearby — three steps.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-title">Create your profile</div>
+        <div class="step-desc">Sign up with your email or phone. Add your name and a photo. Control exactly who can find and see you.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-title">Share where you are</div>
+        <div class="step-desc">Check in at your venue, post your plans, or just browse what's happening around you tonight.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-title">Connect and go out</div>
+        <div class="step-desc">See who's nearby, message friends, plan your night, and make the most of wherever you are.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCATION HIGHLIGHT -->
+<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="location-highlight" style="max-width:900px; margin:0 auto;">
+    <div class="location-visual">
+      <div class="location-visual-inner">
+        <div>📍</div>
+        <p>At Venue — live map</p>
+      </div>
+    </div>
+    <div class="location-text">
+      <p class="section-label">Privacy first</p>
+      <h2 class="section-title">Your location, your rules</h2>
+      <p class="section-sub" style="margin-bottom:28px;">Find-Mee never tracks you without your knowledge. Location sharing is always opt-in, temporary, and in your hands.</p>
+      <div class="check"><span class="check-icon">✦</span><p>Check-in location is only visible to others for <strong style="color:var(--text)">3 hours</strong>, then automatically hidden</p></div>
+      <div class="check"><span class="check-icon">✦</span><p>Only shared with members within <strong style="color:var(--text)">300 metres</strong> of you</p></div>
+      <div class="check"><span class="check-icon">✦</span><p>Revoke location permission any time in your device settings</p></div>
+      <div class="check"><span class="check-icon">✦</span><p>Profile visibility settings — public, friends-only, or private</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section>
+  <div class="cta-section">
+    <p class="section-label">Ready to go?</p>
+    <h2 class="section-title">Download Find-Mee free</h2>
+    <p class="section-sub" style="margin-bottom:40px;">Available on iOS and Android. Cyprus &amp; Greece. Ages 17+.</p>
+    <div class="cta-btns">
+      <a href="#download" class="btn-primary">🍎 App Store</a>
+      <a href="#download" class="btn-secondary">▶ Google Play</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Find-Mee</h3>
+      <p>The social app for going out. Connect with people nearby, discover venues, and make every night out count.</p>
+      <p style="margin-top:12px; font-size:0.8rem;">T&amp;T Leisureland · Cyprus</p>
+    </div>
+    <div class="footer-col">
+      <h4>App</h4>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#download">Download</a>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="terms-and-conditions.html">Terms &amp; Conditions</a>
+      <a href="community-guidelines.html">Community Guidelines</a>
+      <a href="mailto:support@find-mee.com">Support</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>&copy; 2026 T&amp;T Leisureland. All rights reserved.</p>
+    <div style="display:flex; gap:20px;">
+      <a href="privacy-policy.html">Privacy</a>
+      <a href="terms-and-conditions.html">Terms</a>
+      <a href="mailto:support@find-mee.com">Contact</a>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
