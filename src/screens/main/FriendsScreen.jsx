@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, StatusBar } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, StatusBar, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
@@ -96,7 +96,7 @@ const FriendsScreen = ({ navigation }) => {
     </View>
   );
 
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
+  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
   const visibleFriends = friends.filter((item) => {
     const fid = item.requester_id === userId ? item.addressee_id : item.requester_id;
     return !blockedIds.has(fid);
@@ -105,6 +105,9 @@ const FriendsScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Text style={styles.backText}>‹</Text>
+        </TouchableOpacity>
         <Text style={styles.title}>{t('friends.title')}</Text>
         <TouchableOpacity style={styles.searchBtn} onPress={() => navigation.navigate(ROUTES.SEARCH_USERS)}>
           <Text style={styles.searchBtnText}>🔍 {t('friends.search')}</Text>
@@ -216,14 +219,15 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: COLORS.background,
     paddingHorizontal: 20,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
+  back: { width: 40, alignItems: 'flex-start' },
+  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
+  title: { flex: 1, fontSize: 26, fontWeight: '800', color: COLORS.primary, textAlign: 'center' },
   searchBtn: {
     backgroundColor: 'rgba(200,128,10,0.12)',
     borderRadius: 20,

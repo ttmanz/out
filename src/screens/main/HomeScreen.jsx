@@ -8,18 +8,19 @@ import { useUser } from '../../contexts/UserContext';
 import LanguagePicker from '../../components/common/LanguagePicker';
 
 const FEATURES = [
-  { emoji: '🎉', titleKey: 'home.whatsHappening', route: ROUTES.WHAT_HAPPENING, watermark: '🎆' },
-  { emoji: '🗺️', titleKey: 'home.whereToGo',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️' },
-  { emoji: '⚡', titleKey: 'home.spurOfMoment',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
-  { emoji: '💬', titleKey: 'home.openChat',        route: ROUTES.OPEN_CHAT,      watermark: '💭' },
-  { emoji: '🌙', titleKey: 'home.nightOut',        route: ROUTES.NIGHT_OUT,      watermark: '🌃' },
-  { emoji: '🏛️', titleKey: 'home.clubGroups',      route: ROUTES.CLUB_GROUPS,    watermark: '🎭' },
-  { emoji: '🍸', titleKey: 'home.venue',           route: ROUTES.VENUE_HUB,      watermark: '📍' },
+  { emoji: '🎉', titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, watermark: '🎆' },
+  { emoji: '🗺️', titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️' },
+  { emoji: '⚡', titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
+  { emoji: '💬', titleKey: 'home.openChat',        descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      watermark: '💭' },
+  { emoji: '📍', titleKey: 'home.atVenue',         descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       watermark: '👥' },
+  { emoji: '🌙', titleKey: 'home.nightOut',        descKey: 'home.nightOutDesc',       route: ROUTES.NIGHT_OUT,      watermark: '🌃' },
+  { emoji: '🏛️', titleKey: 'home.clubGroups',      descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    watermark: '🎭' },
+  { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍' },
 ];
 
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
-const FeatureCard = ({ emoji, title, watermark, onPress }) => (
+const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
   <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
     <View style={styles.watermarkContainer}>
       <Text style={styles.watermark}>{watermark}</Text>
@@ -29,7 +30,10 @@ const FeatureCard = ({ emoji, title, watermark, onPress }) => (
         <Text style={styles.cardEmoji}>{emoji}</Text>
       </View>
     </View>
-    <Text style={styles.cardTitle}>{title}</Text>
+    <View style={styles.textWrap}>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardDesc}>{description}</Text>
+    </View>
     <Text style={styles.chevron}>›</Text>
   </TouchableOpacity>
 );
@@ -96,6 +100,7 @@ const HomeScreen = ({ navigation }) => {
               key={f.route}
               emoji={f.emoji}
               title={t(f.titleKey)}
+              description={t(f.descKey)}
               watermark={f.watermark}
               onPress={() => navigation.navigate(f.route)}
             />
@@ -235,7 +240,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   cardEmoji: { fontSize: 24 },
-  cardTitle: { flex: 1, fontSize: 15, fontWeight: '700', color: COLORS.text },
+  textWrap: { flex: 1 },
+  cardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
+  cardDesc: { fontSize: 11, color: COLORS.textMuted, lineHeight: 15 },
   chevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
 });
 

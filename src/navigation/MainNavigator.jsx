@@ -28,8 +28,10 @@ import NightOutDetailScreen from '../screens/main/NightOutDetailScreen';
 import ClubGroupsScreen from '../screens/main/ClubGroupsScreen';
 import ClubDetailScreen from '../screens/main/ClubDetailScreen';
 import CreateClubScreen from '../screens/main/CreateClubScreen';
+import AtVenueScreen from '../screens/main/AtVenueScreen';
 import VenueHubScreen from '../screens/main/VenueHubScreen';
 import VenueSearchScreen from '../screens/main/VenueSearchScreen';
+import VenueReviewsScreen from '../screens/main/VenueReviewsScreen';
 import MembersAtScreen from '../screens/main/MembersAtScreen';
 import TrendingVenuesScreen from '../screens/main/TrendingVenuesScreen';
 import TopVenuesScreen from '../screens/main/TopVenuesScreen';
@@ -67,8 +69,10 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.CLUB_GROUPS}      component={ClubGroupsScreen} />
     <HomeStack.Screen name={ROUTES.CLUB_DETAIL}      component={ClubDetailScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_CLUB}      component={CreateClubScreen} />
+    <HomeStack.Screen name={ROUTES.AT_VENUE}          component={AtVenueScreen} />
     <HomeStack.Screen name={ROUTES.VENUE_HUB}        component={VenueHubScreen} />
     <HomeStack.Screen name={ROUTES.VENUE_SEARCH}     component={VenueSearchScreen} />
+    <HomeStack.Screen name={ROUTES.VENUE_REVIEWS}   component={VenueReviewsScreen} />
     <HomeStack.Screen name={ROUTES.MEMBERS_AT}       component={MembersAtScreen} />
     <HomeStack.Screen name={ROUTES.TRENDING_VENUES}  component={TrendingVenuesScreen} />
     <HomeStack.Screen name={ROUTES.TOP_VENUES}        component={TopVenuesScreen} />

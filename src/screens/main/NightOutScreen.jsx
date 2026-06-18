@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert, StatusBar,
+  ActivityIndicator, Alert, StatusBar, Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -54,19 +54,22 @@ const NightOutScreen = ({ navigation }) => {
     );
   }
 
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
+  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
   return (
     <View style={styles.safe}>
       <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <View>
-          <Text style={styles.title}>{t('nightOut.title')}</Text>
-        </View>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Text style={styles.backText}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.title} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.65}>
+          {t('nightOut.title')}
+        </Text>
         <TouchableOpacity
           style={styles.createBtn}
           onPress={() => navigation.navigate(ROUTES.CREATE_NIGHT_OUT)}
         >
-          <Text style={styles.createBtnText}>+ {t('nightOut.create')}</Text>
+          <Text style={styles.createBtnText} numberOfLines={1}>+ {t('nightOut.create')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -135,23 +138,25 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: COLORS.background,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
+  back: { width: 40, alignItems: 'flex-start' },
+  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
+  title: { flex: 1, fontSize: 22, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginHorizontal: 8 },
   createBtn: {
     backgroundColor: 'rgba(200,128,10,0.12)',
     borderRadius: 20,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
+    maxWidth: 130,
   },
-  createBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
+  createBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 12 },
   list: { paddingVertical: 12, paddingHorizontal: 16, paddingBottom: 40 },
   emptyWrap: { alignItems: 'center', marginTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },

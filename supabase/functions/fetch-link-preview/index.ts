@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     if (['youtube.com', 'youtu.be', 'm.youtube.com'].includes(domain)) {
       const r = await fetch(
         `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,
-        { headers: { 'User-Agent': 'OutAndAroundBot/1.0' } }
+        { headers: { 'User-Agent': 'FindMeeBot/1.0' } }
       );
       if (r.ok) {
         const d = await r.json();
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
     if (domain === 'open.spotify.com' || domain === 'spotify.com') {
       const r = await fetch(
         `https://open.spotify.com/oembed?url=${encodeURIComponent(url)}`,
-        { headers: { 'User-Agent': 'OutAndAroundBot/1.0' } }
+        { headers: { 'User-Agent': 'FindMeeBot/1.0' } }
       );
       if (r.ok) {
         const d = await r.json();
@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     // General — OG / Twitter Card scraping
     const r = await fetch(url, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; OutAndAroundBot/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; FindMeeBot/1.0)',
         'Accept': 'text/html',
       },
       redirect: 'follow',

@@ -1,0 +1,224 @@
+import React, { useState, useCallback } from 'react';
+import {
+  View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
+  ActivityIndicator, Alert, StatusBar, Platform, KeyboardAvoidingView,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
+import { COLORS } from '../../constants/colors';
+import { getSession } from '../../lib/auth';
+import { getVenueReviews, createVenueReview, deleteVenueReview } from '../../lib/venueReviews';
+import { formatAgo } from '../../utils/format';
+import AdBanner from '../../components/common/AdBanner';
+import ProfileBanner from '../../components/common/ProfileBanner';
+
+const STARS = [1, 2, 3, 4, 5];
+const STAR_DISPLAY = ['', '★☆☆☆☆', '★★☆☆☆', '★★★☆☆', '★★★★☆', '★★★★★'];
+
+const StarRow = ({ value, onChange }) => (
+  <View style={styles.starRow}>
+    {STARS.map((n) => (
+      <TouchableOpacity key={n} onPress={() => onChange(n)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+        <Text style={styles.star}>{n <= value ? '★' : '☆'}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+);
+
+const VenueReviewsScreen = ({ navigation }) => {
+  const { t } = useTranslation();
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState(null);
+  const [composing, setComposing] = useState(false);
+  const [venueName, setVenueName] = useState('');
+  const [body, setBody] = useState('');
+  const [rating, setRating] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
+
+  const load = useCallback(async () => {
+    const [{ data: { session } }, { data, error }] = await Promise.all([
+      getSession(),
+      getVenueReviews(),
+    ]);
+    if (session) setUserId(session.user.id);
+    if (!error) setReviews(data ?? []);
+    setLoading(false);
+  }, []);
+
+  useFocusEffect(load);
+
+  const handleSubmit = async () => {
+    if (!venueName.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorVenue'));
+    if (!body.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorBody'));
+    if (rating === 0) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorRating'));
+    setSubmitting(true);
+    const { error } = await createVenueReview(userId, venueName, body, rating);
+    setSubmitting(false);
+    if (error) return Alert.alert(t('common.error'), error.message);
+    setVenueName('');
+    setBody('');
+    setRating(0);
+    setComposing(false);
+    load();
+  };
+
+  const handleDelete = (id) => {
+    Alert.alert(t('venueReviews.deleteConfirm'), '', [
+      { text: t('venueReviews.cancel'), style: 'cancel' },
+      { text: t('venueReviews.delete'), style: 'destructive', onPress: async () => {
+        await deleteVenueReview(id, userId);
+        setReviews((prev) => prev.filter((r) => r.id !== id));
+      }},
+    ]);
+  };
+
+  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
+
+  return (
+    <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
+          <Text style={styles.backText}>‹</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{t('venueReviews.title')}</Text>
+        <TouchableOpacity onPress={() => setComposing((v) => !v)} style={styles.writeBtn}>
+          <Text style={styles.writeBtnText}>{composing ? '✕' : '+ ' + t('venueReviews.write')}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {composing && (
+        <View style={styles.composeCard}>
+          <TextInput
+            style={styles.input}
+            placeholder={t('venueReviews.venueNamePlaceholder')}
+            placeholderTextColor={COLORS.textMuted}
+            value={venueName}
+            onChangeText={setVenueName}
+          />
+          <TextInput
+            style={[styles.input, styles.bodyInput]}
+            placeholder={t('venueReviews.thoughtPlaceholder')}
+            placeholderTextColor={COLORS.textMuted}
+            value={body}
+            onChangeText={(v) => setBody(v.slice(0, 200))}
+            multiline
+            numberOfLines={3}
+          />
+          <View style={styles.composeFooter}>
+            <StarRow value={rating} onChange={setRating} />
+            <Text style={styles.charCount}>{body.length}/200</Text>
+            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={submitting}>
+              {submitting
+                ? <ActivityIndicator color={COLORS.black} size="small" />
+                : <Text style={styles.submitText}>{t('venueReviews.submit')}</Text>
+              }
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {loading ? (
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={reviews}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ListHeaderComponent={() => (
+            <>
+              <AdBanner page="VenueReviews" />
+              <ProfileBanner navigation={navigation} />
+            </>
+          )}
+          ListEmptyComponent={
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyIcon}>⭐</Text>
+              <Text style={styles.empty}>{t('venueReviews.empty')}</Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.venueName}>{item.venue_name}</Text>
+                <Text style={styles.stars}>{STAR_DISPLAY[item.rating] ?? ''}</Text>
+              </View>
+              <Text style={styles.cardBody}>{item.body}</Text>
+              <View style={styles.cardFooter}>
+                <Text style={styles.author}>{item.author?.full_name ?? t('notifications.someone')}</Text>
+                <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
+                {item.user_id === userId && (
+                  <TouchableOpacity onPress={() => handleDelete(item.id)} style={styles.deleteBtn}>
+                    <Text style={styles.deleteText}>✕</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          )}
+        />
+      )}
+    </KeyboardAvoidingView>
+  );
+};
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  header: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 16, paddingBottom: 14,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+  },
+  back: { width: 40, alignItems: 'flex-start' },
+  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
+  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
+  writeBtn: {
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  writeBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 12 },
+  composeCard: {
+    margin: 16, padding: 16,
+    backgroundColor: COLORS.surface,
+    borderRadius: 16, borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  input: {
+    borderWidth: 1, borderColor: COLORS.border, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 10, fontSize: 14,
+    color: COLORS.text, backgroundColor: COLORS.background, marginBottom: 10,
+  },
+  bodyInput: { height: 80, textAlignVertical: 'top' },
+  composeFooter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  starRow: { flexDirection: 'row', gap: 4 },
+  star: { fontSize: 24, color: COLORS.primary },
+  charCount: { flex: 1, color: COLORS.textMuted, fontSize: 11, textAlign: 'right' },
+  submitBtn: {
+    backgroundColor: COLORS.primary, borderRadius: 10,
+    paddingHorizontal: 16, paddingVertical: 8,
+  },
+  submitText: { color: COLORS.black, fontWeight: '800', fontSize: 13 },
+  list: { paddingBottom: 40 },
+  emptyWrap: { alignItems: 'center', marginTop: 80 },
+  emptyIcon: { fontSize: 48, marginBottom: 12 },
+  empty: { color: COLORS.textMuted, fontSize: 15 },
+  card: {
+    marginHorizontal: 16, marginTop: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: COLORS.border,
+  },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
+  venueName: { fontSize: 15, fontWeight: '700', color: COLORS.primary, flex: 1, marginRight: 8 },
+  stars: { fontSize: 13, color: COLORS.primary },
+  cardBody: { fontSize: 14, color: COLORS.text, lineHeight: 20, marginBottom: 8 },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  author: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600', flex: 1 },
+  time: { fontSize: 11, color: COLORS.textMuted },
+  deleteBtn: { paddingHorizontal: 6, paddingVertical: 2 },
+  deleteText: { color: COLORS.error, fontSize: 13, fontWeight: '700' },
+});
+
+export default VenueReviewsScreen;

@@ -11,6 +11,7 @@ const OPTIONS = [
   { emoji: '👥', titleKey: 'venueHub.membersAt',  descKey: 'venueHub.membersAtDesc',  route: ROUTES.MEMBERS_AT,      watermark: '📍' },
   { emoji: '🔥', titleKey: 'venueHub.trending',   descKey: 'venueHub.trendingDesc',   route: ROUTES.TRENDING_VENUES, watermark: '📈' },
   { emoji: '🏆', titleKey: 'venueHub.topVenues',  descKey: 'venueHub.topVenuesDesc',  route: ROUTES.TOP_VENUES,      watermark: '⭐' },
+  { emoji: '⭐', titleKey: 'venueHub.reviews',    descKey: 'venueHub.reviewsDesc',    route: ROUTES.VENUE_REVIEWS,   watermark: '💬' },
 ];
 
 const VenueHubScreen = ({ navigation }) => {

@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Out-and-Around",
+    "appName": "Find - Mee",
     "error": "Something went wrong",
     "or": "or"
   },
@@ -61,13 +61,28 @@
   },
   "home": {
     "whatsHappening": "What's Happening",
+    "whatsHappeningDesc": "Share your plans & itinerary",
     "whereToGo": "Where to Go",
+    "whereToGoDesc": "Find venues near you on the map",
     "spurOfMoment": "Spur of the Moment",
+    "spurOfMomentDesc": "Spontaneous meetups, right now",
     "openChat": "Open Chat",
+    "openChatDesc": "Chat with members nearby",
+    "atVenue": "At Venue",
+    "atVenueDesc": "See who's around you right now",
     "nightOut": "Night Out Planner",
-    "tagline": "Explore. Connect. Experience.",
+    "nightOutDesc": "Plan your perfect night out",
     "clubGroups": "Club Groups",
-    "venue": "Venues"
+    "clubGroupsDesc": "Join & create interest groups",
+    "venue": "Venues",
+    "venueDesc": "Explore venues, trends & reviews",
+    "tagline": "Explore. Connect. Experience."
+  },
+  "atVenue": {
+    "locationRequired": "Location access is required to see members nearby.",
+    "noMembers": "No other members detected at this venue right now.",
+    "viewProfile": "View Profile",
+    "private": "Private profile"
   },
   "openChat": {
     "title": "Open Chat",
@@ -120,7 +135,7 @@
     "title": "Profile Settings",
     "whoCanFind": "Who can find me?",
     "everyone": "Everyone",
-    "everyoneDesc": "Any Out-and-Around member can find and view your profile",
+    "everyoneDesc": "Any Find - Mee member can find and view your profile",
     "friends": "Friends Only",
     "friendsDesc": "Only your accepted friends can find you",
     "closeFriends": "Close Friends",
@@ -204,7 +219,24 @@
     "noTop": "No top venues listed yet.",
     "noMembers": "No recent activity at this venue.",
     "membersRecent": "members recently here",
-    "recentPosts": "Recent posts mentioning this venue"
+    "recentPosts": "Recent posts mentioning this venue",
+    "reviews": "Reviews",
+    "reviewsDesc": "Share a quick thought about a venue"
+  },
+  "venueReviews": {
+    "title": "Venue Reviews",
+    "write": "Write",
+    "venueNamePlaceholder": "Venue name...",
+    "thoughtPlaceholder": "Share a quick thought...",
+    "submit": "Post",
+    "empty": "No reviews yet — be the first!",
+    "deleteConfirm": "Delete this review?",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "errorTitle": "Missing info",
+    "errorVenue": "Please enter a venue name.",
+    "errorBody": "Please write a short thought.",
+    "errorRating": "Please pick a star rating."
   },
   "profile": {
     "activity": "Recent activity",
