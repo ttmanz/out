@@ -3,15 +3,17 @@ import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, 
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { getTopVenues } from '../../lib/venues';
+import { getTopVenues, matchesCategory } from '../../lib/venues';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import CategoryFilter from '../../components/common/CategoryFilter';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
 const TopVenuesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [venues, setVenues] = useState([]);
+  const [category, setCategory] = useState('all');
   const [loading, setLoading] = useState(true);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
@@ -28,6 +30,8 @@ const TopVenuesScreen = ({ navigation }) => {
     const query = encodeURIComponent(venue.address || venue.name);
     Linking.openURL(`https://www.google.com/maps/search/${query}`);
   };
+
+  const visibleVenues = venues.filter((v) => matchesCategory(category, v.category));
 
   if (loading) {
     return (
@@ -48,20 +52,21 @@ const TopVenuesScreen = ({ navigation }) => {
       </View>
 
       <FlatList
-        data={venues}
+        data={visibleVenues}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         ListHeaderComponent={() => (
           <>
             <AdBanner page="TopVenues" />
             <ProfileBanner navigation={navigation} />
+            <CategoryFilter selected={category} onSelect={setCategory} />
           </>
         )}
         ListEmptyComponent={<Text style={styles.empty}>{t('venueHub.noTop')}</Text>}
-        renderItem={({ item, index }) => (
+        renderItem={({ item }) => (
           <TouchableOpacity style={styles.card} onPress={() => openMaps(item)} activeOpacity={0.8}>
             <View style={styles.rankWrap}>
-              <Text style={styles.medal}>{MEDALS[index] ?? `#${index + 1}`}</Text>
+              <Text style={styles.medal}>{MEDALS[item.rank - 1] ?? `#${item.rank}`}</Text>
             </View>
             <View style={styles.cardContent}>
               <Text style={styles.venueName}>{item.name}</Text>

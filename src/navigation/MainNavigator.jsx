@@ -42,6 +42,10 @@ import ChatScreen from '../screens/main/ChatScreen';
 import NotificationsScreen from '../screens/main/NotificationsScreen';
 import AdminScreen from '../screens/main/AdminScreen';
 import CompleteProfileScreen from '../screens/main/CompleteProfileScreen';
+import ActivitiesScreen from '../screens/main/ActivitiesScreen';
+import ActivityEventsScreen from '../screens/main/ActivityEventsScreen';
+import StoryFeedScreen from '../screens/main/StoryFeedScreen';
+import CreateStoryScreen from '../screens/main/CreateStoryScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -77,6 +81,10 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.TRENDING_VENUES}  component={TrendingVenuesScreen} />
     <HomeStack.Screen name={ROUTES.TOP_VENUES}        component={TopVenuesScreen} />
     <HomeStack.Screen name={ROUTES.COMPLETE_PROFILE}  component={CompleteProfileScreen} />
+    <HomeStack.Screen name={ROUTES.ACTIVITIES}        component={ActivitiesScreen} />
+    <HomeStack.Screen name={ROUTES.ACTIVITY_EVENTS}  component={ActivityEventsScreen} />
+    <HomeStack.Screen name={ROUTES.STORY_FEED}        component={StoryFeedScreen} />
+    <HomeStack.Screen name={ROUTES.CREATE_STORY}      component={CreateStoryScreen} />
   </HomeStack.Navigator>
 );
 

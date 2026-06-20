@@ -3,21 +3,23 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-na
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../constants/colors';
 
-const PhotoPicker = ({ uri, onChange, aspect = [16, 9] }) => {
+const PhotoPicker = ({ uri, onChange, aspect = [16, 9], allowVideo = false }) => {
   const pick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow photo library access to add a photo.');
+      Alert.alert('Permission needed', 'Allow photo library access to add media.');
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect,
+      mediaTypes: allowVideo
+        ? ImagePicker.MediaTypeOptions.All
+        : ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: !allowVideo,
+      aspect: allowVideo ? undefined : aspect,
       quality: 0.8,
     });
     if (!result.canceled && result.assets?.[0]?.uri) {
-      onChange(result.assets[0].uri);
+      onChange(result.assets[0].uri, result.assets[0].type);
     }
   };
 
@@ -26,7 +28,7 @@ const PhotoPicker = ({ uri, onChange, aspect = [16, 9] }) => {
       <View style={styles.previewWrap}>
         <Image source={{ uri }} style={styles.preview} resizeMode="cover" />
         <TouchableOpacity style={styles.removeBtn} onPress={() => onChange(null)}>
-          <Text style={styles.removeBtnText}>✕ Remove photo</Text>
+          <Text style={styles.removeBtnText}>✕ Remove</Text>
         </TouchableOpacity>
       </View>
     );
@@ -34,8 +36,8 @@ const PhotoPicker = ({ uri, onChange, aspect = [16, 9] }) => {
 
   return (
     <TouchableOpacity style={styles.addBtn} onPress={pick}>
-      <Text style={styles.addBtnIcon}>📷</Text>
-      <Text style={styles.addBtnText}>Add photo</Text>
+      <Text style={styles.addBtnIcon}>{allowVideo ? '🎬' : '📷'}</Text>
+      <Text style={styles.addBtnText}>{allowVideo ? 'Add Photo or Video' : 'Add photo'}</Text>
     </TouchableOpacity>
   );
 };

@@ -33,4 +33,8 @@ export const ROUTES = {
   TRENDING_VENUES: 'TrendingVenues',
   TOP_VENUES: 'TopVenues',
   COMPLETE_PROFILE: 'CompleteProfile',
+  ACTIVITIES: 'Activities',
+  ACTIVITY_EVENTS: 'ActivityEvents',
+  STORY_FEED: 'StoryFeed',
+  CREATE_STORY: 'CreateStory',
 };

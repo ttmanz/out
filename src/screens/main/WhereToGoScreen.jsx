@@ -8,7 +8,7 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { fetchNearbyVenues } from '../../lib/venues';
+import { fetchNearbyVenues, getPinColor } from '../../lib/venues';
 import { getHappenings } from '../../lib/happenings';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
@@ -94,7 +94,7 @@ const WhereToGoScreen = ({ navigation }) => {
               <Marker
                 key={venue.id}
                 coordinate={{ latitude: venue.latitude, longitude: venue.longitude }}
-                pinColor={COLORS.primary}
+                pinColor={getPinColor(venue.category)}
                 onPress={() => setSelected(venue)}
               />
             ))}
@@ -145,8 +145,8 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderTopWidth: 1,
     borderColor: COLORS.borderAccent,
-    padding: 24,
-    paddingBottom: 36,
+    padding: 14,
+    paddingBottom: 20,
     shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.2,

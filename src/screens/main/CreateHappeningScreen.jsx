@@ -20,12 +20,13 @@ const WHEN_OPTIONS = [
   { key: 'nearby',      emoji: '📍' },
 ];
 
-const CreateHappeningScreen = ({ navigation }) => {
+const CreateHappeningScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
-  const [title, setTitle] = useState('');
-  const [venue, setVenue] = useState('');
-  const [when, setWhen] = useState(null);
+  const prefill = route.params?.prefill ?? {};
+  const [title, setTitle] = useState(prefill.title ?? '');
+  const [venue, setVenue] = useState(prefill.venue ?? '');
+  const [when, setWhen] = useState(prefill.when ?? null);
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [linkPreview, setLinkPreview] = useState(null);

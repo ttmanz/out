@@ -60,6 +60,8 @@
     }
   },
   "home": {
+    "myStory": "My Story",
+    "myStoryDesc": "Share photos, videos & stories",
     "whatsHappening": "What's Happening",
     "whatsHappeningDesc": "Share your plans & itinerary",
     "whereToGo": "Where to Go",
@@ -156,7 +158,14 @@
   "venues": {
     "title": "Where to Go",
     "loading": "Finding venues near you...",
-    "membersHere": "members going here"
+    "membersHere": "members going here",
+    "catAll": "All",
+    "catEat": "Eating",
+    "catBars": "Bars",
+    "catClubs": "Clubs",
+    "catBeaches": "Beaches",
+    "catCoffee": "Coffee Shops",
+    "noCategoryVenues": "No venues found for this category"
   },
   "messages": {
     "title": "Messages",
@@ -242,12 +251,33 @@
     "activity": "Recent activity",
     "noPosts": "No posts yet"
   },
+  "stories": {
+    "title": "My Story",
+    "createPost": "Share Your Story",
+    "seeAll": "See All",
+    "onlyFriends": "Only Friends",
+    "labelText": "What's your story?",
+    "placeholderText": "Share something about your night out...",
+    "submitPost": "Post Story",
+    "noStories": "No stories yet — be the first to share!",
+    "noFriendStories": "No stories from friends yet.",
+    "errors": {
+      "contentRequired": "Please add some text or a photo/video",
+      "mediaFailed": "Media upload failed. Post without media?",
+      "postFailed": "Could not post your story. Please try again."
+    }
+  },
   "happenings": {
     "title": "What's Happening",
+    "myStory": "My Story",
     "today": "Today",
     "tomorrow": "Tomorrow",
     "thisWeekend": "This Weekend",
-    "nearby": "Nearby Activities",
+    "nearby": "Activities",
+    "theaters": "Theaters",
+    "movies": "Movies",
+    "concerts": "Live Concerts",
+    "kids": "Kids",
     "noHappenings": "Nothing planned yet — be the first to post!",
     "post": "Post a Plan",
     "labelTitle": "What's the plan?",

@@ -6,12 +6,11 @@ import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 
-const CATEGORIES = [
-  { key: 'myStory',     emoji: '📸', screen: ROUTES.STORY_FEED },
-  { key: 'today',       emoji: '🗓️' },
-  { key: 'tomorrow',    emoji: '☀️' },
-  { key: 'thisWeekend', emoji: '🎊' },
-  { key: 'nearby',      emoji: '🎭', screen: ROUTES.ACTIVITIES },
+const ACTIVITY_CATEGORIES = [
+  { key: 'theaters', emoji: '🎭' },
+  { key: 'movies',   emoji: '🎬' },
+  { key: 'concerts', emoji: '🎸' },
+  { key: 'kids',     emoji: '🎡' },
 ];
 
 const CategoryCard = ({ emoji, title, onPress }) => (
@@ -22,7 +21,7 @@ const CategoryCard = ({ emoji, title, onPress }) => (
   </TouchableOpacity>
 );
 
-const WhatHappeningScreen = ({ navigation }) => {
+const ActivitiesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
@@ -32,19 +31,19 @@ const WhatHappeningScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('happenings.title')}</Text>
+        <Text style={styles.headerTitle}>{t('happenings.nearby').toUpperCase()}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <AdBanner page="WhatHappening" />
         <ProfileBanner navigation={navigation} />
-        {CATEGORIES.map(({ key, emoji, screen }) => (
+        {ACTIVITY_CATEGORIES.map(({ key, emoji }) => (
           <CategoryCard
             key={key}
             emoji={emoji}
             title={t(`happenings.${key}`).toUpperCase()}
-            onPress={() => navigation.navigate(screen ?? ROUTES.HAPPENING_FEED, screen ? undefined : { filter: key })}
+            onPress={() => navigation.navigate(ROUTES.ACTIVITY_EVENTS, { filter: key })}
           />
         ))}
       </ScrollView>
@@ -84,4 +83,4 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
 });
 
-export default WhatHappeningScreen;
+export default ActivitiesScreen;

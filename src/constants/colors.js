@@ -32,6 +32,5 @@ export const COLORS = {
   white: '#FFFFFF',
   black: '#000000',
 
-  // Legacy compat
-  backgroundDark: '#181008',
+
 };

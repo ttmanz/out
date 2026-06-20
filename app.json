@@ -6,23 +6,83 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "ios": {
-      "supportsTablet": true
+    "userInterfaceStyle": "dark",
+    "primaryColor": "#c8800a",
+
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0d0a03"
     },
-    "android": {
-      "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.ttleisureland.findmee",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area.",
+        "NSCameraUsageDescription": "Find-Mee uses your camera to take profile photos and post images.",
+        "NSPhotoLibraryUsageDescription": "Find-Mee accesses your photo library to upload profile photos and post images.",
+        "NSPhotoLibraryAddUsageDescription": "Find-Mee saves photos to your library.",
+        "NSMicrophoneUsageDescription": "Find-Mee may access your microphone for video features."
+      },
+      "config": {
+        "googleMapsApiKey": ""
       }
     },
+
+    "android": {
+      "package": "com.ttleisureland.findmee",
+      "versionCode": 1,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "INTERNET"
+      ],
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#0d0a03"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": ""
+        }
+      }
+    },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
+
     "plugins": [
-      "expo-web-browser"
-    ]
+      "expo-web-browser",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Find-Mee accesses your photos to upload profile and post images.",
+          "cameraPermission": "Find-Mee uses your camera to take profile and post photos."
+        }
+      ]
+    ],
+
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    },
+
+    "owner": "ttmanz"
   }
 }

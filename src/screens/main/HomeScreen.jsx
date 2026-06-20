@@ -8,6 +8,7 @@ import { useUser } from '../../contexts/UserContext';
 import LanguagePicker from '../../components/common/LanguagePicker';
 
 const FEATURES = [
+  { emoji: '📸', titleKey: 'home.myStory',        descKey: 'home.myStoryDesc',        route: ROUTES.STORY_FEED,     watermark: '🌟' },
   { emoji: '🎉', titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, watermark: '🎆' },
   { emoji: '🗺️', titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️' },
   { emoji: '⚡', titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
