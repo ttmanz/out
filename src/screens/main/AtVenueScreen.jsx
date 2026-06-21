@@ -61,6 +61,7 @@ const AtVenueScreen = ({ navigation }) => {
     const nearby = (checkins ?? []).filter(
       (c) =>
         c.user_id !== myId &&
+        c.profiles?.visibility !== 'private' &&
         distanceKm(latitude, longitude, c.latitude, c.longitude) <= VENUE_RADIUS_KM
     );
 
@@ -135,9 +136,6 @@ const AtVenueScreen = ({ navigation }) => {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardName}>{selected.profiles?.full_name ?? '—'}</Text>
-                  {selected.profiles?.visibility === 'private' && (
-                    <Text style={styles.privateLabel}>🔒 {t('atVenue.private')}</Text>
-                  )}
                 </View>
               </View>
               <TouchableOpacity
@@ -220,7 +218,6 @@ const styles = StyleSheet.create({
   },
   cardAvatarText: { color: COLORS.black, fontWeight: '800', fontSize: 22 },
   cardName: { fontSize: 20, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
-  privateLabel: { fontSize: 12, color: COLORS.textMuted },
   profileBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 13, alignItems: 'center',

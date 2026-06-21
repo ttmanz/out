@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView,
+  ActivityIndicator, SafeAreaView, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { ROUTES } from '../../constants/routes';
 import { supabase } from '../../lib/supabase';
 import { getSession } from '../../lib/auth';
 import { getMemberHappenings } from '../../lib/happenings';
+import { sendFriendRequest } from '../../lib/friends';
 import { getOrCreateConversation } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
@@ -31,8 +32,10 @@ const MemberProfileScreen = ({ navigation, route }) => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [isFriend, setIsFriend] = useState(false);
+  const [friendStatus, setFriendStatus] = useState(null); // null | 'pending_out' | 'pending_in'
   const [loading, setLoading] = useState(true);
   const [messaging, setMessaging] = useState(false);
+  const [requesting, setRequesting] = useState(false);
 
   const load = useCallback(async () => {
     const { data: { session } } = await getSession();
@@ -40,7 +43,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
     const uid = session.user.id;
     setMyId(uid);
 
-    const [profileRes, postsRes, friendRes] = await Promise.all([
+    const [profileRes, postsRes, friendRes, pendingRes] = await Promise.all([
       supabase.from('profiles').select('id, full_name, visibility').eq('id', targetId).single(),
       getMemberHappenings(targetId),
       supabase
@@ -49,15 +52,37 @@ const MemberProfileScreen = ({ navigation, route }) => {
         .eq('status', 'accepted')
         .or(`and(requester_id.eq.${uid},addressee_id.eq.${targetId}),and(requester_id.eq.${targetId},addressee_id.eq.${uid})`)
         .maybeSingle(),
+      supabase
+        .from('friendships')
+        .select('id, requester_id')
+        .eq('status', 'pending')
+        .or(`and(requester_id.eq.${uid},addressee_id.eq.${targetId}),and(requester_id.eq.${targetId},addressee_id.eq.${uid})`)
+        .maybeSingle(),
     ]);
 
     if (!profileRes.error) setProfile(profileRes.data);
     if (!postsRes.error) setPosts(postsRes.data ?? []);
     setIsFriend(!!friendRes.data);
+    if (pendingRes.data) {
+      setFriendStatus(pendingRes.data.requester_id === uid ? 'pending_out' : 'pending_in');
+    } else {
+      setFriendStatus(null);
+    }
     setLoading(false);
   }, [targetId]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const handleAddFriend = async () => {
+    setRequesting(true);
+    const { error } = await sendFriendRequest(myId, targetId);
+    setRequesting(false);
+    if (error?.code === 'REQUESTS_CLOSED') {
+      Alert.alert(t('friends.requestsClosed'), t('friends.errors.requestsClosed'));
+    } else if (!error) {
+      setFriendStatus('pending_out');
+    }
+  };
 
   const handleMessage = async () => {
     setMessaging(true);
@@ -105,6 +130,24 @@ const MemberProfileScreen = ({ navigation, route }) => {
             {profile?.visibility === 'private' && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>🔒 Private</Text>
+              </View>
+            )}
+            {targetId !== myId && !isFriend && !friendStatus && (
+              <TouchableOpacity style={styles.addFriendBtn} onPress={handleAddFriend} disabled={requesting}>
+                {requesting
+                  ? <ActivityIndicator size="small" color={COLORS.black} />
+                  : <Text style={styles.addFriendBtnText}>➕ {t('friends.addFriend')}</Text>
+                }
+              </TouchableOpacity>
+            )}
+            {targetId !== myId && friendStatus === 'pending_out' && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingBadgeText}>✓ {t('friends.requestSent')}</Text>
+              </View>
+            )}
+            {targetId !== myId && friendStatus === 'pending_in' && (
+              <View style={styles.pendingBadge}>
+                <Text style={styles.pendingBadgeText}>⏳ Request received — check Friends tab</Text>
               </View>
             )}
             {isFriend && targetId !== myId && (
@@ -160,6 +203,22 @@ const styles = StyleSheet.create({
   profileName: { fontSize: 22, fontWeight: '800', color: COLORS.text, marginBottom: 6 },
   badge: { backgroundColor: '#f0f0f0', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 },
   badgeText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
+  addFriendBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    marginBottom: 12,
+    minWidth: 160, alignItems: 'center',
+  },
+  addFriendBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 14 },
+  pendingBadge: {
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+    borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8,
+    marginBottom: 12,
+  },
+  pendingBadgeText: { color: COLORS.primary, fontWeight: '600', fontSize: 13 },
   messageBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: 10,

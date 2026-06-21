@@ -32,11 +32,17 @@ const ExpiryBadge = ({ createdAt }) => {
 const StoryCard = ({ item, navigation }) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
-      <View style={styles.avatar}>
+      <TouchableOpacity
+        style={styles.avatar}
+        onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {
+          userId: item.user_id,
+          fullName: item.profiles?.full_name,
+        })}
+      >
         <Text style={styles.avatarText}>
           {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
         </Text>
-      </View>
+      </TouchableOpacity>
       <View style={{ flex: 1 }}>
         <TouchableOpacity
           onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {

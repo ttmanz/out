@@ -4,6 +4,7 @@ import {
   ActivityIndicator, Alert, ScrollView, TextInput, StatusBar,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
@@ -24,7 +25,9 @@ const CreateNightOutScreen = ({ navigation }) => {
   const [userId, setUserId] = useState(null);
   const [title, setTitle] = useState('');
   const [venue, setVenue] = useState('');
-  const [when, setWhen] = useState('');
+  const [plannedDate, setPlannedDate] = useState(null);
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerMode, setPickerMode] = useState('date');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [friends, setFriends] = useState([]);
@@ -45,6 +48,30 @@ const CreateNightOutScreen = ({ navigation }) => {
   const friendId = (item) =>
     item.requester_id === userId ? item.addressee_id : item.requester_id;
 
+  const formatDate = (date) =>
+    date.toLocaleString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit',
+    });
+
+  const onPickerChange = (event, selected) => {
+    if (Platform.OS === 'android') {
+      setShowPicker(false);
+      if (event.type === 'dismissed') return;
+      const date = selected ?? plannedDate ?? new Date();
+      if (pickerMode === 'date') {
+        setPlannedDate(date);
+        setPickerMode('time');
+        setShowPicker(true);
+      } else {
+        setPlannedDate(date);
+        setPickerMode('date');
+      }
+    } else {
+      setPlannedDate(selected ?? plannedDate);
+    }
+  };
+
   const toggleFriend = (fid) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -56,6 +83,10 @@ const CreateNightOutScreen = ({ navigation }) => {
   const handleCreate = async () => {
     if (!title.trim()) {
       Alert.alert(t('common.error'), t('nightOut.titleRequired'));
+      return;
+    }
+    if (!plannedDate) {
+      Alert.alert(t('common.error'), t('nightOut.whenRequired'));
       return;
     }
     setSaving(true);
@@ -74,7 +105,7 @@ const CreateNightOutScreen = ({ navigation }) => {
     const { data, error } = await createNightOut(userId, {
       title: title.trim(),
       venue: venue.trim(),
-      planned_at: when.trim(),
+      planned_at: plannedDate.toISOString(),
       description: description.trim(),
       photo_url,
     });
@@ -122,15 +153,32 @@ const CreateNightOutScreen = ({ navigation }) => {
           maxLength={100}
         />
 
-        <Text style={styles.label}>{t('nightOut.labelWhen')}</Text>
-        <TextInput
-          style={styles.input}
-          value={when}
-          onChangeText={setWhen}
-          placeholder={t('nightOut.placeholderWhen')}
-          placeholderTextColor={COLORS.textMuted}
-          maxLength={80}
-        />
+        <Text style={styles.label}>{t('nightOut.labelWhen')} *</Text>
+        <TouchableOpacity
+          style={[styles.input, styles.dateBtn, !plannedDate && styles.dateBtnEmpty]}
+          onPress={() => { setPickerMode('date'); setShowPicker(true); }}
+          activeOpacity={0.7}
+        >
+          <Text style={plannedDate ? styles.dateText : styles.datePlaceholder}>
+            {plannedDate ? formatDate(plannedDate) : t('nightOut.tapToSetDate')}
+          </Text>
+          <Text style={styles.dateIcon}>📅</Text>
+        </TouchableOpacity>
+
+        {showPicker && (
+          <DateTimePicker
+            value={plannedDate ?? new Date()}
+            mode={Platform.OS === 'ios' ? 'datetime' : pickerMode}
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            minimumDate={new Date()}
+            onChange={onPickerChange}
+          />
+        )}
+        {Platform.OS === 'ios' && showPicker && (
+          <TouchableOpacity style={styles.doneBtn} onPress={() => setShowPicker(false)}>
+            <Text style={styles.doneBtnText}>{t('common.done')}</Text>
+          </TouchableOpacity>
+        )}
 
         <Text style={styles.label}>{t('nightOut.labelDescription')}</Text>
         <TextInput
@@ -205,6 +253,17 @@ const styles = StyleSheet.create({
     color: COLORS.text, backgroundColor: COLORS.surface, marginBottom: 4,
   },
   inputMulti: { height: 80, textAlignVertical: 'top' },
+  dateBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dateBtnEmpty: { borderColor: COLORS.border },
+  dateText: { fontSize: 15, color: COLORS.text, flex: 1 },
+  datePlaceholder: { fontSize: 15, color: COLORS.textMuted, flex: 1 },
+  dateIcon: { fontSize: 18 },
+  doneBtn: {
+    alignSelf: 'flex-end', marginTop: 6, marginBottom: 4,
+    paddingHorizontal: 16, paddingVertical: 8,
+    backgroundColor: COLORS.primary, borderRadius: 8,
+  },
+  doneBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 13 },
   friendRow: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.surface, borderRadius: 12,

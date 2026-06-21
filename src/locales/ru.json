@@ -2,7 +2,8 @@
   "common": {
     "appName": "Find - Mee",
     "error": "Что-то пошло не так",
-    "or": "или"
+    "or": "или",
+    "done": "Готово"
   },
   "auth": {
     "login": "Войти",
@@ -191,11 +192,12 @@
     "empty": "Планов пока нет — создайте и пригласите друзей!",
     "labelTitle": "Название плана",
     "labelVenue": "Место (необязательно)",
-    "labelWhen": "Когда? (необязательно)",
+    "labelWhen": "Когда",
     "labelDescription": "Подробности (необязательно)",
     "placeholderTitle": "напр. Пятничная ночь",
     "placeholderVenue": "напр. Finos Bar, Лимасол",
-    "placeholderWhen": "напр. Пятница 18 июля, 21:00",
+    "tapToSetDate": "Нажмите, чтобы выбрать дату и время",
+    "whenRequired": "Пожалуйста, укажите дату и время",
     "placeholderDescription": "Дополнительные детали...",
     "inviteFriends": "Пригласить друзей",
     "submitCreate": "Создать план",

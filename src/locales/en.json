@@ -2,7 +2,8 @@
   "common": {
     "appName": "Find - Mee",
     "error": "Something went wrong",
-    "or": "or"
+    "or": "or",
+    "done": "Done"
   },
   "auth": {
     "login": "Log In",
@@ -189,11 +190,12 @@
     "empty": "No plans yet — create one and invite your friends!",
     "labelTitle": "Plan name",
     "labelVenue": "Venue (optional)",
-    "labelWhen": "When? (optional)",
+    "labelWhen": "When",
     "labelDescription": "Details (optional)",
     "placeholderTitle": "e.g. Friday Night Out",
     "placeholderVenue": "e.g. Finos Bar, Limassol",
-    "placeholderWhen": "e.g. Friday 18 July, 9pm",
+    "tapToSetDate": "Tap to set date & time",
+    "whenRequired": "Please set the date and time for your night out",
     "placeholderDescription": "Any extra details for your crew...",
     "inviteFriends": "Invite friends",
     "submitCreate": "Create Plan",

@@ -6,8 +6,11 @@ export const upsertCheckin = (userId, latitude, longitude) =>
     { onConflict: 'user_id' }
   );
 
-export const getRecentCheckins = () =>
-  supabase
+export const getRecentCheckins = () => {
+  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+  return supabase
     .from('member_checkins')
     .select('user_id, latitude, longitude, updated_at, profiles:user_id(full_name, visibility)')
+    .gte('updated_at', twoHoursAgo)
     .limit(200);
+};

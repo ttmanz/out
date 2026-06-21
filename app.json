@@ -8,13 +8,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "primaryColor": "#c8800a",
-
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#0d0a03"
     },
-
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ttleisureland.findmee",
@@ -31,7 +29,6 @@
         "googleMapsApiKey": ""
       }
     },
-
     "android": {
       "package": "com.ttleisureland.findmee",
       "versionCode": 1,
@@ -55,11 +52,9 @@
         }
       }
     },
-
     "web": {
       "favicon": "./assets/favicon.png"
     },
-
     "plugins": [
       "expo-web-browser",
       [
@@ -74,15 +69,14 @@
           "photosPermission": "Find-Mee accesses your photos to upload profile and post images.",
           "cameraPermission": "Find-Mee uses your camera to take profile and post photos."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
-
     "extra": {
       "eas": {
         "projectId": ""
       }
     },
-
     "owner": "ttmanz"
   }
 }

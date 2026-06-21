@@ -2,7 +2,8 @@
   "common": {
     "appName": "Find - Mee",
     "error": "Κάτι πήγε στραβά",
-    "or": "ή"
+    "or": "ή",
+    "done": "Τέλος"
   },
   "auth": {
     "login": "Σύνδεση",
@@ -191,11 +192,12 @@
     "empty": "Δεν υπάρχουν σχέδια — δημιουργήστε ένα και καλέστε φίλους!",
     "labelTitle": "Όνομα σχεδίου",
     "labelVenue": "Χώρος (προαιρετικό)",
-    "labelWhen": "Πότε; (προαιρετικό)",
+    "labelWhen": "Πότε",
     "labelDescription": "Λεπτομέρειες (προαιρετικό)",
     "placeholderTitle": "π.χ. Βραδιά Παρασκευής",
     "placeholderVenue": "π.χ. Finos Bar, Λεμεσός",
-    "placeholderWhen": "π.χ. Παρασκευή 18 Ιουλίου, 9μμ",
+    "tapToSetDate": "Πατήστε για ημερομηνία & ώρα",
+    "whenRequired": "Παρακαλώ ορίστε ημερομηνία και ώρα",
     "placeholderDescription": "Επιπλέον λεπτομέρειες...",
     "inviteFriends": "Πρόσκληση φίλων",
     "submitCreate": "Δημιουργία Σχεδίου",
