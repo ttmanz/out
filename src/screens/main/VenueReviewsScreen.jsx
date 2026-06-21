@@ -32,7 +32,6 @@ const VenueReviewsScreen = ({ navigation }) => {
   const [userId, setUserId] = useState(null);
   const [composing, setComposing] = useState(false);
   const [venueName, setVenueName] = useState('');
-  const [body, setBody] = useState('');
   const [rating, setRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
@@ -50,14 +49,12 @@ const VenueReviewsScreen = ({ navigation }) => {
 
   const handleSubmit = async () => {
     if (!venueName.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorVenue'));
-    if (!body.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorBody'));
     if (rating === 0) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorRating'));
     setSubmitting(true);
-    const { error } = await createVenueReview(userId, venueName, body, rating);
+    const { error } = await createVenueReview(userId, venueName, rating);
     setSubmitting(false);
     if (error) return Alert.alert(t('common.error'), error.message);
     setVenueName('');
-    setBody('');
     setRating(0);
     setComposing(false);
     load();
@@ -83,7 +80,7 @@ const VenueReviewsScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('venueReviews.title')}</Text>
         <TouchableOpacity onPress={() => setComposing((v) => !v)} style={styles.writeBtn}>
-          <Text style={styles.writeBtnText}>{composing ? '✕' : '+ ' + t('venueReviews.write')}</Text>
+          <Text style={styles.writeBtnText}>{composing ? '✕' : '+ ' + t('venueReviews.rate')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -96,18 +93,8 @@ const VenueReviewsScreen = ({ navigation }) => {
             value={venueName}
             onChangeText={setVenueName}
           />
-          <TextInput
-            style={[styles.input, styles.bodyInput]}
-            placeholder={t('venueReviews.thoughtPlaceholder')}
-            placeholderTextColor={COLORS.textMuted}
-            value={body}
-            onChangeText={(v) => setBody(v.slice(0, 200))}
-            multiline
-            numberOfLines={3}
-          />
           <View style={styles.composeFooter}>
             <StarRow value={rating} onChange={setRating} />
-            <Text style={styles.charCount}>{body.length}/200</Text>
             <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={submitting}>
               {submitting
                 ? <ActivityIndicator color={COLORS.black} size="small" />
@@ -145,7 +132,6 @@ const VenueReviewsScreen = ({ navigation }) => {
                 <Text style={styles.venueName}>{item.venue_name}</Text>
                 <Text style={styles.stars}>{STAR_DISPLAY[item.rating] ?? ''}</Text>
               </View>
-              <Text style={styles.cardBody}>{item.body}</Text>
               <View style={styles.cardFooter}>
                 <Text style={styles.author}>{item.author?.full_name ?? t('notifications.someone')}</Text>
                 <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
@@ -190,11 +176,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 10, fontSize: 14,
     color: COLORS.text, backgroundColor: COLORS.background, marginBottom: 10,
   },
-  bodyInput: { height: 80, textAlignVertical: 'top' },
-  composeFooter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  composeFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   starRow: { flexDirection: 'row', gap: 4 },
   star: { fontSize: 24, color: COLORS.primary },
-  charCount: { flex: 1, color: COLORS.textMuted, fontSize: 11, textAlign: 'right' },
   submitBtn: {
     backgroundColor: COLORS.primary, borderRadius: 10,
     paddingHorizontal: 16, paddingVertical: 8,
@@ -213,7 +197,6 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   venueName: { fontSize: 15, fontWeight: '700', color: COLORS.primary, flex: 1, marginRight: 8 },
   stars: { fontSize: 13, color: COLORS.primary },
-  cardBody: { fontSize: 14, color: COLORS.text, lineHeight: 20, marginBottom: 8 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   author: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600', flex: 1 },
   time: { fontSize: 11, color: COLORS.textMuted },

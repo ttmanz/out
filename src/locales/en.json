@@ -236,17 +236,15 @@
   },
   "venueReviews": {
     "title": "Venue Reviews",
-    "write": "Write",
+    "rate": "Rate",
     "venueNamePlaceholder": "Venue name...",
-    "thoughtPlaceholder": "Share a quick thought...",
     "submit": "Post",
-    "empty": "No reviews yet — be the first!",
-    "deleteConfirm": "Delete this review?",
+    "empty": "No ratings yet — be the first!",
+    "deleteConfirm": "Delete this rating?",
     "cancel": "Cancel",
     "delete": "Delete",
     "errorTitle": "Missing info",
     "errorVenue": "Please enter a venue name.",
-    "errorBody": "Please write a short thought.",
     "errorRating": "Please pick a star rating."
   },
   "profile": {
