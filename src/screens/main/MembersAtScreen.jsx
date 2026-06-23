@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  StatusBar, FlatList, ActivityIndicator,
+  FlatList, ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -9,6 +9,7 @@ import { getHappenings } from '../../lib/happenings';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const MembersAtScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -16,7 +17,6 @@ const MembersAtScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [results, setResults] = useState([]);
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const handleSearch = async () => {
     const name = query.trim();
@@ -38,13 +38,7 @@ const MembersAtScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('venueHub.membersAt')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('venueHub.membersAt')} onBack={() => navigation.goBack()} />
 
       <View style={styles.searchRow}>
         <TextInput
@@ -109,14 +103,6 @@ const MembersAtScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   searchRow: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 10 },
   input: {
     flex: 1, borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 12,

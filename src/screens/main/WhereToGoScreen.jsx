@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -12,6 +12,7 @@ import { fetchNearbyVenues, getPinColor } from '../../lib/venues';
 import { getHappenings } from '../../lib/happenings';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const DEFAULT_REGION = {
   latitude: 34.9,
@@ -22,7 +23,6 @@ const DEFAULT_REGION = {
 
 const WhereToGoScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [venues, setVenues] = useState([]);
   const [happenings, setHappenings] = useState([]);
@@ -65,13 +65,7 @@ const WhereToGoScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('venues.title')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('venues.title')} onBack={() => navigation.goBack()} />
 
       <AdBanner page="WhereToGo" />
       <ProfileBanner navigation={navigation} />
@@ -122,18 +116,6 @@ const WhereToGoScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { color: COLORS.textMuted, fontSize: 14 },
   map: { flex: 1 },

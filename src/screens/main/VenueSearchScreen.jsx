@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  StatusBar, Linking, Alert, ActivityIndicator,
+  Linking, Alert, ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -9,12 +9,12 @@ import { getSession } from '../../lib/auth';
 import { logVenueSearch } from '../../lib/venues';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const VenueSearchScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const handleSearch = async () => {
     const name = query.trim();
@@ -34,13 +34,7 @@ const VenueSearchScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('venueHub.search')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('venueHub.search')} onBack={() => navigation.goBack()} />
 
       <AdBanner page="VenueSearch" />
       <ProfileBanner navigation={navigation} />
@@ -69,14 +63,6 @@ const VenueSearchScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   body: { padding: 24, paddingTop: 32 },
   label: { fontSize: 13, fontWeight: '700', color: COLORS.primary, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
   input: {

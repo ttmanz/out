@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, StatusBar, RefreshControl,
+  ActivityIndicator, RefreshControl,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import { distanceKm } from '../../utils/geo';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
+import BackHeader from '../../components/common/BackHeader';
 
 const HappeningCard = ({ item, distKm, navigation }) => (
   <View style={styles.card}>
@@ -44,7 +45,6 @@ const HappeningCard = ({ item, distKm, navigation }) => (
 const HappeningFeedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const filter = route.params?.filter ?? 'nearby';
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const [happenings, setHappenings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,15 +101,7 @@ const HappeningFeedScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {t(`happenings.${filter}`).toUpperCase()}
-        </Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t(`happenings.${filter}`).toUpperCase()} onBack={() => navigation.goBack()} />
 
       <FlatList
         data={filtered}
@@ -145,18 +137,6 @@ const HappeningFeedScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   list: { padding: 16, paddingBottom: 100 },
   empty: {
     textAlign: 'center',

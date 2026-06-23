@@ -40,3 +40,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# editor / local tooling
+.claude/launch.json
+
+# supabase local temp
+supabase/.temp/

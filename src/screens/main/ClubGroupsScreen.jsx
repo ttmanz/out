@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, StatusBar, RefreshControl, Image,
+  ActivityIndicator, RefreshControl, Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
@@ -11,6 +11,7 @@ import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const ClubCard = ({ club, onPress }) => (
   <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
@@ -27,7 +28,6 @@ const ClubCard = ({ club, onPress }) => (
 );
 
 const ClubGroupsScreen = ({ navigation }) => {
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [userId, setUserId] = useState(null);
   const [allClubs, setAllClubs] = useState([]);
   const [myClubIds, setMyClubIds] = useState(new Set());
@@ -68,13 +68,7 @@ const ClubGroupsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Club Groups</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title="Club Groups" onBack={() => navigation.goBack()} />
 
       <View style={styles.tabs}>
         <TouchableOpacity
@@ -130,14 +124,6 @@ const ClubGroupsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   tabs: {
     flexDirection: 'row',
     borderBottomWidth: 1, borderBottomColor: COLORS.border,

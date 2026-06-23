@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const OPTIONS = [
   { emoji: '🔍', titleKey: 'venueHub.search',     descKey: 'venueHub.searchDesc',     route: ROUTES.VENUE_SEARCH,    watermark: '🗺️' },
@@ -16,17 +17,10 @@ const OPTIONS = [
 
 const VenueHubScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('home.venue')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('home.venue')} onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <AdBanner page="VenueHub" />
@@ -60,14 +54,6 @@ const VenueHubScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 16, paddingBottom: 40 },
   card: {
     flexDirection: 'row', alignItems: 'center',

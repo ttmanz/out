@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
-  ActivityIndicator, StatusBar, RefreshControl, Image,
+  ActivityIndicator, RefreshControl, Image,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { ROUTES } from '../../constants/routes';
 import { getActivityEvents, deriveWhen } from '../../lib/activityEvents';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const formatEventDate = (iso) => {
   if (!iso) return null;
@@ -43,7 +44,6 @@ const EventCard = ({ event, onGoing }) => (
 const ActivityEventsScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { filter } = route.params;
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,13 +79,7 @@ const ActivityEventsScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t(`happenings.${filter}`).toUpperCase()}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t(`happenings.${filter}`).toUpperCase()} onBack={() => navigation.goBack()} />
 
       <FlatList
         data={events}
@@ -114,14 +108,6 @@ const ActivityEventsScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   list: { padding: 16, paddingBottom: 40 },
   empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
   card: {

@@ -1,10 +1,11 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const ACTIVITY_CATEGORIES = [
   { key: 'theaters', emoji: '🎭' },
@@ -23,17 +24,10 @@ const CategoryCard = ({ emoji, title, onPress }) => (
 
 const ActivitiesScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('happenings.nearby').toUpperCase()}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('happenings.nearby').toUpperCase()} onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <AdBanner page="WhatHappening" />
@@ -53,18 +47,6 @@ const ActivitiesScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 20, paddingTop: 24 },
   card: {
     flexDirection: 'row',

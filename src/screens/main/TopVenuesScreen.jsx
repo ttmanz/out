@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, StatusBar, Linking } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Linking } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -7,6 +7,7 @@ import { getTopVenues, matchesCategory } from '../../lib/venues';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import CategoryFilter from '../../components/common/CategoryFilter';
+import BackHeader from '../../components/common/BackHeader';
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -15,7 +16,6 @@ const TopVenuesScreen = ({ navigation }) => {
   const [venues, setVenues] = useState([]);
   const [category, setCategory] = useState('all');
   const [loading, setLoading] = useState(true);
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -43,13 +43,7 @@ const TopVenuesScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('venueHub.topVenues')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('venueHub.topVenues')} onBack={() => navigation.goBack()} />
 
       <FlatList
         data={visibleVenues}
@@ -84,14 +78,6 @@ const TopVenuesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   list: { padding: 16, paddingBottom: 40 },
   empty: { color: COLORS.textMuted, fontSize: 14, textAlign: 'center', marginTop: 60 },
   card: {

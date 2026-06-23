@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, StatusBar, RefreshControl,
+  ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -11,6 +11,7 @@ import { getStories, getFriendStories, STORY_EXPIRY_DAYS } from '../../lib/stori
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const daysLeft = (createdAt) => {
   const ms = new Date(createdAt).getTime() + STORY_EXPIRY_DAYS * 24 * 60 * 60 * 1000 - Date.now();
@@ -71,7 +72,6 @@ const StoryCard = ({ item, navigation }) => (
 
 const StoryFeedScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [mode, setMode] = useState('all');
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -110,13 +110,7 @@ const StoryFeedScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('stories.title')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('stories.title')} onBack={() => navigation.goBack()} />
 
       <View style={styles.toggleBar}>
         <TouchableOpacity
@@ -166,14 +160,6 @@ const StoryFeedScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   toggleBar: {
     flexDirection: 'row', margin: 16, marginBottom: 4,
     backgroundColor: COLORS.surface, borderRadius: 12,
