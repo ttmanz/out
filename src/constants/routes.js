@@ -39,4 +39,6 @@ export const ROUTES = {
   CREATE_STORY: 'CreateStory',
   SUBSCRIPTION: 'Subscription',
   ADMIN_SUBSCRIPTION_PLANS: 'AdminSubscriptionPlans',
+  MARKET: 'Market',
+  CREATE_MARKET_LISTING: 'CreateMarketListing',
 };

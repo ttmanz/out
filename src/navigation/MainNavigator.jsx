@@ -48,6 +48,8 @@ import ActivitiesScreen from '../screens/main/ActivitiesScreen';
 import ActivityEventsScreen from '../screens/main/ActivityEventsScreen';
 import StoryFeedScreen from '../screens/main/StoryFeedScreen';
 import CreateStoryScreen from '../screens/main/CreateStoryScreen';
+import MarketScreen from '../screens/main/MarketScreen';
+import CreateMarketListingScreen from '../screens/main/CreateMarketListingScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -87,7 +89,9 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.ACTIVITY_EVENTS}  component={ActivityEventsScreen} />
     <HomeStack.Screen name={ROUTES.STORY_FEED}        component={StoryFeedScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_STORY}      component={CreateStoryScreen} />
-    <HomeStack.Screen name={ROUTES.SUBSCRIPTION}      component={SubscriptionScreen} />
+    <HomeStack.Screen name={ROUTES.SUBSCRIPTION}            component={SubscriptionScreen} />
+    <HomeStack.Screen name={ROUTES.MARKET}                  component={MarketScreen} />
+    <HomeStack.Screen name={ROUTES.CREATE_MARKET_LISTING}   component={CreateMarketListingScreen} />
   </HomeStack.Navigator>
 );
 

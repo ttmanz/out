@@ -99,6 +99,8 @@
     "clubGroupsDesc": "Join & create interest groups",
     "venue": "Venues",
     "venueDesc": "Explore venues, trends & reviews",
+    "market": "The Market",
+    "marketDesc": "Buy & sell with members",
     "tagline": "Explore. Connect. Experience."
   },
   "atVenue": {
@@ -286,6 +288,25 @@
       "mediaFailed": "Media upload failed. Post without media?",
       "postFailed": "Could not post your story. Please try again."
     }
+  },
+  "market": {
+    "title": "The Market",
+    "subtitle": "Buy & sell with members. Payments arranged directly or through our payment solution.",
+    "post": "Sell",
+    "createTitle": "List an Item",
+    "labelPhoto": "Photo (optional)",
+    "labelDescription": "Description & Details",
+    "placeholderDescription": "Describe your item — condition, price, pickup/delivery, contact info...",
+    "descriptionRequired": "Please add a description for your item.",
+    "photoFailed": "Photo upload failed. Post without photo?",
+    "createFailed": "Could not post your listing. Please try again.",
+    "paymentNote": "✦  Payments can be arranged privately or through the in-app payment solution when available.",
+    "submit": "Post Listing",
+    "empty": "No listings yet — be the first to sell something!",
+    "unknownSeller": "Member",
+    "deleteTitle": "Remove listing?",
+    "deleteDesc": "This will permanently remove your listing.",
+    "delete": "Remove"
   },
   "happenings": {
     "title": "What's Happening",
