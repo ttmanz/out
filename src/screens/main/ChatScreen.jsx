@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
+import { supabase } from '../../lib/supabase';
 import { getMessages, sendMessage, markMessagesRead } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -30,19 +31,41 @@ const ChatScreen = ({ navigation, route }) => {
     if (uid) markMessagesRead(conversationId, uid);
   }, [conversationId]);
 
+  const appendMessage = useCallback((row, uid) => {
+    setMessages((prev) => (prev.some((m) => m.id === row.id) ? prev : [...prev, row]));
+    if (uid && row.sender_id !== uid) markMessagesRead(conversationId, uid);
+  }, [conversationId]);
+
   useFocusEffect(useCallback(() => {
     let uid;
+    let channel;
     getSession().then(({ data: { session } }) => {
       if (!session) return;
       uid = session.user.id;
       setMyId(uid);
+      // Authorise the realtime socket so RLS lets this user receive their rows
+      supabase.realtime.setAuth(session.access_token);
       loadMessages(uid);
-      intervalRef.current = setInterval(() => loadMessages(uid), 3000);
+
+      // Realtime: new messages in this conversation arrive instantly
+      channel = supabase
+        .channel(`chat:${conversationId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `conversation_id=eq.${conversationId}`,
+        }, (payload) => appendMessage(payload.new, uid))
+        .subscribe();
+
+      // Slow fallback poll — safety net if a realtime event is ever missed
+      intervalRef.current = setInterval(() => loadMessages(uid), 20000);
     });
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (channel) supabase.removeChannel(channel);
     };
-  }, [loadMessages]));
+  }, [loadMessages, appendMessage, conversationId]));
 
   useEffect(() => {
     if (messages.length > 0) {
