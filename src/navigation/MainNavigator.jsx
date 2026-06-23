@@ -139,6 +139,8 @@ const MainNavigator = () => {
     getSession().then(({ data: { session } }) => {
       if (!session) return;
       const uid = session.user.id;
+      // Authorise the realtime socket so RLS delivers this user's notifications
+      supabase.realtime.setAuth(session.access_token);
       getUnreadNotificationCount(uid).then(({ count }) => setNotifCount(count ?? 0));
       channel = supabase
         .channel('notif_badge')
