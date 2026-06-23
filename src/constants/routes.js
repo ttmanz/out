@@ -37,4 +37,6 @@ export const ROUTES = {
   ACTIVITY_EVENTS: 'ActivityEvents',
   STORY_FEED: 'StoryFeed',
   CREATE_STORY: 'CreateStory',
+  SUBSCRIPTION: 'Subscription',
+  ADMIN_SUBSCRIPTION_PLANS: 'AdminSubscriptionPlans',
 };

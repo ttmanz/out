@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 import { getSession } from '../lib/auth';
 import { getUnreadNotificationCount } from '../lib/notifications';
 import { useUser } from '../contexts/UserContext';
+import { subscriptionStatus } from '../lib/subscription';
 
 import HomeScreen from '../screens/main/HomeScreen';
 import WhatHappeningScreen from '../screens/main/WhatHappeningScreen';
@@ -41,6 +42,8 @@ import MessagesScreen from '../screens/main/MessagesScreen';
 import ChatScreen from '../screens/main/ChatScreen';
 import NotificationsScreen from '../screens/main/NotificationsScreen';
 import AdminScreen from '../screens/main/AdminScreen';
+import AdminSubscriptionPlansScreen from '../screens/main/AdminSubscriptionPlansScreen';
+import SubscriptionScreen from '../screens/main/SubscriptionScreen';
 import CompleteProfileScreen from '../screens/main/CompleteProfileScreen';
 import ActivitiesScreen from '../screens/main/ActivitiesScreen';
 import ActivityEventsScreen from '../screens/main/ActivityEventsScreen';
@@ -85,6 +88,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.ACTIVITY_EVENTS}  component={ActivityEventsScreen} />
     <HomeStack.Screen name={ROUTES.STORY_FEED}        component={StoryFeedScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_STORY}      component={CreateStoryScreen} />
+    <HomeStack.Screen name={ROUTES.SUBSCRIPTION}      component={SubscriptionScreen} />
   </HomeStack.Navigator>
 );
 
@@ -114,6 +118,7 @@ const NotificationsStackNavigator = () => (
 const AdminStackNavigator = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
     <AdminStack.Screen name="Admin" component={AdminScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
   </AdminStack.Navigator>
 );
 
@@ -124,6 +129,7 @@ const MainNavigator = () => {
 
   const isRestricted = profile?.status === 'restricted';
   const isAdmin = profile?.is_admin === true;
+  const { hasAccess } = subscriptionStatus(profile);
 
   useEffect(() => {
     if (isRestricted) return;
@@ -144,6 +150,10 @@ const MainNavigator = () => {
     });
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [isRestricted]);
+
+  if (profile && !hasAccess) {
+    return <SubscriptionScreen standalone />;
+  }
 
   return (
     <Tab.Navigator

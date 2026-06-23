@@ -7,6 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import { getAllMembers, setMemberStatus } from '../../lib/admin';
 import { useUser } from '../../contexts/UserContext';
+import { ROUTES } from '../../constants/routes';
 
 const STATUS_CYCLE = { active: 'restricted', restricted: 'disabled', disabled: 'active' };
 const STATUS_COLOR = {
@@ -20,7 +21,7 @@ const STATUS_LABEL = {
   disabled: 'Disabled',
 };
 
-const AdminScreen = () => {
+const AdminScreen = ({ navigation }) => {
   const { profile } = useUser();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -72,8 +73,14 @@ const AdminScreen = () => {
     <View style={styles.safe}>
       <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <Text style={styles.title}>Members</Text>
-        <Text style={styles.count}>{members.length} total</Text>
+        <TouchableOpacity
+          style={styles.plansBtn}
+          onPress={() => navigation.navigate(ROUTES.ADMIN_SUBSCRIPTION_PLANS)}
+        >
+          <Text style={styles.plansBtnText}>⭐ Plans</Text>
+        </TouchableOpacity>
       </View>
+      <Text style={styles.count}>{members.length} members</Text>
 
       <FlatList
         data={members}
@@ -126,7 +133,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
-  count: { fontSize: 13, color: COLORS.textMuted },
+  count: { fontSize: 13, color: COLORS.textMuted, paddingHorizontal: 20, paddingVertical: 8 },
+  plansBtn: {
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  plansBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
   list: { paddingBottom: 40 },
   row: {
     flexDirection: 'row',

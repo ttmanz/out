@@ -110,6 +110,19 @@ const ProfileSettingsScreen = ({ navigation }) => {
           <Text style={styles.editProfileChevron}>›</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.editProfileBtn}
+          onPress={() => navigation.navigate(ROUTES.SUBSCRIPTION)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileEmoji}>⭐</Text>
+          <View style={styles.editProfileText}>
+            <Text style={styles.editProfileLabel}>{t('subscription.title')}</Text>
+            <Text style={styles.editProfileDesc}>{t('subscription.manageDesc')}</Text>
+          </View>
+          <Text style={styles.editProfileChevron}>›</Text>
+        </TouchableOpacity>
+
         <Text style={styles.sectionLabel}>{t('profileSettings.whoCanFind')}</Text>
 
         {VISIBILITY_OPTIONS.map(({ key, emoji, labelKey, descKey }) => {

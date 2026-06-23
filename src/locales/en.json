@@ -3,7 +3,25 @@
     "appName": "Find - Mee",
     "error": "Something went wrong",
     "or": "or",
-    "done": "Done"
+    "done": "Done",
+    "cancel": "Cancel"
+  },
+  "subscription": {
+    "title": "My Subscription",
+    "manageDesc": "View plan, trial status & billing",
+    "choosePlan": "Choose a plan",
+    "subscribe": "Subscribe",
+    "confirm": "Confirm",
+    "confirmTitle": "Subscribe",
+    "confirmBody": "Subscribe to {{plan}} for {{price}}?",
+    "currentPlan": "Current Plan",
+    "trialActive": "Free Trial Active",
+    "trialDaysLeft": "{{days}} day(s) remaining in your free trial",
+    "activeTitle": "Subscription Active",
+    "activeDaysLeft": "{{days}} day(s) until renewal",
+    "expiredTitle": "Subscription Expired",
+    "expiredSub": "Choose a plan below to continue enjoying full access.",
+    "footerNote": "Subscriptions are managed manually. Contact support to cancel or for billing questions."
   },
   "auth": {
     "login": "Log In",
