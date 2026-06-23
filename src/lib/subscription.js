@@ -20,6 +20,7 @@ export const activateSubscription = (userId, planId, durationMonths) => {
 };
 
 export const subscriptionStatus = (profile) => {
+  if (profile?.is_staff) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: 0, planId: 'staff' };
   const plan = profile?.subscription_plan;
   const expires = profile?.subscription_expires_at;
   if (!plan || !expires) return { hasAccess: false, isOnTrial: false, isActive: false, daysLeft: 0, planId: null };

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
-import { getAllMembers, setMemberStatus } from '../../lib/admin';
+import { getAllMembers, setMemberStatus, setStaffStatus } from '../../lib/admin';
 import { useUser } from '../../contexts/UserContext';
 import { ROUTES } from '../../constants/routes';
 
@@ -26,6 +26,7 @@ const AdminScreen = ({ navigation }) => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
+  const [staffUpdating, setStaffUpdating] = useState(null);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async () => {
@@ -36,6 +37,26 @@ const AdminScreen = ({ navigation }) => {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const handleStaffToggle = async (member) => {
+    const next = !member.is_staff;
+    Alert.alert(
+      next ? 'Grant Staff Access' : 'Remove Staff Access',
+      `${next ? 'Give' : 'Remove'} free subscription for ${member.full_name ?? 'this member'}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            setStaffUpdating(member.id);
+            await setStaffStatus(member.id, next);
+            setStaffUpdating(null);
+            load();
+          },
+        },
+      ]
+    );
+  };
 
   const handleStatusPress = (member) => {
     if (member.id === profile?.id) {
@@ -89,6 +110,7 @@ const AdminScreen = ({ navigation }) => {
         renderItem={({ item }) => {
           const status = item.status ?? 'active';
           const isUpdating = updating === item.id;
+          const isStaffUpdating = staffUpdating === item.id;
           return (
             <View style={styles.row}>
               <View style={styles.avatar}>
@@ -100,6 +122,18 @@ const AdminScreen = ({ navigation }) => {
                 <Text style={styles.name}>{item.full_name ?? '—'}</Text>
                 {item.is_admin && <Text style={styles.adminBadge}>Admin</Text>}
               </View>
+              <TouchableOpacity
+                style={[styles.staffChip, item.is_staff && styles.staffChipActive]}
+                onPress={() => handleStaffToggle(item)}
+                disabled={isStaffUpdating}
+              >
+                {isStaffUpdating
+                  ? <ActivityIndicator size="small" color={item.is_staff ? COLORS.black : COLORS.textMuted} />
+                  : <Text style={[styles.staffChipText, item.is_staff && styles.staffChipTextActive]}>
+                      {item.is_staff ? '✓ Staff' : 'Staff'}
+                    </Text>
+                }
+              </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.statusBtn, { borderColor: STATUS_COLOR[status] }]}
                 onPress={() => handleStatusPress(item)}
@@ -160,6 +194,22 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   name: { fontSize: 15, fontWeight: '600', color: COLORS.text },
   adminBadge: { fontSize: 10, color: COLORS.primary, fontWeight: '700', marginTop: 2 },
+  staffChip: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginRight: 8,
+    minWidth: 58,
+    alignItems: 'center',
+  },
+  staffChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  staffChipText: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted },
+  staffChipTextActive: { color: COLORS.black },
   statusBtn: {
     borderWidth: 1,
     borderRadius: 20,
