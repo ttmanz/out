@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert, ScrollView, StatusBar,
+  ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -11,6 +11,7 @@ import { getProfile, updateProfileSettings } from '../../lib/profile';
 import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend } from '../../lib/friends';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const VISIBILITY_OPTIONS = [
   { key: 'everyone',      emoji: '🌍', labelKey: 'profileSettings.everyone',     descKey: 'profileSettings.everyoneDesc' },
@@ -29,8 +30,6 @@ const ProfileSettingsScreen = ({ navigation }) => {
   const [friends, setFriends] = useState([]);
   const [closeFriendIds, setCloseFriendIds] = useState(new Set());
   const [togglingId, setTogglingId] = useState(null);
-
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
@@ -85,13 +84,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('profileSettings.title')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('profileSettings.title')} onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <AdBanner page="ProfileSettings" />
@@ -226,18 +219,6 @@ const ProfileSettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 20, paddingBottom: 48 },
   sectionLabel: {
     fontSize: 13, fontWeight: '700', color: COLORS.primary,

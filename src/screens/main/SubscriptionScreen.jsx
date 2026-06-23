@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert, ScrollView, StatusBar, Platform,
+  ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getSubscriptionPlans, activateSubscription, subscriptionStatus } from '../../lib/subscription';
 import { useUser } from '../../contexts/UserContext';
+import BackHeader from '../../components/common/BackHeader';
 
 const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const { t } = useTranslation();
@@ -16,7 +17,6 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [subscribing, setSubscribing] = useState(null);
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
   const status = subscriptionStatus(profile);
 
@@ -87,16 +87,10 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        {!standalone && navigation && (
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-        )}
-        {standalone && <View style={{ width: 40 }} />}
-        <Text style={styles.headerTitle}>{t('subscription.title')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader
+        title={t('subscription.title')}
+        onBack={!standalone && navigation ? () => navigation.goBack() : undefined}
+      />
 
       <ScrollView contentContainerStyle={styles.scroll}>
         {statusBanner()}
@@ -151,14 +145,6 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 20, paddingBottom: 60 },
   trialBanner: {
     backgroundColor: 'rgba(200,128,10,0.12)',

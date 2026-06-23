@@ -1,17 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
-  ActivityIndicator, Alert, StatusBar, RefreshControl,
+  ActivityIndicator, Alert, RefreshControl,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import { getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import BackHeader from '../../components/common/BackHeader';
 
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const [userId, setUserId] = useState(null);
   const [club, setClub] = useState(null);
@@ -94,13 +94,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{club.name}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={club.name} onBack={() => navigation.goBack()} />
 
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -198,14 +192,6 @@ const ClubDetailScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
   scroll: { paddingBottom: 48 },
   heroPhoto: { width: '100%', height: 200 },
   heroPlaceholder: {

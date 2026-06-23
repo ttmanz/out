@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, StatusBar, Platform,
+  ActivityIndicator,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -12,6 +12,7 @@ import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { upsertCheckin, getRecentCheckins } from '../../lib/checkins';
 import { distanceKm } from '../../utils/geo';
+import BackHeader from '../../components/common/BackHeader';
 
 const VENUE_RADIUS_KM = 0.3;
 
@@ -25,7 +26,6 @@ const MemberPin = ({ initial }) => (
 
 const AtVenueScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
   const [myLocation, setMyLocation] = useState(null);
   const [nearbyMembers, setNearbyMembers] = useState([]);
@@ -78,15 +78,15 @@ const AtVenueScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('home.atVenue')}</Text>
-        <TouchableOpacity onPress={load} style={styles.refreshBtn}>
-          <Text style={styles.refreshText}>↻</Text>
-        </TouchableOpacity>
-      </View>
+      <BackHeader
+        title={t('home.atVenue')}
+        onBack={() => navigation.goBack()}
+        right={(
+          <TouchableOpacity onPress={load} style={styles.refreshBtn}>
+            <Text style={styles.refreshText}>↻</Text>
+          </TouchableOpacity>
+        )}
+      />
 
       {loading ? (
         <View style={styles.center}>
@@ -160,14 +160,6 @@ const AtVenueScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
   refreshBtn: { width: 40, alignItems: 'flex-end' },
   refreshText: { fontSize: 22, color: COLORS.primary },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },

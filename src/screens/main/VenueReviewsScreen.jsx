@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
-  ActivityIndicator, Alert, StatusBar, Platform, KeyboardAvoidingView,
+  ActivityIndicator, Alert, Platform, KeyboardAvoidingView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const STARS = [1, 2, 3, 4, 5];
 const STAR_DISPLAY = ['', '★☆☆☆☆', '★★☆☆☆', '★★★☆☆', '★★★★☆', '★★★★★'];
@@ -73,19 +74,17 @@ const VenueReviewsScreen = ({ navigation }) => {
     ]);
   };
 
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
-
   return (
     <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('venueReviews.title')}</Text>
-        <TouchableOpacity onPress={() => setComposing((v) => !v)} style={styles.writeBtn}>
-          <Text style={styles.writeBtnText}>{composing ? '✕' : '+ ' + t('venueReviews.rate')}</Text>
-        </TouchableOpacity>
-      </View>
+      <BackHeader
+        title={t('venueReviews.title')}
+        onBack={() => navigation.goBack()}
+        right={(
+          <TouchableOpacity onPress={() => setComposing((v) => !v)} style={styles.writeBtn}>
+            <Text style={styles.writeBtnText}>{composing ? '✕' : '+ ' + t('venueReviews.rate')}</Text>
+          </TouchableOpacity>
+        )}
+      />
 
       {composing && (
         <View style={styles.composeCard}>
@@ -155,14 +154,6 @@ const VenueReviewsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.primary, textAlign: 'center' },
   writeBtn: {
     backgroundColor: 'rgba(200,128,10,0.12)',
     borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6,

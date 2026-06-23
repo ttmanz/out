@@ -1,18 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ActivityIndicator, Alert, ScrollView, StatusBar, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import { getSubscriptionPlans, updateSubscriptionPlan } from '../../lib/subscription';
+import BackHeader from '../../components/common/BackHeader';
 
 const AdminSubscriptionPlansScreen = ({ navigation }) => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [drafts, setDrafts] = useState({});
   const [saving, setSaving] = useState(null);
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) : 44;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -51,13 +51,7 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Subscription Plans</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title="Subscription Plans" onBack={() => navigation.goBack()} />
 
       {loading ? (
         <View style={styles.center}>
@@ -131,14 +125,6 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 20, paddingBottom: 48 },
   card: {
     backgroundColor: COLORS.surface, borderRadius: 16,
