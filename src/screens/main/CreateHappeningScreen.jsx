@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, StatusBar,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
 import * as Location from 'expo-location';
 import { useTranslation } from 'react-i18next';
@@ -9,6 +9,7 @@ import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
+import BackHeader from '../../components/common/BackHeader';
 import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -24,7 +25,6 @@ const WHEN_OPTIONS = [
 const CreateHappeningScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { hasAccess } = useUser();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const prefill = route.params?.prefill ?? {};
   const [title, setTitle] = useState(prefill.title ?? '');
   const [venue, setVenue] = useState(prefill.venue ?? '');
@@ -69,7 +69,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
     if (photoUri) {
       const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
       if (error) {
-        Alert.alert(t('common.error'), 'Photo upload failed. Post without photo?');
+        Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setLoading(false);
         return;
       }
@@ -100,13 +100,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('happenings.post')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <BackHeader title={t('happenings.post')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <AuthInput
@@ -171,14 +165,6 @@ const CreateHappeningScreen = ({ navigation, route }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   whenLabel: { fontSize: 14, color: COLORS.text, fontWeight: '500', marginBottom: 10 },
   whenGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },

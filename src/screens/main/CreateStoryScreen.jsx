@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, StatusBar,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import BackHeader from '../../components/common/BackHeader';
 import { createStory } from '../../lib/stories';
 import { uploadStoryMedia } from '../../lib/storage';
 import { getSession } from '../../lib/auth';
@@ -15,7 +16,6 @@ import { useUser } from '../../contexts/UserContext';
 const CreateStoryScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { hasAccess } = useUser();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -56,13 +56,7 @@ const CreateStoryScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('stories.createPost')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <BackHeader title={t('stories.createPost')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <AuthInput
@@ -88,14 +82,6 @@ const CreateStoryScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   postBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,

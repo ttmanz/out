@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert, ScrollView, TextInput, StatusBar,
+  ActivityIndicator, Alert, ScrollView, TextInput,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -12,6 +12,7 @@ import { getFriends } from '../../lib/friends';
 import { createNightOut, addNightOutMembers } from '../../lib/nightOut';
 import { uploadPostPhoto } from '../../lib/storage';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import BackHeader from '../../components/common/BackHeader';
 import { useUser } from '../../contexts/UserContext';
 
 const Avatar = ({ name, size = 36 }) => (
@@ -23,7 +24,6 @@ const Avatar = ({ name, size = 36 }) => (
 const CreateNightOutScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { hasAccess } = useUser();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [userId, setUserId] = useState(null);
   const [title, setTitle] = useState('');
   const [venue, setVenue] = useState('');
@@ -98,7 +98,7 @@ const CreateNightOutScreen = ({ navigation }) => {
     if (photoUri) {
       const { url, error } = await uploadPostPhoto(userId, photoUri);
       if (error) {
-        Alert.alert(t('common.error'), 'Photo upload failed. Create without photo?');
+        Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setSaving(false);
         return;
       }
@@ -127,13 +127,7 @@ const CreateNightOutScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('nightOut.create')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+      <BackHeader title={t('nightOut.create')} onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <Text style={styles.label}>{t('nightOut.labelTitle')} *</Text>
@@ -236,15 +230,6 @@ const CreateNightOutScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    backgroundColor: COLORS.background,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   scroll: { padding: 20, paddingBottom: 48 },
   label: {
     fontSize: 12, fontWeight: '700', color: COLORS.primary,

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   ScrollView, KeyboardAvoidingView, Platform, Alert,
-  ActivityIndicator, StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -11,11 +11,11 @@ import { createMarketListing } from '../../lib/market';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import BackHeader from '../../components/common/BackHeader';
 
 const CreateMarketListingScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { hasAccess } = useUser();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [userId, setUserId] = useState(null);
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -61,13 +61,7 @@ const CreateMarketListingScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('market.createTitle')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <BackHeader title={t('market.createTitle')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <Text style={styles.label}>{t('market.labelPhoto')}</Text>
@@ -104,14 +98,6 @@ const CreateMarketListingScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 48 },
   label: {
     fontSize: 12, fontWeight: '700', color: COLORS.primary,

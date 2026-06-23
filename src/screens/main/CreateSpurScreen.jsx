@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator, StatusBar,
+  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -10,6 +10,7 @@ import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 import { createSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -18,7 +19,6 @@ import { useUser } from '../../contexts/UserContext';
 const CreateSpurScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { hasAccess } = useUser();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -44,7 +44,7 @@ const CreateSpurScreen = ({ navigation }) => {
     if (photoUri) {
       const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
       if (error) {
-        Alert.alert(t('common.error'), 'Photo upload failed. Post without photo?');
+        Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setLoading(false);
         return;
       }
@@ -71,13 +71,7 @@ const CreateSpurScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t('spur.post')}</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <BackHeader title={t('spur.post')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <AdBanner page="CreateSpur" />
@@ -121,14 +115,6 @@ const CreateSpurScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 40 },
   preview: {
     fontSize: 16, fontWeight: '700', color: COLORS.text,

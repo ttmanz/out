@@ -4,7 +4,21 @@
     "error": "Something went wrong",
     "or": "or",
     "done": "Done",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "photoUploadFailed": "Photo upload failed. Please try again."
+  },
+  "club": {
+    "create": "Start a Club",
+    "nameLabel": "Club Name",
+    "namePlaceholder": "e.g. Friday Night Runners",
+    "descLabel": "Description",
+    "descPlaceholder": "What is this club about?",
+    "photoLabel": "Club Photo",
+    "adminNote": "You will be the administrator of this club and can approve or reject member requests.",
+    "submit": "Create Club",
+    "nameRequired": "Please enter a club name.",
+    "createFailed": "Could not create club. Please try again.",
+    "subscriptionRequired": "Subscribe to create clubs and connect with members."
   },
   "subscription": {
     "title": "My Subscription",
@@ -124,6 +138,8 @@
     "replyPlaceholder": "Reply...",
     "send": "Send",
     "blockedFromPost": "You have been blocked from replying to this post",
+    "flaggedTitle": "Post not allowed",
+    "flaggedBody": "Your message was flagged for: {{reason}}.\nPlease revise it before posting.",
     "errors": {
       "messageRequired": "Please write something",
       "postFailed": "Could not post",
@@ -336,5 +352,5 @@
       "locationDenied": "Location permission denied — needed for Nearby posts",
       "postFailed": "Could not post your plan"
     }
-  },
+  }
 }

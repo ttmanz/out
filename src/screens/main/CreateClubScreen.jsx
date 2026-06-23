@@ -2,27 +2,29 @@ import React, { useState } from 'react';
 import {
   View, Text, TextInput, StyleSheet, TouchableOpacity,
   ScrollView, KeyboardAvoidingView, Platform, Alert,
-  ActivityIndicator, StatusBar,
+  ActivityIndicator,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { createClub } from '../../lib/clubs';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import BackHeader from '../../components/common/BackHeader';
 
 const CreateClubScreen = ({ navigation }) => {
+  const { t } = useTranslation();
   const { hasAccess } = useUser();
-  const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    if (!hasAccess) { Alert.alert('Subscription Required', 'Subscribe to create clubs and connect with members.'); return; }
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('club.subscriptionRequired')); return; }
     if (!name.trim()) {
-      Alert.alert('Required', 'Please enter a club name.');
+      Alert.alert(t('common.error'), t('club.nameRequired'));
       return;
     }
     setSaving(true);
@@ -34,7 +36,7 @@ const CreateClubScreen = ({ navigation }) => {
     if (photoUri) {
       const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
       if (error) {
-        Alert.alert('Error', 'Photo upload failed. Create without photo?');
+        Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setSaving(false);
         return;
       }
@@ -49,7 +51,7 @@ const CreateClubScreen = ({ navigation }) => {
 
     setSaving(false);
     if (error) {
-      Alert.alert('Error', 'Could not create club. Please try again.');
+      Alert.alert(t('common.error'), t('club.createFailed'));
     } else {
       navigation.goBack();
     }
@@ -58,51 +60,43 @@ const CreateClubScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-            <Text style={styles.backText}>‹</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Start a Club</Text>
-          <View style={{ width: 40 }} />
-        </View>
+        <BackHeader title={t('club.create')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <Text style={styles.label}>Club Name *</Text>
+          <Text style={styles.label}>{t('club.nameLabel')} *</Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Friday Night Runners"
+            placeholder={t('club.namePlaceholder')}
             placeholderTextColor={COLORS.textMuted}
             maxLength={80}
             autoCapitalize="words"
           />
 
-          <Text style={styles.label}>Description</Text>
+          <Text style={styles.label}>{t('club.descLabel')}</Text>
           <TextInput
             style={[styles.input, styles.inputMulti]}
             value={description}
             onChangeText={setDescription}
-            placeholder="What is this club about?"
+            placeholder={t('club.descPlaceholder')}
             placeholderTextColor={COLORS.textMuted}
             multiline
             maxLength={300}
             autoCapitalize="sentences"
           />
 
-          <Text style={styles.label}>Club Photo</Text>
+          <Text style={styles.label}>{t('club.photoLabel')}</Text>
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
 
           <View style={styles.adminNote}>
-            <Text style={styles.adminNoteText}>
-              ✦  You will be the administrator of this club and can approve or reject member requests.
-            </Text>
+            <Text style={styles.adminNoteText}>✦  {t('club.adminNote')}</Text>
           </View>
 
           <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={saving}>
             {saving
               ? <ActivityIndicator color={COLORS.black} />
-              : <Text style={styles.submitText}>Create Club</Text>
+              : <Text style={styles.submitText}>{t('club.submit')}</Text>
             }
           </TouchableOpacity>
         </ScrollView>
@@ -113,14 +107,6 @@ const CreateClubScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingBottom: 14,
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { fontSize: 18, fontWeight: '700', color: COLORS.primary },
   form: { padding: 20, paddingBottom: 48 },
   label: {
     fontSize: 12, fontWeight: '700', color: COLORS.primary,
