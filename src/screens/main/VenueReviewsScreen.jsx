@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getVenueReviews, createVenueReview, deleteVenueReview } from '../../lib/venueReviews';
+import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
@@ -27,6 +28,7 @@ const StarRow = ({ value, onChange }) => (
 
 const VenueReviewsScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
@@ -48,6 +50,7 @@ const VenueReviewsScreen = ({ navigation }) => {
   useFocusEffect(load);
 
   const handleSubmit = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     if (!venueName.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorVenue'));
     if (rating === 0) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorRating'));
     setSubmitting(true);

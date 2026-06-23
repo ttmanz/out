@@ -12,6 +12,7 @@ import { getSession } from '../../lib/auth';
 import { getMemberHappenings } from '../../lib/happenings';
 import { sendFriendRequest } from '../../lib/friends';
 import { getOrCreateConversation } from '../../lib/messages';
+import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
@@ -27,6 +28,7 @@ const POST_TYPE_LABEL = {
 
 const MemberProfileScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const { userId: targetId, fullName } = route.params;
   const [myId, setMyId] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -74,6 +76,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const handleAddFriend = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     setRequesting(true);
     const { error } = await sendFriendRequest(myId, targetId);
     setRequesting(false);

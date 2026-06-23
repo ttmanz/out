@@ -10,7 +10,6 @@ import { supabase } from '../lib/supabase';
 import { getSession } from '../lib/auth';
 import { getUnreadNotificationCount } from '../lib/notifications';
 import { useUser } from '../contexts/UserContext';
-import { subscriptionStatus } from '../lib/subscription';
 
 import HomeScreen from '../screens/main/HomeScreen';
 import WhatHappeningScreen from '../screens/main/WhatHappeningScreen';
@@ -129,7 +128,6 @@ const MainNavigator = () => {
 
   const isRestricted = profile?.status === 'restricted';
   const isAdmin = profile?.is_admin === true;
-  const { hasAccess } = subscriptionStatus(profile);
 
   useEffect(() => {
     if (isRestricted) return;
@@ -150,10 +148,6 @@ const MainNavigator = () => {
     });
     return () => { if (channel) supabase.removeChannel(channel); };
   }, [isRestricted]);
-
-  if (profile && !hasAccess) {
-    return <SubscriptionScreen standalone />;
-  }
 
   return (
     <Tab.Navigator

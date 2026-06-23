@@ -12,9 +12,11 @@ import { createOpenChatPost } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { moderateContent } from '../../lib/moderation';
 import { uploadPostPhoto } from '../../lib/storage';
+import { useUser } from '../../contexts/UserContext';
 
 const CreateOpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [message, setMessage] = useState('');
   const [venue, setVenue] = useState('');
@@ -24,6 +26,7 @@ const CreateOpenChatScreen = ({ navigation }) => {
   const [messageError, setMessageError] = useState('');
 
   const handlePost = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     if (!message.trim()) {
       setMessageError(t('openChat.errors.messageRequired'));
       return;

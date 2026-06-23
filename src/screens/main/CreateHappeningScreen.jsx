@@ -12,6 +12,7 @@ import LinkInput from '../../components/common/LinkInput';
 import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
+import { useUser } from '../../contexts/UserContext';
 
 const WHEN_OPTIONS = [
   { key: 'today',       emoji: '🗓️' },
@@ -22,6 +23,7 @@ const WHEN_OPTIONS = [
 
 const CreateHappeningScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const prefill = route.params?.prefill ?? {};
   const [title, setTitle] = useState(prefill.title ?? '');
@@ -35,6 +37,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
   const [whenError, setWhenError] = useState('');
 
   const handlePost = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     let valid = true;
     if (!title.trim()) { setTitleError(t('happenings.errors.titleRequired')); valid = false; }
     else setTitleError('');

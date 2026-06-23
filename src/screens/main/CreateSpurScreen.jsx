@@ -13,9 +13,11 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 import { createSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
+import { useUser } from '../../contexts/UserContext';
 
 const CreateSpurScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
@@ -26,6 +28,7 @@ const CreateSpurScreen = ({ navigation }) => {
   const [activityError, setActivityError] = useState('');
 
   const handlePost = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     let valid = true;
     if (!venue.trim()) { setVenueError(t('spur.errors.venueRequired')); valid = false; }
     else setVenueError('');

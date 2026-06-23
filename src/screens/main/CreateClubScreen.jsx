@@ -8,9 +8,11 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { createClub } from '../../lib/clubs';
 import { uploadPostPhoto } from '../../lib/storage';
+import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
 
 const CreateClubScreen = ({ navigation }) => {
+  const { hasAccess } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -18,6 +20,7 @@ const CreateClubScreen = ({ navigation }) => {
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
+    if (!hasAccess) { Alert.alert('Subscription Required', 'Subscribe to create clubs and connect with members.'); return; }
     if (!name.trim()) {
       Alert.alert('Required', 'Please enter a club name.');
       return;

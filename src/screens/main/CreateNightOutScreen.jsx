@@ -12,6 +12,7 @@ import { getFriends } from '../../lib/friends';
 import { createNightOut, addNightOutMembers } from '../../lib/nightOut';
 import { uploadPostPhoto } from '../../lib/storage';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import { useUser } from '../../contexts/UserContext';
 
 const Avatar = ({ name, size = 36 }) => (
   <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
@@ -21,6 +22,7 @@ const Avatar = ({ name, size = 36 }) => (
 
 const CreateNightOutScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [userId, setUserId] = useState(null);
   const [title, setTitle] = useState('');
@@ -81,6 +83,7 @@ const CreateNightOutScreen = ({ navigation }) => {
   };
 
   const handleCreate = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     if (!title.trim()) {
       Alert.alert(t('common.error'), t('nightOut.titleRequired'));
       return;

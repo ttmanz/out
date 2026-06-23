@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView,
+  TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, SafeAreaView, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -9,9 +9,11 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { getMessages, sendMessage, markMessagesRead } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
+import { useUser } from '../../contexts/UserContext';
 
 const ChatScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const { conversationId, friendName } = route.params;
   const [myId, setMyId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -49,6 +51,7 @@ const ChatScreen = ({ navigation, route }) => {
   }, [messages]);
 
   const handleSend = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     const content = text.trim();
     if (!content || !myId) return;
     setText('');

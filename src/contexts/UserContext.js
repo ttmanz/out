@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getSession } from '../lib/auth';
 import { getProfile } from '../lib/profile';
+import { subscriptionStatus } from '../lib/subscription';
 
-const UserContext = createContext({ profile: null, refreshProfile: () => {} });
+const UserContext = createContext({ profile: null, refreshProfile: () => {}, hasAccess: true });
 
 export const UserProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
@@ -16,8 +17,10 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => { refreshProfile(); }, [refreshProfile]);
 
+  const { hasAccess } = subscriptionStatus(profile);
+
   return (
-    <UserContext.Provider value={{ profile, refreshProfile }}>
+    <UserContext.Provider value={{ profile, refreshProfile, hasAccess }}>
       {children}
     </UserContext.Provider>
   );

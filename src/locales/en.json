@@ -21,7 +21,9 @@
     "activeDaysLeft": "{{days}} day(s) until renewal",
     "expiredTitle": "Subscription Expired",
     "expiredSub": "Choose a plan below to continue enjoying full access.",
-    "footerNote": "Subscriptions are managed manually. Contact support to cancel or for billing questions."
+    "footerNote": "Subscriptions are managed manually. Contact support to cancel or for billing questions.",
+    "requiredTitle": "Subscription Required",
+    "requiredBody": "Subscribe to post content and connect with other members."
   },
   "auth": {
     "login": "Log In",

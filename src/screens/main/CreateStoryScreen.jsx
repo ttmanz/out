@@ -10,15 +10,18 @@ import PhotoPicker from '../../components/common/PhotoPicker';
 import { createStory } from '../../lib/stories';
 import { uploadStoryMedia } from '../../lib/storage';
 import { getSession } from '../../lib/auth';
+import { useUser } from '../../contexts/UserContext';
 
 const CreateStoryScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { hasAccess } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handlePost = async () => {
+    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     if (!text.trim() && !mediaUri) {
       Alert.alert(t('common.error'), t('stories.errors.contentRequired'));
       return;
