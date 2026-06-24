@@ -44,6 +44,15 @@ export const getTopVenues = () =>
     .select('id, name, description, address, rank, category')
     .order('rank', { ascending: true });
 
+export const createTopVenue = (payload) =>
+  supabase.from('top_venues').insert(payload).select().single();
+
+export const updateTopVenue = (id, payload) =>
+  supabase.from('top_venues').update(payload).eq('id', id);
+
+export const deleteTopVenue = (id) =>
+  supabase.from('top_venues').delete().eq('id', id);
+
 export const fetchNearbyVenues = async (latitude, longitude, radiusMeters = 1500) => {
   const query = `
     [out:json][timeout:15];

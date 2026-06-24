@@ -96,6 +96,12 @@ const AdminScreen = ({ navigation }) => {
         <Text style={styles.title}>Members</Text>
         <TouchableOpacity
           style={styles.plansBtn}
+          onPress={() => navigation.navigate(ROUTES.ADMIN_TOP_VENUES)}
+        >
+          <Text style={styles.plansBtnText}>📍 Venues</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.plansBtn}
           onPress={() => navigation.navigate(ROUTES.ADMIN_SUBSCRIPTION_PLANS)}
         >
           <Text style={styles.plansBtnText}>⭐ Plans</Text>

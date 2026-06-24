@@ -42,6 +42,7 @@ import ChatScreen from '../screens/main/ChatScreen';
 import NotificationsScreen from '../screens/main/NotificationsScreen';
 import AdminScreen from '../screens/main/AdminScreen';
 import AdminSubscriptionPlansScreen from '../screens/main/AdminSubscriptionPlansScreen';
+import AdminTopVenuesScreen from '../screens/main/AdminTopVenuesScreen';
 import SubscriptionScreen from '../screens/main/SubscriptionScreen';
 import CompleteProfileScreen from '../screens/main/CompleteProfileScreen';
 import ActivitiesScreen from '../screens/main/ActivitiesScreen';
@@ -122,6 +123,7 @@ const AdminStackNavigator = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
     <AdminStack.Screen name="Admin" component={AdminScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_TOP_VENUES} component={AdminTopVenuesScreen} />
   </AdminStack.Navigator>
 );
 

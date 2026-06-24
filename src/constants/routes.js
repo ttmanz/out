@@ -39,6 +39,7 @@ export const ROUTES = {
   CREATE_STORY: 'CreateStory',
   SUBSCRIPTION: 'Subscription',
   ADMIN_SUBSCRIPTION_PLANS: 'AdminSubscriptionPlans',
+  ADMIN_TOP_VENUES: 'AdminTopVenues',
   MARKET: 'Market',
   CREATE_MARKET_LISTING: 'CreateMarketListing',
 };
