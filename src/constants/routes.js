@@ -2,7 +2,6 @@
 export const ROUTES = {
   LOGIN: 'Login',
   REGISTER: 'Register',
-  PHONE_LOGIN: 'PhoneLogin',
   HOME: 'Home',
   FRIENDS: 'Friends',
   SEARCH_USERS: 'SearchUsers',

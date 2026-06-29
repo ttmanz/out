@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Find - Mee",
-    "slug": "out-and-around",
+    "slug": "find-mee",
     "scheme": "outandaround",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -69,6 +69,6 @@
         "projectId": "02b0d6f0-c1a0-4746-a57b-3cfd8ed6a1dd"
       }
     },
-    "owner": "ttmanz"
+    "owner": "ttmanzs-team"
   }
 }

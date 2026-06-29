@@ -37,14 +37,6 @@ export const signInWithGoogle   = () => oauthSignIn('google');
 export const signInWithFacebook = () => oauthSignIn('facebook');
 export const signInWithApple    = () => oauthSignIn('apple');
 
-// Phone OTP — requires an SMS provider configured in Supabase Dashboard →
-// Authentication → Providers → Phone. Supports Twilio, Vonage, etc.
-export const signInWithPhone = (phone) =>
-  supabase.auth.signInWithOtp({ phone });
-
-export const verifyPhoneOtp = (phone, token) =>
-  supabase.auth.verifyOtp({ phone, token, type: 'sms' });
-
 export const signOut = () => supabase.auth.signOut();
 
 export const getSession = () => supabase.auth.getSession();
