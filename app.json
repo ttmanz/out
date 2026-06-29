@@ -24,9 +24,6 @@
         "NSPhotoLibraryUsageDescription": "Find-Mee accesses your photo library to upload profile photos and post images.",
         "NSPhotoLibraryAddUsageDescription": "Find-Mee saves photos to your library.",
         "NSMicrophoneUsageDescription": "Find-Mee may access your microphone for video features."
-      },
-      "config": {
-        "googleMapsApiKey": ""
       }
     },
     "android": {
@@ -45,11 +42,6 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png",
         "backgroundColor": "#0d0a03"
-      },
-      "config": {
-        "googleMaps": {
-          "apiKey": ""
-        }
       }
     },
     "web": {
@@ -74,7 +66,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": ""
+        "projectId": "02b0d6f0-c1a0-4746-a57b-3cfd8ed6a1dd"
       }
     },
     "owner": "ttmanz"
