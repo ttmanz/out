@@ -18,6 +18,7 @@
       "bundleIdentifier": "com.ttleisureland.findmee",
       "buildNumber": "1",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSLocationWhenInUseUsageDescription": "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area.",
         "NSCameraUsageDescription": "Find-Mee uses your camera to take profile photos and post images.",
@@ -29,6 +30,11 @@
     "android": {
       "package": "com.ttleisureland.findmee",
       "versionCode": 1,
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyCYZnZoP137iDKTHUK2zFZIHfAT9unrvjw"
+        }
+      },
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",

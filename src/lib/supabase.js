@@ -6,5 +6,6 @@ export const supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey,
     autoRefreshToken: true,
     persistSession: false,
     detectSessionInUrl: false,
+    flowType: 'implicit',
   },
 });
