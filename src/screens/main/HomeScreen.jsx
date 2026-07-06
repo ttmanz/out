@@ -14,7 +14,6 @@ const FEATURES = [
   { emoji: '⚡', titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
   { emoji: '💬', titleKey: 'home.openChat',        descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      watermark: '💭' },
   { emoji: '📍', titleKey: 'home.atVenue',         descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       watermark: '👥' },
-  { emoji: '🌙', titleKey: 'home.nightOut',        descKey: 'home.nightOutDesc',       route: ROUTES.NIGHT_OUT,      watermark: '🌃' },
   { emoji: '🏛️', titleKey: 'home.clubGroups',      descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    watermark: '🎭' },
   { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍' },
   { emoji: '🛍️', titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         watermark: '🏷️' },

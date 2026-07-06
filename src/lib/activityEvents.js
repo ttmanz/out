@@ -1,12 +1,18 @@
 import { supabase } from './supabase';
 
-export const getActivityEvents = (category) =>
-  supabase
+// Only current/upcoming events — a past event would otherwise derive to the
+// 'today' bucket when someone taps "I'm Going" on it.
+export const getActivityEvents = (category) => {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  return supabase
     .from('activity_events')
     .select('id, category, name, venue, event_date, description, photo_url')
     .eq('category', category)
     .eq('active', true)
+    .or(`event_date.is.null,event_date.gte.${startOfToday.toISOString()}`)
     .order('event_date', { ascending: true });
+};
 
 // Maps an event_date to the nearest WHEN_OPTIONS key for pre-filling the post form.
 // Always resolves to one of the 3 reachable Happening buckets — never falls through

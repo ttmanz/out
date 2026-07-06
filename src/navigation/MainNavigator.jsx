@@ -9,6 +9,7 @@ import { COLORS } from '../constants/colors';
 import { supabase } from '../lib/supabase';
 import { getSession } from '../lib/auth';
 import { getUnreadNotificationCount } from '../lib/notifications';
+import { getUnreadMessageCount } from '../lib/messages';
 import { useUser } from '../contexts/UserContext';
 
 import HomeScreen from '../screens/main/HomeScreen';
@@ -22,9 +23,6 @@ import ProfileSettingsScreen from '../screens/main/ProfileSettingsScreen';
 import OpenChatScreen from '../screens/main/OpenChatScreen';
 import CreateOpenChatScreen from '../screens/main/CreateOpenChatScreen';
 import MemberProfileScreen from '../screens/main/MemberProfileScreen';
-import NightOutScreen from '../screens/main/NightOutScreen';
-import CreateNightOutScreen from '../screens/main/CreateNightOutScreen';
-import NightOutDetailScreen from '../screens/main/NightOutDetailScreen';
 import ClubGroupsScreen from '../screens/main/ClubGroupsScreen';
 import ClubDetailScreen from '../screens/main/ClubDetailScreen';
 import CreateClubScreen from '../screens/main/CreateClubScreen';
@@ -72,9 +70,6 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.OPEN_CHAT} component={OpenChatScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_OPEN_CHAT} component={CreateOpenChatScreen} />
     <HomeStack.Screen name={ROUTES.MEMBER_PROFILE} component={MemberProfileScreen} />
-    <HomeStack.Screen name={ROUTES.NIGHT_OUT} component={NightOutScreen} />
-    <HomeStack.Screen name={ROUTES.CREATE_NIGHT_OUT} component={CreateNightOutScreen} />
-    <HomeStack.Screen name={ROUTES.NIGHT_OUT_DETAIL} component={NightOutDetailScreen} />
     <HomeStack.Screen name={ROUTES.CLUB_GROUPS}      component={ClubGroupsScreen} />
     <HomeStack.Screen name={ROUTES.CLUB_DETAIL}      component={ClubDetailScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_CLUB}      component={CreateClubScreen} />
@@ -127,8 +122,23 @@ const AdminStackNavigator = () => (
   </AdminStack.Navigator>
 );
 
+// Red counter bubble shown on a tab icon
+const TabBadge = ({ count }) => count > 0 ? (
+  <View style={{
+    position: 'absolute', top: -3, right: -7,
+    backgroundColor: COLORS.error,
+    borderRadius: 9, minWidth: 17, height: 17,
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3,
+  }}>
+    <Text style={{ color: COLORS.white, fontSize: 9, fontWeight: '800' }}>
+      {count > 99 ? '99+' : count}
+    </Text>
+  </View>
+) : null;
+
 const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
+  const [msgCount, setMsgCount] = useState(0);
   const insets = useSafeAreaInsets();
   const { profile } = useUser();
 
@@ -137,14 +147,15 @@ const MainNavigator = () => {
 
   useEffect(() => {
     if (isRestricted) return;
-    let channel;
+    let notifChannel, msgChannel;
     getSession().then(({ data: { session } }) => {
       if (!session) return;
       const uid = session.user.id;
-      // Authorise the realtime socket so RLS delivers this user's notifications
+      // Authorise the realtime socket so RLS delivers this user's rows
       supabase.realtime.setAuth(session.access_token);
+
       getUnreadNotificationCount(uid).then(({ count }) => setNotifCount(count ?? 0));
-      channel = supabase
+      notifChannel = supabase
         .channel('notif_badge')
         .on('postgres_changes', {
           event: 'INSERT',
@@ -153,8 +164,20 @@ const MainNavigator = () => {
           filter: `user_id=eq.${uid}`,
         }, () => setNotifCount((c) => c + 1))
         .subscribe();
+
+      // Messages badge: refetch on any message change I can see — INSERTs bump
+      // the count, UPDATEs (read_at stamped when a chat is opened) clear it
+      const refreshMsgCount = () =>
+        getUnreadMessageCount(uid).then(({ count }) => setMsgCount(count ?? 0));
+      refreshMsgCount();
+      msgChannel = supabase
+        .channel('msg_badge')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, refreshMsgCount)
+        .subscribe();
     });
-    return () => { if (channel) supabase.removeChannel(channel); };
+    return () => {
+      [notifChannel, msgChannel].forEach((c) => c && supabase.removeChannel(c));
+    };
   }, [isRestricted]);
 
   return (
@@ -214,7 +237,10 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Messages',
             tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
+              <View>
+                <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
+                <TabBadge count={msgCount} />
+              </View>
             ),
           }}
         />
@@ -232,18 +258,7 @@ const MainNavigator = () => {
             tabBarIcon: ({ color, focused }) => (
               <View>
                 <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
-                {notifCount > 0 && (
-                  <View style={{
-                    position: 'absolute', top: -3, right: -7,
-                    backgroundColor: COLORS.error,
-                    borderRadius: 9, minWidth: 17, height: 17,
-                    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3,
-                  }}>
-                    <Text style={{ color: COLORS.white, fontSize: 9, fontWeight: '800' }}>
-                      {notifCount > 99 ? '99+' : notifCount}
-                    </Text>
-                  </View>
-                )}
+                <TabBadge count={notifCount} />
               </View>
             ),
           }}

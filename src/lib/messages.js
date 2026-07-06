@@ -33,6 +33,15 @@ export const getMessages = (conversationId) =>
 export const sendMessage = (conversationId, senderId, content) =>
   supabase.from('messages').insert({ conversation_id: conversationId, sender_id: senderId, content });
 
+// Unread incoming messages across all my conversations — feeds the Messages tab badge
+export const getUnreadMessageCount = (userId) =>
+  supabase
+    .from('messages')
+    .select('id, conversation:conversations!inner(user1_id, user2_id)', { count: 'exact', head: true })
+    .is('read_at', null)
+    .neq('sender_id', userId)
+    .or(`user1_id.eq.${userId},user2_id.eq.${userId}`, { referencedTable: 'conversation' });
+
 export const markMessagesRead = (conversationId, currentUserId) =>
   supabase
     .from('messages')
