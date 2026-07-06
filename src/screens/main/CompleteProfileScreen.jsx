@@ -6,7 +6,8 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
-import { getProfile, updateFullProfile, uploadAvatar } from '../../lib/profile';
+import { getProfile, updateFullProfile } from '../../lib/profile';
+import { uploadAvatar } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
@@ -15,6 +16,22 @@ const INTERESTS = [
   '🎮 Gaming', '🎭 Events', '🏖️ Outdoor', '🎨 Arts & Culture', '✏️ Other',
 ];
 const OTHER_KEY = '✏️ Other';
+
+const formatDob = (text) => {
+  const digits = text.replace(/\D/g, '').slice(0, 8);
+  return [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean).join('/');
+};
+
+// Stored as ISO (YYYY-MM-DD); displayed and edited as DD/MM/YYYY
+const isoToDisplayDob = (iso) => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? '');
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : (iso ?? '');
+};
+
+const displayToISODob = (display) => {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(display.trim());
+  return m ? `${m[3]}-${m[2]}-${m[1]}` : display.trim();
+};
 
 const CompleteProfileScreen = ({ navigation }) => {
   const { refreshProfile } = useUser();
@@ -42,7 +59,7 @@ const CompleteProfileScreen = ({ navigation }) => {
       const { data } = await getProfile(session.user.id);
       if (data) {
         setPhotoUri(data.photo_url ?? null);
-        setDob(data.dob ?? '');
+        setDob(isoToDisplayDob(data.dob));
         setGender(data.gender ?? '');
         setCity(data.city ?? '');
         setBio(data.bio ?? '');
@@ -98,7 +115,7 @@ const CompleteProfileScreen = ({ navigation }) => {
     setSaving(true);
     const { error } = await updateFullProfile(userId, {
       photo_url: photoUri,
-      dob: dob.trim(),
+      dob: displayToISODob(dob),
       gender,
       city: city.trim(),
       bio: bio.trim(),
@@ -160,7 +177,7 @@ const CompleteProfileScreen = ({ navigation }) => {
           <TextInput
             style={styles.input}
             value={dob}
-            onChangeText={setDob}
+            onChangeText={(text) => setDob(formatDob(text))}
             placeholder="DD/MM/YYYY"
             placeholderTextColor={COLORS.textMuted}
             keyboardType="numeric"

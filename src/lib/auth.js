@@ -1,4 +1,5 @@
 import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { makeRedirectUri } from 'expo-auth-session';
 import { supabase } from './supabase';
 
@@ -20,7 +21,11 @@ const oauthSignIn = async (provider) => {
   const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
   if (result.type !== 'success') return { error: null }; // user cancelled
 
-  return supabase.auth.exchangeCodeForSession(result.url);
+  const { queryParams } = Linking.parse(result.url);
+  if (queryParams?.error) return { error: new Error(queryParams.error_description || queryParams.error) };
+  if (!queryParams?.code) return { error: new Error('No auth code returned') };
+
+  return supabase.auth.exchangeCodeForSession(queryParams.code);
 };
 
 export const signInWithEmail = (email, password) =>

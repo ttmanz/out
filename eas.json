@@ -17,6 +17,11 @@
     },
     "production": {
       "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_SUPABASE_URL": "https://mwvtciffmvxjvdphezka.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13dnRjaWZmbXZ4anZkcGhlemthIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MzQ2NTIsImV4cCI6MjA5NzAxMDY1Mn0.3v93k36--BMYUxxsN_DKOf4nLFw28XX2FCAtLv55xc0",
+        "GOOGLE_MAPS_API_KEY": "AIzaSyCYZnZoP137iDKTHUK2zFZIHfAT9unrvjw"
+      },
       "ios": {
         "buildConfiguration": "Release",
         "distribution": "store"

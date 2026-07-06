@@ -1,31 +1,35 @@
 import { supabase } from './supabase';
-import { createHappening } from './happenings';
 
 export const getSpurPosts = () => {
   const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
   return supabase
-    .from('happenings')
+    .from('spur_posts')
     .select('*, profiles:user_id(full_name)')
-    .eq('happening_at', 'spur')
     .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
     .limit(30);
 };
 
 export const createSpurPost = (userId, { venue, activity, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
-  createHappening(userId, {
+  supabase.from('spur_posts').insert({
+    user_id: userId,
     title: `Going to ${venue} for ${activity}, join me?`,
     venue,
-    happening_at: 'spur',
-    description: null,
-    latitude: null,
-    longitude: null,
     photo_url,
     link_url,
     link_title,
     link_image,
     link_domain,
   });
+
+// All of a specific member's spur posts, for their profile page (no time cutoff)
+export const getMemberSpurPosts = (userId) =>
+  supabase
+    .from('spur_posts')
+    .select('*, profiles:user_id(full_name)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50);
 
 export const getSpurReplies = (spurId) =>
   supabase

@@ -38,12 +38,16 @@ const SearchUsersScreen = ({ navigation }) => {
     });
   }, [userId]);
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
+  const handleSearch = async (showErrors = false) => {
+    if (!query.trim()) { setResults([]); return; }
     setSearching(true);
     const { data, error } = await searchUsers(query.trim(), userId);
     setSearching(false);
-    if (error) return;
+    if (error) {
+      // Only alert on an explicit search — the debounced live search would spam
+      if (showErrors) Alert.alert(t('common.error'), t('friends.errors.searchFailed'));
+      return;
+    }
     const myInterests = profile?.interests ?? [];
     const filtered = (data ?? []).filter((r) => !blockedIds.has(r.id));
     const sorted = filtered.sort(
@@ -51,6 +55,13 @@ const SearchUsersScreen = ({ navigation }) => {
     );
     setResults(sorted);
   };
+
+  // Live "starts with" search as the user types, debounced to avoid a request per keystroke
+  useEffect(() => {
+    if (!userId) return;
+    const timer = setTimeout(() => handleSearch(), 300);
+    return () => clearTimeout(timer);
+  }, [query, userId]);
 
   const handleAdd = async (addresseeId) => {
     const { error } = await sendFriendRequest(userId, addresseeId);
@@ -98,11 +109,11 @@ const SearchUsersScreen = ({ navigation }) => {
         placeholder={t('friends.searchPlaceholder')}
         value={query}
         onChangeText={setQuery}
-        onSubmitEditing={handleSearch}
+        onSubmitEditing={() => handleSearch(true)}
         returnKeyType="search"
       />
 
-      <TouchableOpacity style={styles.searchBtn} onPress={handleSearch}>
+      <TouchableOpacity style={styles.searchBtn} onPress={() => handleSearch(true)}>
         {searching
           ? <ActivityIndicator color={COLORS.white} />
           : <Text style={styles.searchBtnText}>{t('friends.search')}</Text>

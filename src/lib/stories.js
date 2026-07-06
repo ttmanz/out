@@ -8,7 +8,7 @@ const expiryThreshold = () =>
 export const getStories = () =>
   supabase
     .from('stories')
-    .select('*, profiles:user_id(full_name, avatar_url)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .gte('created_at', expiryThreshold())
     .order('created_at', { ascending: false })
     .limit(50);
@@ -31,7 +31,7 @@ export const getFriendStories = async (userId) => {
 
   return supabase
     .from('stories')
-    .select('*, profiles:user_id(full_name, avatar_url)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .in('user_id', ids)
     .gte('created_at', expiryThreshold())
     .order('created_at', { ascending: false })

@@ -33,24 +33,30 @@ const WhereToGoScreen = ({ navigation }) => {
     setLoading(true);
     setSelected(null);
 
-    const [locationResult, happeningsRes] = await Promise.all([
-      Location.requestForegroundPermissionsAsync()
-        .then(({ status }) =>
-          status === 'granted'
-            ? Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-            : null
-        )
-        .catch(() => null),
-      getHappenings(),
-    ]);
+    const { status: permStatus } = await Location.requestForegroundPermissionsAsync();
+    let locationResult = null;
+    if (permStatus === 'granted') {
+      try {
+        locationResult = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      } catch {
+        locationResult = null;
+      }
+    }
+    const happeningsRes = await getHappenings();
 
     if (!happeningsRes.error) setHappenings(happeningsRes.data ?? []);
 
+    // Without GPS, still show venues — search a wider radius around the default area
+    const center = locationResult
+      ? locationResult.coords
+      : { latitude: DEFAULT_REGION.latitude, longitude: DEFAULT_REGION.longitude };
     if (locationResult) {
-      const { latitude, longitude } = locationResult.coords;
-      setRegion({ latitude, longitude, latitudeDelta: 0.02, longitudeDelta: 0.02 });
-      const nearby = await fetchNearbyVenues(latitude, longitude).catch(() => []);
-      setVenues(nearby);
+      setRegion({ ...center, latitudeDelta: 0.02, longitudeDelta: 0.02 });
+    }
+    try {
+      setVenues(await fetchNearbyVenues(center.latitude, center.longitude, locationResult ? 1500 : 8000));
+    } catch {
+      setVenues([]);
     }
 
     setLoading(false);
@@ -58,10 +64,15 @@ const WhereToGoScreen = ({ navigation }) => {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const memberCount = (venueName) =>
-    happenings.filter(
-      (h) => h.venue && h.venue.toLowerCase().includes(venueName.toLowerCase())
-    ).length;
+  // Loose two-way match — members rarely type a venue name exactly as OSM has it
+  const memberCount = (venueName) => {
+    const name = venueName.toLowerCase();
+    return happenings.filter((h) => {
+      if (!h.venue) return false;
+      const posted = h.venue.toLowerCase();
+      return posted.includes(name) || name.includes(posted);
+    }).length;
+  };
 
   return (
     <View style={styles.safe}>
@@ -80,6 +91,7 @@ const WhereToGoScreen = ({ navigation }) => {
           <MapView
             style={styles.map}
             region={region}
+            onRegionChangeComplete={setRegion}
             showsUserLocation
             showsMyLocationButton
             onPress={() => setSelected(null)}

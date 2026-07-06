@@ -1,14 +1,19 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
-  ActivityIndicator, Alert, RefreshControl,
+  ActivityIndicator, Alert, RefreshControl, TextInput,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
-import { getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember } from '../../lib/clubs';
+import {
+  getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
+  getClubPosts, createClubPost,
+} from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
+import { uploadPostPhoto } from '../../lib/storage';
 import { formatAgo } from '../../utils/format';
 import BackHeader from '../../components/common/BackHeader';
+import PhotoPicker from '../../components/common/PhotoPicker';
 
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
@@ -17,21 +22,27 @@ const ClubDetailScreen = ({ navigation, route }) => {
   const [club, setClub] = useState(null);
   const [members, setMembers] = useState([]);
   const [myStatus, setMyStatus] = useState(null); // null | 'pending' | 'approved'
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionId, setActionId] = useState(null);
+  const [postText, setPostText] = useState('');
+  const [postPhotoUri, setPostPhotoUri] = useState(null);
+  const [posting, setPosting] = useState(false);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-    const [{ data: { session } }, clubRes, membersRes] = await Promise.all([
+    const [{ data: { session } }, clubRes, membersRes, postsRes] = await Promise.all([
       getSession(),
       getClub(clubId),
       getClubMembers(clubId),
+      getClubPosts(clubId),
     ]);
     const uid = session?.user?.id ?? null;
     setUserId(uid);
     setClub(clubRes.data ?? null);
     setMembers(membersRes.data ?? []);
+    setPosts(postsRes.data ?? []);
 
     const statusRes = uid ? await getMemberStatus(clubId, uid) : { data: null };
     setMyStatus(statusRes.data?.status ?? null);
@@ -42,6 +53,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const isAdmin = club?.admin_id === userId;
+  const canPost = isAdmin || myStatus === 'approved';
   const pending = members.filter((m) => m.status === 'pending');
   const approved = members.filter((m) => m.status === 'approved');
 
@@ -82,6 +94,31 @@ const ClubDetailScreen = ({ navigation, route }) => {
         },
       ]
     );
+  };
+
+  const handlePost = async () => {
+    const text = postText.trim();
+    if (!text && !postPhotoUri) return;
+    setPosting(true);
+    let photo_url = null;
+    if (postPhotoUri) {
+      const { url, error } = await uploadPostPhoto(userId, postPhotoUri);
+      if (error) {
+        Alert.alert('Error', 'Could not upload photo.');
+        setPosting(false);
+        return;
+      }
+      photo_url = url;
+    }
+    const { error } = await createClubPost(clubId, userId, { text: text || null, photo_url });
+    setPosting(false);
+    if (error) {
+      Alert.alert('Error', 'Could not post.');
+      return;
+    }
+    setPostText('');
+    setPostPhotoUri(null);
+    await load();
   };
 
   if (loading || !club) {
@@ -184,6 +221,50 @@ const ClubDetailScreen = ({ navigation, route }) => {
             ))
           }
         </View>
+
+        {/* Posts — visible/postable only to approved members and the admin */}
+        {canPost && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Club Posts</Text>
+
+            <View style={styles.composeBox}>
+              <TextInput
+                style={styles.composeInput}
+                placeholder="Share something with the club..."
+                placeholderTextColor={COLORS.textMuted}
+                value={postText}
+                onChangeText={setPostText}
+                multiline
+              />
+              <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
+              <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
+                {posting
+                  ? <ActivityIndicator size="small" color={COLORS.black} />
+                  : <Text style={styles.postBtnText}>Post</Text>
+                }
+              </TouchableOpacity>
+            </View>
+
+            {posts.length === 0
+              ? <Text style={styles.empty}>No posts yet — be the first!</Text>
+              : posts.map((p) => (
+                <View key={p.id} style={styles.postCard}>
+                  <View style={styles.postHeader}>
+                    <View style={styles.avatar}>
+                      <Text style={styles.avatarText}>{p.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.memberName}>{p.profiles?.full_name ?? 'Unknown'}</Text>
+                      <Text style={styles.postTime}>{formatAgo(p.created_at)}</Text>
+                    </View>
+                  </View>
+                  {!!p.text && <Text style={styles.postText}>{p.text}</Text>}
+                  {!!p.photo_url && <Image source={{ uri: p.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+                </View>
+              ))
+            }
+          </View>
+        )}
       </ScrollView>
     </View>
   );
@@ -261,6 +342,26 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.error,
   },
   rejectBtnText: { fontSize: 14, color: COLORS.error, fontWeight: '700' },
+  composeBox: { marginBottom: 16 },
+  composeInput: {
+    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 10, fontSize: 14,
+    color: COLORS.text, backgroundColor: COLORS.surfaceAlt,
+    minHeight: 60, textAlignVertical: 'top', marginBottom: 10,
+  },
+  postBtn: {
+    backgroundColor: COLORS.primary, borderRadius: 10,
+    paddingVertical: 10, alignItems: 'center',
+  },
+  postBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.black },
+  postCard: {
+    borderTopWidth: 1, borderTopColor: COLORS.border,
+    paddingTop: 14, marginTop: 4,
+  },
+  postHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  postTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 1 },
+  postText: { fontSize: 14, color: COLORS.text, lineHeight: 20, marginBottom: 8 },
+  postPhoto: { width: '100%', height: 180, borderRadius: 10 },
 });
 
 export default ClubDetailScreen;

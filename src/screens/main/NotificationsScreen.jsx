@@ -17,6 +17,7 @@ const TYPE_ICON = {
   friend_request: '👥',
   reply: '💬',
   night_out_invite: '🌙',
+  club_join_request: '🏛️',
 };
 
 const NotificationsScreen = ({ navigation }) => {
@@ -44,6 +45,8 @@ const NotificationsScreen = ({ navigation }) => {
       else if (item.reference_type === 'open_chat') navigation.navigate('HomeTab', { screen: ROUTES.OPEN_CHAT });
     } else if (item.type === 'night_out_invite') {
       navigation.navigate('HomeTab', { screen: ROUTES.NIGHT_OUT });
+    } else if (item.type === 'club_join_request') {
+      navigation.navigate('HomeTab', { screen: ROUTES.CLUB_DETAIL, params: { clubId: item.reference_id } });
     }
   };
 
@@ -52,6 +55,7 @@ const NotificationsScreen = ({ navigation }) => {
     if (item.type === 'friend_request') return t('notifications.friendRequest', { name: actor });
     if (item.type === 'reply') return t('notifications.reply', { name: actor, post: item.reference_text ?? '' });
     if (item.type === 'night_out_invite') return t('notifications.nightOutInvite', { name: actor, plan: item.reference_text ?? '' });
+    if (item.type === 'club_join_request') return t('notifications.clubJoinRequest', { name: actor, club: item.reference_text ?? '' });
     return '';
   };
 

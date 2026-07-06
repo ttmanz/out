@@ -8,5 +8,6 @@ export const supabase = createClient(CONFIG.supabaseUrl, CONFIG.supabaseAnonKey,
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: false,
+    flowType: 'pkce',
   },
 });

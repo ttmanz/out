@@ -12,17 +12,3 @@ export const updateProfileSettings = (userId, { visibility, allow_friend_request
 
 export const updateFullProfile = (userId, fields) =>
   supabase.from('profiles').update({ ...fields, profile_completed: true }).eq('id', userId);
-
-export const uploadAvatar = async (userId, uri) => {
-  const ext = uri.split('.').pop().toLowerCase();
-  const path = `${userId}/avatar.${ext}`;
-  const response = await fetch(uri);
-  const blob = await response.blob();
-  const { error } = await supabase.storage.from('avatars').upload(path, blob, {
-    contentType: `image/${ext}`,
-    upsert: true,
-  });
-  if (error) return { error };
-  const { data } = supabase.storage.from('avatars').getPublicUrl(path);
-  return { url: `${data.publicUrl}?t=${Date.now()}` };
-};

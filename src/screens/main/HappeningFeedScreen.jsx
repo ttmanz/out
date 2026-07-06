@@ -1,95 +1,145 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl,
+  ActivityIndicator, RefreshControl, TextInput, Alert,
 } from 'react-native';
-import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getHappenings } from '../../lib/happenings';
+import { getHappenings, getHappeningReplies, createHappeningReply } from '../../lib/happenings';
+import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
-import { distanceKm } from '../../utils/geo';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
 
-const HappeningCard = ({ item, distKm, navigation }) => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>
-          {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
+const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply }) => {
+  const ps = replyState ?? {};
+  const replyCount = ps.replies?.length ?? 0;
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>
+            {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
+          </Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity onPress={() => navigation?.navigate(ROUTES.MEMBER_PROFILE, { userId: item.user_id, fullName: item.profiles?.full_name })}>
+            <Text style={styles.posterName}>{item.profiles?.full_name ?? 'Someone'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
+        </View>
+      </View>
+      <Text style={styles.title}>{item.title}</Text>
+      {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
+      {!!item.description && <Text style={styles.desc}>{item.description}</Text>}
+      {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+      {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
+
+      <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(item.id)}>
+        <Text style={styles.replyToggleText}>
+          💬 {ps.expanded ? t('happenings.hideReplies') : `${t('happenings.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
         </Text>
-      </View>
-      <View style={{ flex: 1 }}>
-        <TouchableOpacity onPress={() => navigation?.navigate(ROUTES.MEMBER_PROFILE, { userId: item.user_id, fullName: item.profiles?.full_name })}>
-          <Text style={styles.posterName}>{item.profiles?.full_name ?? 'Someone'}</Text>
-        </TouchableOpacity>
-        <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
-      </View>
-      {distKm != null && (
-        <Text style={styles.distance}>{distKm < 1 ? '<1 km' : `${distKm.toFixed(1)} km`}</Text>
+      </TouchableOpacity>
+
+      {ps.expanded && (
+        <View style={styles.repliesSection}>
+          {ps.loading ? (
+            <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
+          ) : (
+            <>
+              {(ps.replies ?? []).length === 0 && (
+                <Text style={styles.noReplies}>{t('happenings.noReplies')}</Text>
+              )}
+              {(ps.replies ?? []).map((r) => (
+                <View key={r.id} style={styles.replyRow}>
+                  <Text style={styles.replyName}>{r.profiles?.full_name ?? 'Someone'}</Text>
+                  <Text style={styles.replyText}>{r.message}</Text>
+                  <Text style={styles.replyTime}>{formatAgo(r.created_at)}</Text>
+                </View>
+              ))}
+              <View style={styles.replyInputRow}>
+                <TextInput
+                  style={styles.replyInput}
+                  placeholder={t('happenings.replyPlaceholder')}
+                  placeholderTextColor={COLORS.textMuted}
+                  value={ps.text ?? ''}
+                  onChangeText={(v) => onReplyTextChange(item.id, v)}
+                  returnKeyType="send"
+                  onSubmitEditing={() => onSendReply(item.id)}
+                />
+                <TouchableOpacity
+                  style={styles.sendBtn}
+                  onPress={() => onSendReply(item.id)}
+                  disabled={ps.sending}
+                >
+                  {ps.sending
+                    ? <ActivityIndicator size="small" color={COLORS.black} />
+                    : <Text style={styles.sendBtnText}>{t('happenings.send')}</Text>
+                  }
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
       )}
     </View>
-    <Text style={styles.title}>{item.title}</Text>
-    {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
-    {!!item.description && <Text style={styles.desc}>{item.description}</Text>}
-    {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
-    {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
-  </View>
-);
+  );
+};
 
 const HappeningFeedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const filter = route.params?.filter ?? 'nearby';
+  const filter = route.params?.filter ?? 'today';
 
   const [happenings, setHappenings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
+  const [replyState, setReplyState] = useState({});
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-
-    const [happeningsRes] = await Promise.all([
-      getHappenings(),
-      filter === 'nearby'
-        ? Location.requestForegroundPermissionsAsync()
-            .then(({ status }) => status === 'granted'
-              ? Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-              : null)
-            .then(pos => pos && setUserLocation(pos.coords))
-            .catch(() => null)
-        : Promise.resolve(),
-    ]);
-
-    if (!happeningsRes.error) setHappenings(happeningsRes.data ?? []);
+    const { data, error } = await getHappenings();
+    if (!error) setHappenings(data ?? []);
     setLoading(false);
     setRefreshing(false);
-  }, [filter]);
+  }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const filtered = useMemo(() => {
-    const base = happenings.filter((h) => h.happening_at === filter);
-    if (filter !== 'nearby' || !userLocation) return base;
-    return [...base]
-      .map((h) => ({
-        ...h,
-        _dist: h.latitude != null
-          ? distanceKm(userLocation.latitude, userLocation.longitude, h.latitude, h.longitude)
-          : null,
-      }))
-      .sort((a, b) => {
-        if (a._dist == null && b._dist == null) return 0;
-        if (a._dist == null) return 1;
-        if (b._dist == null) return -1;
-        return a._dist - b._dist;
-      });
-  }, [happenings, filter, userLocation]);
+  const filtered = useMemo(
+    () => happenings.filter((h) => h.happening_at === filter),
+    [happenings, filter]
+  );
+
+  const patchReply = (id, patch) =>
+    setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const toggleReplies = async (happeningId) => {
+    const cur = replyState[happeningId] ?? {};
+    if (cur.expanded) { patchReply(happeningId, { expanded: false }); return; }
+    patchReply(happeningId, { expanded: true, loading: true });
+    const { data, error } = await getHappeningReplies(happeningId);
+    patchReply(happeningId, { loading: false, replies: error ? [] : (data ?? []) });
+  };
+
+  const handleReply = async (happeningId) => {
+    const text = (replyState[happeningId]?.text ?? '').trim();
+    if (!text) return;
+    const { data: { session } } = await getSession();
+    if (!session) return;
+    patchReply(happeningId, { sending: true });
+    const { error } = await createHappeningReply(session.user.id, happeningId, text);
+    if (error) {
+      Alert.alert(t('common.error'), t('happenings.errors.replyFailed'));
+      patchReply(happeningId, { sending: false });
+    } else {
+      const { data } = await getHappeningReplies(happeningId);
+      patchReply(happeningId, { sending: false, text: '', replies: data ?? [] });
+    }
+  };
 
   if (loading) {
     return (
@@ -120,13 +170,21 @@ const HappeningFeedScreen = ({ navigation, route }) => {
           <Text style={styles.empty}>{t('happenings.noHappenings')}</Text>
         }
         renderItem={({ item }) => (
-          <HappeningCard item={item} distKm={item._dist ?? null} navigation={navigation} />
+          <HappeningCard
+            item={item}
+            navigation={navigation}
+            t={t}
+            replyState={replyState[item.id]}
+            onToggleReplies={toggleReplies}
+            onReplyTextChange={(id, v) => patchReply(id, { text: v })}
+            onSendReply={handleReply}
+          />
         )}
       />
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate(ROUTES.CREATE_HAPPENING)}
+        onPress={() => navigation.navigate(ROUTES.CREATE_HAPPENING, { prefill: { when: filter } })}
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
@@ -164,17 +222,37 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
-  distance: {
-    fontSize: 12, fontWeight: '700',
-    color: COLORS.primary,
-    backgroundColor: 'rgba(200,128,10,0.12)',
-    paddingHorizontal: 8, paddingVertical: 3,
-    borderRadius: 10,
-  },
   title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 6 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10, marginTop: 8 },
   meta: { fontSize: 13, color: COLORS.textMuted, marginBottom: 3 },
   desc: { fontSize: 13, color: COLORS.text, marginTop: 6, lineHeight: 18 },
+  replyToggle: { alignSelf: 'flex-start', marginTop: 10 },
+  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
+  noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
+  replyRow: { marginBottom: 10 },
+  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  replyText: { fontSize: 13, color: COLORS.text, marginTop: 1 },
+  replyTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
+  replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  replyInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    backgroundColor: COLORS.surfaceAlt,
+    color: COLORS.text,
+  },
+  sendBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
   fab: {
     position: 'absolute',
     bottom: 24, right: 24,

@@ -5,11 +5,11 @@ import { supabase } from './supabase';
 // that map onto each category; the `all` chip is the unfiltered view.
 export const VENUE_CATEGORIES = [
   { id: 'all',     labelKey: 'venues.catAll',     emoji: '✨',  pinColor: '#D4943A', types: [] },
-  { id: 'eat',     labelKey: 'venues.catEat',     emoji: '🍽️', pinColor: '#FF8C42', types: ['restaurant', 'cafe', 'fast_food'] },
+  { id: 'eat',     labelKey: 'venues.catEat',     emoji: '🍽️', pinColor: '#FF8C42', types: ['restaurant', 'fast_food'] },
   { id: 'bars',    labelKey: 'venues.catBars',    emoji: '🍸',  pinColor: '#C47AFF', types: ['bar', 'pub'] },
   { id: 'clubs',   labelKey: 'venues.catClubs',   emoji: '🎶',  pinColor: '#FF4FA8', types: ['nightclub'] },
   { id: 'beaches', labelKey: 'venues.catBeaches', emoji: '🏖️', pinColor: '#00D4E8', types: ['beach', 'beach_resort'] },
-  { id: 'coffee',  labelKey: 'venues.catCoffee',  emoji: '☕',  pinColor: '#A0522D', types: ['coffee_shop'] },
+  { id: 'coffee',  labelKey: 'venues.catCoffee',  emoji: '☕',  pinColor: '#A0522D', types: ['cafe'] },
 ];
 
 export const getPinColor = (categoryId) =>
@@ -21,7 +21,7 @@ const TYPE_TO_CATEGORY = VENUE_CATEGORIES.reduce((map, cat) => {
 }, {});
 
 // Resolve a raw OSM venue type to one of our category ids (null if uncategorised).
-export const categoryOfType = (type) => TYPE_TO_CATEGORY[type] ?? null;
+const categoryOfType = (type) => TYPE_TO_CATEGORY[type] ?? null;
 
 // True when a venue should show under the selected filter chip.
 export const matchesCategory = (selectedId, venueCategory) =>
@@ -53,6 +53,14 @@ export const updateTopVenue = (id, payload) =>
 export const deleteTopVenue = (id) =>
   supabase.from('top_venues').delete().eq('id', id);
 
+// Public Overpass mirrors are frequently rate-limited or briefly down and reply
+// with an HTML error page instead of JSON — fall through to the next mirror
+// rather than surfacing a raw JSON-parse error.
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+];
+
 export const fetchNearbyVenues = async (latitude, longitude, radiusMeters = 1500) => {
   const query = `
     [out:json][timeout:15];
@@ -66,19 +74,27 @@ export const fetchNearbyVenues = async (latitude, longitude, radiusMeters = 1500
     );
     out 60;
   `;
-  const res = await fetch(
-    `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`
-  );
-  const json = await res.json();
-  return (json.elements ?? []).map((el) => {
-    const type = el.tags?.amenity ?? el.tags?.natural ?? el.tags?.leisure ?? 'venue';
-    return {
-      id: String(el.id),
-      name: el.tags?.name ?? 'Venue',
-      latitude: el.lat,
-      longitude: el.lon,
-      type,
-      category: categoryOfType(type),
-    };
-  });
+
+  let lastError = null;
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const res = await fetch(`${endpoint}?data=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error(`Overpass returned ${res.status}`);
+      const json = await res.json();
+      return (json.elements ?? []).map((el) => {
+        const type = el.tags?.amenity ?? el.tags?.natural ?? el.tags?.leisure ?? 'venue';
+        return {
+          id: String(el.id),
+          name: el.tags?.name ?? 'Venue',
+          latitude: el.lat,
+          longitude: el.lon,
+          type,
+          category: categoryOfType(type),
+        };
+      });
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
 };

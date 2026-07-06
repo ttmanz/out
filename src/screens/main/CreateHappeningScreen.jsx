@@ -3,7 +3,6 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
   KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
 } from 'react-native';
-import * as Location from 'expo-location';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
@@ -15,52 +14,25 @@ import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 
-const WHEN_OPTIONS = [
-  { key: 'today',       emoji: '🗓️' },
-  { key: 'tomorrow',    emoji: '☀️' },
-  { key: 'thisWeekend', emoji: '🎊' },
-  { key: 'nearby',      emoji: '📍' },
-];
-
 const CreateHappeningScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { hasAccess } = useUser();
   const prefill = route.params?.prefill ?? {};
   const [title, setTitle] = useState(prefill.title ?? '');
   const [venue, setVenue] = useState(prefill.venue ?? '');
-  const [when, setWhen] = useState(prefill.when ?? null);
+  const [when] = useState(prefill.when ?? 'today');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [titleError, setTitleError] = useState('');
-  const [whenError, setWhenError] = useState('');
 
   const handlePost = async () => {
     if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
-    let valid = true;
-    if (!title.trim()) { setTitleError(t('happenings.errors.titleRequired')); valid = false; }
-    else setTitleError('');
-    if (!when) { setWhenError(t('happenings.errors.whenRequired')); valid = false; }
-    else setWhenError('');
-    if (!valid) return;
+    if (!title.trim()) { setTitleError(t('happenings.errors.titleRequired')); return; }
+    setTitleError('');
 
     setLoading(true);
-
-    let latitude = null;
-    let longitude = null;
-
-    if (when === 'nearby') {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert(t('common.error'), t('happenings.errors.locationDenied'));
-        setLoading(false);
-        return;
-      }
-      const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-      latitude = pos.coords.latitude;
-      longitude = pos.coords.longitude;
-    }
 
     const { data: { session } } = await getSession();
     if (!session) { setLoading(false); return; }
@@ -81,8 +53,6 @@ const CreateHappeningScreen = ({ navigation, route }) => {
       venue: venue.trim() || null,
       happening_at: when,
       description: description.trim() || null,
-      latitude,
-      longitude,
       photo_url,
       link_url: linkPreview?.url ?? null,
       link_title: linkPreview?.title ?? null,
@@ -119,26 +89,6 @@ const CreateHappeningScreen = ({ navigation, route }) => {
             autoCapitalize="words"
           />
 
-          <Text style={styles.whenLabel}>{t('happenings.labelWhen')}</Text>
-          <View style={styles.whenGrid}>
-            {WHEN_OPTIONS.map(({ key, emoji }) => (
-              <TouchableOpacity
-                key={key}
-                style={[styles.whenBtn, when === key && styles.whenBtnActive]}
-                onPress={() => { setWhen(key); setWhenError(''); }}
-              >
-                <Text style={styles.whenEmoji}>{emoji}</Text>
-                <Text style={[styles.whenText, when === key && styles.whenTextActive]}>
-                  {t(`happenings.${key}`).toUpperCase()}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-          {!!whenError && <Text style={styles.error}>{whenError}</Text>}
-          {when === 'nearby' && (
-            <Text style={styles.locationNote}>📍 {t('happenings.locationNote')}</Text>
-          )}
-
           <AuthInput
             label={t('happenings.labelDescription')}
             placeholder={t('happenings.placeholderDescription')}
@@ -166,20 +116,6 @@ const CreateHappeningScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   form: { padding: 20, paddingBottom: 40 },
-  whenLabel: { fontSize: 14, color: COLORS.text, fontWeight: '500', marginBottom: 10 },
-  whenGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
-  whenBtn: {
-    flexDirection: 'row', alignItems: 'center',
-    width: '47%', paddingVertical: 12, paddingHorizontal: 14,
-    borderRadius: 12, borderWidth: 1.5,
-    borderColor: COLORS.borderAccent, backgroundColor: COLORS.surface, gap: 8,
-  },
-  whenBtnActive: { backgroundColor: COLORS.primary },
-  whenEmoji: { fontSize: 18 },
-  whenText: { fontSize: 12, fontWeight: '700', color: COLORS.primary, letterSpacing: 0.4 },
-  whenTextActive: { color: COLORS.black },
-  error: { fontSize: 12, color: COLORS.error, marginBottom: 8, marginTop: 2 },
-  locationNote: { fontSize: 12, color: COLORS.textMuted, marginBottom: 16, marginTop: 4 },
   postBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 15, alignItems: 'center', marginTop: 8,

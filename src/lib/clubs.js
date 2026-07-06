@@ -36,3 +36,13 @@ export const rejectMember = (clubId, userId) =>
 
 export const getMemberStatus = (clubId, userId) =>
   supabase.from('club_members').select('status').eq('club_id', clubId).eq('user_id', userId).maybeSingle();
+
+export const getClubPosts = (clubId) =>
+  supabase
+    .from('club_posts')
+    .select('*, profiles:user_id(full_name)')
+    .eq('club_id', clubId)
+    .order('created_at', { ascending: false });
+
+export const createClubPost = (clubId, userId, { text, photo_url = null }) =>
+  supabase.from('club_posts').insert({ club_id: clubId, user_id: userId, text, photo_url });

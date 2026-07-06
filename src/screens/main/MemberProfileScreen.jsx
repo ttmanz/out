@@ -10,6 +10,8 @@ import { ROUTES } from '../../constants/routes';
 import { supabase } from '../../lib/supabase';
 import { getSession } from '../../lib/auth';
 import { getMemberHappenings } from '../../lib/happenings';
+import { getMemberSpurPosts } from '../../lib/spur';
+import { getMemberOpenChatPosts } from '../../lib/openChat';
 import { sendFriendRequest } from '../../lib/friends';
 import { getOrCreateConversation } from '../../lib/messages';
 import { useUser } from '../../contexts/UserContext';
@@ -45,9 +47,11 @@ const MemberProfileScreen = ({ navigation, route }) => {
     const uid = session.user.id;
     setMyId(uid);
 
-    const [profileRes, postsRes, friendRes, pendingRes] = await Promise.all([
+    const [profileRes, happeningsRes, spurRes, openChatRes, friendRes, pendingRes] = await Promise.all([
       supabase.from('profiles').select('id, full_name, visibility').eq('id', targetId).single(),
       getMemberHappenings(targetId),
+      getMemberSpurPosts(targetId),
+      getMemberOpenChatPosts(targetId),
       supabase
         .from('friendships')
         .select('id')
@@ -63,7 +67,14 @@ const MemberProfileScreen = ({ navigation, route }) => {
     ]);
 
     if (!profileRes.error) setProfile(profileRes.data);
-    if (!postsRes.error) setPosts(postsRes.data ?? []);
+    // Each feature owns its own posts table; this profile view just aggregates
+    // them for display — tag each with its source so POST_TYPE_LABEL still works.
+    const combined = [
+      ...(happeningsRes.data ?? []),
+      ...(spurRes.data ?? []).map((p) => ({ ...p, happening_at: 'spur' })),
+      ...(openChatRes.data ?? []).map((p) => ({ ...p, happening_at: 'open_chat' })),
+    ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    setPosts(combined);
     setIsFriend(!!friendRes.data);
     if (pendingRes.data) {
       setFriendStatus(pendingRes.data.requester_id === uid ? 'pending_out' : 'pending_in');

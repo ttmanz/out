@@ -52,8 +52,8 @@ export const getFriends = (userId) =>
       id,
       requester_id,
       addressee_id,
-      requester:profiles!friendships_requester_id_fkey(id, full_name, avatar_url),
-      addressee:profiles!friendships_addressee_id_fkey(id, full_name, avatar_url)
+      requester:profiles!friendships_requester_id_fkey(id, full_name, photo_url),
+      addressee:profiles!friendships_addressee_id_fkey(id, full_name, photo_url)
     `)
     .eq('status', 'accepted')
     .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
@@ -64,7 +64,7 @@ export const getPendingRequests = (userId) =>
     .from('friendships')
     .select(`
       id,
-      requester:profiles!friendships_requester_id_fkey(id, full_name, avatar_url, visibility)
+      requester:profiles!friendships_requester_id_fkey(id, full_name, photo_url, visibility)
     `)
     .eq('addressee_id', userId)
     .eq('status', 'pending');

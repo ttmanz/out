@@ -25,10 +25,9 @@ const MembersAtScreen = ({ navigation }) => {
     const { data, error } = await getHappenings();
     if (!error) {
       const lower = name.toLowerCase();
-      const matches = (data ?? []).filter(
+      setResults((data ?? []).filter(
         (h) => h.venue && h.venue.toLowerCase().includes(lower)
-      );
-      setResults(matches);
+      ));
     }
     setSearched(true);
     setLoading(false);
@@ -50,7 +49,11 @@ const MembersAtScreen = ({ navigation }) => {
           returnKeyType="search"
           onSubmitEditing={handleSearch}
         />
-        <TouchableOpacity style={styles.searchBtn} onPress={handleSearch} disabled={loading || !query.trim()}>
+        <TouchableOpacity
+          style={[styles.searchBtn, !query.trim() && styles.searchBtnDisabled]}
+          onPress={handleSearch}
+          disabled={loading || !query.trim()}
+        >
           {loading
             ? <ActivityIndicator size="small" color={COLORS.black} />
             : <Text style={styles.searchBtnText}>→</Text>
@@ -114,6 +117,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center',
   },
   searchBtnText: { fontSize: 20, color: COLORS.black, fontWeight: '700' },
+  searchBtnDisabled: { opacity: 0.4 },
   countBanner: {
     marginHorizontal: 16, marginBottom: 8,
     backgroundColor: 'rgba(200,128,10,0.12)',

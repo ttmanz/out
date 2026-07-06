@@ -91,7 +91,8 @@
       "sendFailed": "Could not send friend request",
       "loadFailed": "Could not load friends",
       "requestsClosed": "This member is not accepting friend requests",
-      "blockFailed": "Could not block member"
+      "blockFailed": "Could not block member",
+      "searchFailed": "Could not search — please try again"
     }
   },
   "home": {
@@ -220,7 +221,8 @@
     "someone": "Someone",
     "friendRequest": "{{name}} sent you a friend request",
     "reply": "{{name}} replied to your post: {{post}}",
-    "nightOutInvite": "{{name}} invited you to {{plan}}"
+    "nightOutInvite": "{{name}} invited you to {{plan}}",
+    "clubJoinRequest": "{{name}} requested to join {{club}}"
   },
   "nightOut": {
     "title": "Night Out Planner",
@@ -302,7 +304,8 @@
     "errors": {
       "contentRequired": "Please add some text or a photo/video",
       "mediaFailed": "Media upload failed. Post without media?",
-      "postFailed": "Could not post your story. Please try again."
+      "postFailed": "Could not post your story. Please try again.",
+      "loadFailed": "Could not load stories"
     }
   },
   "market": {
@@ -369,11 +372,17 @@
     "placeholderDescription": "Optional note for your friends",
     "locationNote": "Your location will be tagged to this post",
     "submitPost": "Post",
+    "viewReplies": "View replies",
+    "hideReplies": "Hide replies",
+    "noReplies": "No replies yet — be the first!",
+    "replyPlaceholder": "Reply...",
+    "send": "Send",
     "errors": {
       "titleRequired": "Please add a title for your plan",
       "whenRequired": "Please select when",
       "locationDenied": "Location permission denied — needed for Nearby posts",
-      "postFailed": "Could not post your plan"
+      "postFailed": "Could not post your plan",
+      "replyFailed": "Could not send reply"
     }
   }
 }
