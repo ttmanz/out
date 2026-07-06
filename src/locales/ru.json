@@ -352,5 +352,20 @@
       "postFailed": "Не удалось опубликовать",
       "replyFailed": "Не удалось отправить ответ"
     }
+  },
+  "activityEvents": {
+    "post": "Опубликовать событие",
+    "labelName": "Название события",
+    "placeholderName": "Что происходит?",
+    "nameRequired": "Укажите название события",
+    "labelVenue": "Место",
+    "placeholderVenue": "Где это будет?",
+    "labelDate": "Дата и время",
+    "tapToSetDate": "Нажмите, чтобы выбрать дату и время",
+    "labelDescription": "Описание",
+    "placeholderDescription": "Детали, которые стоит знать",
+    "labelPhoto": "Фото",
+    "submit": "Опубликовать",
+    "postFailed": "Не удалось опубликовать событие"
   }
 }

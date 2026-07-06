@@ -14,6 +14,12 @@ export const getActivityEvents = (category) => {
     .order('event_date', { ascending: true });
 };
 
+// Member-posted event — created_by is trigger-forced to auth.uid() server-side
+export const createActivityEvent = ({ category, name, venue, event_date, description, photo_url = null }) =>
+  supabase
+    .from('activity_events')
+    .insert({ category, name, venue, event_date, description, photo_url, active: true });
+
 // Maps an event_date to the nearest WHEN_OPTIONS key for pre-filling the post form.
 // Always resolves to one of the 3 reachable Happening buckets — never falls through
 // to null, since CreateHappeningScreen's `prefill.when ?? 'today'` would silently

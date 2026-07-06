@@ -352,5 +352,20 @@
       "postFailed": "Δεν ήταν δυνατή η δημοσίευση",
       "replyFailed": "Δεν ήταν δυνατή η αποστολή απάντησης"
     }
+  },
+  "activityEvents": {
+    "post": "Δημοσίευση Εκδήλωσης",
+    "labelName": "Όνομα εκδήλωσης",
+    "placeholderName": "Τι παίζει;",
+    "nameRequired": "Δώστε ένα όνομα στην εκδήλωση",
+    "labelVenue": "Χώρος",
+    "placeholderVenue": "Πού γίνεται;",
+    "labelDate": "Ημερομηνία & ώρα",
+    "tapToSetDate": "Πατήστε για ημερομηνία & ώρα",
+    "labelDescription": "Περιγραφή",
+    "placeholderDescription": "Λεπτομέρειες που αξίζει να ξέρετε;",
+    "labelPhoto": "Φωτογραφία",
+    "submit": "Δημοσίευση",
+    "postFailed": "Δεν ήταν δυνατή η δημοσίευση της εκδήλωσης"
   }
 }

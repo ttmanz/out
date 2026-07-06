@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getSession } from '../lib/auth';
+import { getSession, onAuthStateChange } from '../lib/auth';
 import { getProfile } from '../lib/profile';
 import { subscriptionStatus } from '../lib/subscription';
 
@@ -15,7 +15,13 @@ export const UserProvider = ({ children }) => {
     setProfile(data ?? null);
   }, []);
 
-  useEffect(() => { refreshProfile(); }, [refreshProfile]);
+  // Load on mount and again on every auth change (fresh login, token refresh),
+  // so profile-derived state never stays stale for the whole session
+  useEffect(() => {
+    refreshProfile();
+    const { data: { subscription } } = onAuthStateChange(() => refreshProfile());
+    return () => subscription.unsubscribe();
+  }, [refreshProfile]);
 
   const { hasAccess } = subscriptionStatus(profile);
 

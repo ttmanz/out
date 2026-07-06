@@ -350,5 +350,20 @@
       "postFailed": "Could not post your plan",
       "replyFailed": "Could not send reply"
     }
+  },
+  "activityEvents": {
+    "post": "Post Event",
+    "labelName": "Event name",
+    "placeholderName": "What's on?",
+    "nameRequired": "Please give the event a name",
+    "labelVenue": "Venue",
+    "placeholderVenue": "Where is it happening?",
+    "labelDate": "Date & time",
+    "tapToSetDate": "Tap to set date & time",
+    "labelDescription": "Description",
+    "placeholderDescription": "Any details worth knowing?",
+    "labelPhoto": "Photo",
+    "submit": "Post Event",
+    "postFailed": "Could not post the event"
   }
 }

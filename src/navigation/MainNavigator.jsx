@@ -45,6 +45,7 @@ import SubscriptionScreen from '../screens/main/SubscriptionScreen';
 import CompleteProfileScreen from '../screens/main/CompleteProfileScreen';
 import ActivitiesScreen from '../screens/main/ActivitiesScreen';
 import ActivityEventsScreen from '../screens/main/ActivityEventsScreen';
+import CreateActivityEventScreen from '../screens/main/CreateActivityEventScreen';
 import StoryFeedScreen from '../screens/main/StoryFeedScreen';
 import CreateStoryScreen from '../screens/main/CreateStoryScreen';
 import MarketScreen from '../screens/main/MarketScreen';
@@ -83,6 +84,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.COMPLETE_PROFILE}  component={CompleteProfileScreen} />
     <HomeStack.Screen name={ROUTES.ACTIVITIES}        component={ActivitiesScreen} />
     <HomeStack.Screen name={ROUTES.ACTIVITY_EVENTS}  component={ActivityEventsScreen} />
+    <HomeStack.Screen name={ROUTES.CREATE_ACTIVITY_EVENT} component={CreateActivityEventScreen} />
     <HomeStack.Screen name={ROUTES.STORY_FEED}        component={StoryFeedScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_STORY}      component={CreateStoryScreen} />
     <HomeStack.Screen name={ROUTES.SUBSCRIPTION}            component={SubscriptionScreen} />

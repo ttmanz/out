@@ -31,6 +31,7 @@ export const ROUTES = {
   COMPLETE_PROFILE: 'CompleteProfile',
   ACTIVITIES: 'Activities',
   ACTIVITY_EVENTS: 'ActivityEvents',
+  CREATE_ACTIVITY_EVENT: 'CreateActivityEvent',
   STORY_FEED: 'StoryFeed',
   CREATE_STORY: 'CreateStory',
   SUBSCRIPTION: 'Subscription',

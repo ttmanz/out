@@ -101,6 +101,13 @@ const ActivityEventsScreen = ({ navigation, route }) => {
           <EventCard event={item} onGoing={() => handleGoing(item)} />
         )}
       />
+
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => navigation.navigate(ROUTES.CREATE_ACTIVITY_EVENT, { category: filter })}
+      >
+        <Text style={styles.fabText}>+</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -131,6 +138,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   goingBtnText: { color: COLORS.background, fontWeight: '800', fontSize: 14 },
+  fab: {
+    position: 'absolute',
+    bottom: 24, right: 24,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: COLORS.primary,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  fabText: { color: COLORS.black, fontSize: 28, lineHeight: 32, fontWeight: '700' },
 });
 
 export default ActivityEventsScreen;

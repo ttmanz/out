@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, 
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blockMember } from '../../lib/friends';
+import { getSession } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
 import AuthInput from '../../components/auth/AuthInput';
 import AdBanner from '../../components/common/AdBanner';
@@ -19,13 +20,22 @@ const sharedCount = (a = [], b = []) => a.filter((i) => b.includes(i)).length;
 const SearchUsersScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
-  const userId = profile?.id ?? null;
+  // The session is the source of truth for who I am — profile is only used for
+  // interests. (Relying on profile.id left userId null until the profile
+  // loaded, which made every search come back empty.)
+  const [userId, setUserId] = useState(null);
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [sentIds, setSentIds] = useState(new Set());
   const [blockedIds, setBlockedIds] = useState(new Set());
   const [searching, setSearching] = useState(false);
   const [blockingId, setBlockingId] = useState(null);
+
+  useEffect(() => {
+    getSession().then(({ data: { session } }) => {
+      if (session) setUserId(session.user.id);
+    });
+  }, []);
 
   useEffect(() => {
     if (!userId) return;
