@@ -8,7 +8,7 @@ import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
 import { ROUTES } from '../../constants/routes';
 import { getProfile, updateProfileSettings } from '../../lib/profile';
-import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend } from '../../lib/friends';
+import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend, getMyBlockedProfiles, unblockMember } from '../../lib/friends';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
@@ -30,16 +30,19 @@ const ProfileSettingsScreen = ({ navigation }) => {
   const [friends, setFriends] = useState([]);
   const [closeFriendIds, setCloseFriendIds] = useState(new Set());
   const [togglingId, setTogglingId] = useState(null);
+  const [blocked, setBlocked] = useState([]);
+  const [unblockingId, setUnblockingId] = useState(null);
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
       if (!session) return;
       const uid = session.user.id;
       setUserId(uid);
-      const [profileRes, friendsRes, closeRes] = await Promise.all([
+      const [profileRes, friendsRes, closeRes, blockedRes] = await Promise.all([
         getProfile(uid),
         getFriends(uid),
         getCloseFriendIds(uid),
+        getMyBlockedProfiles(uid),
       ]);
       if (!profileRes.error) {
         setVisibility(profileRes.data?.visibility ?? 'everyone');
@@ -47,9 +50,18 @@ const ProfileSettingsScreen = ({ navigation }) => {
       }
       if (!friendsRes.error) setFriends(friendsRes.data ?? []);
       if (!closeRes.error) setCloseFriendIds(new Set((closeRes.data ?? []).map((r) => r.friend_id)));
+      if (!blockedRes.error) setBlocked(blockedRes.data ?? []);
       setLoading(false);
     });
   }, []);
+
+  const handleUnblock = async (blockedId) => {
+    setUnblockingId(blockedId);
+    const { error } = await unblockMember(userId, blockedId);
+    setUnblockingId(null);
+    if (error) Alert.alert(t('common.error'), t('profileSettings.unblockFailed'));
+    else setBlocked((prev) => prev.filter((b) => b.id !== blockedId));
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -205,6 +217,33 @@ const ProfileSettingsScreen = ({ navigation }) => {
           </>
         )}
 
+        {blocked.length > 0 && (
+          <>
+            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t('profileSettings.blockedMembers')}</Text>
+            {blocked.map((b) => {
+              const unblocking = unblockingId === b.id;
+              return (
+                <View key={b.id} style={styles.friendRow}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{b.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
+                  </View>
+                  <Text style={styles.friendName}>{b.full_name}</Text>
+                  <TouchableOpacity
+                    style={styles.unblockBtn}
+                    onPress={() => !unblocking && handleUnblock(b.id)}
+                    disabled={unblocking}
+                  >
+                    {unblocking
+                      ? <ActivityIndicator size="small" color={COLORS.primary} />
+                      : <Text style={styles.unblockText}>{t('profileSettings.unblock')}</Text>
+                    }
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </>
+        )}
+
         <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
           {saving
             ? <ActivityIndicator color={COLORS.black} />
@@ -275,6 +314,13 @@ const styles = StyleSheet.create({
   starText: { fontSize: 20, color: COLORS.textMuted },
   starTextActive: { color: COLORS.black },
   emptyText: { fontSize: 14, color: COLORS.textMuted, textAlign: 'center', marginBottom: 16 },
+  unblockBtn: {
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8,
+    backgroundColor: 'rgba(200,128,10,0.08)',
+    minWidth: 90, alignItems: 'center',
+  },
+  unblockText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
   editProfileBtn: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.surface,

@@ -79,3 +79,15 @@ export const blockMember = (blockerId, blockedId) =>
 
 export const getMyBlockedIds = (userId) =>
   supabase.from('member_blocks').select('blocked_id').eq('blocker_id', userId);
+
+// Blocked members with their names, for the unblock list in Profile Settings.
+// Two queries on purpose — member_blocks' FKs may not point at profiles, which
+// would break a PostgREST embedded select.
+export const getMyBlockedProfiles = async (userId) => {
+  const { data: blocks, error } = await getMyBlockedIds(userId);
+  if (error || !(blocks ?? []).length) return { data: [], error };
+  return supabase.from('profiles').select('id, full_name').in('id', blocks.map((b) => b.blocked_id));
+};
+
+export const unblockMember = (blockerId, blockedId) =>
+  supabase.from('member_blocks').delete().eq('blocker_id', blockerId).eq('blocked_id', blockedId);

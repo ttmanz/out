@@ -1,13 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
-  ActivityIndicator, RefreshControl, Image,
+  ActivityIndicator, RefreshControl, Image, TextInput, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getActivityEvents, deriveWhen } from '../../lib/activityEvents';
+import { getActivityEvents, deriveWhen, getActivityEventReplies, createActivityEventReply } from '../../lib/activityEvents';
+import { getSession } from '../../lib/auth';
+import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
@@ -20,26 +22,78 @@ const formatEventDate = (iso) => {
   });
 };
 
-const EventCard = ({ event, onGoing }) => (
-  <View style={styles.card}>
-    {!!event.photo_url && (
-      <Image source={{ uri: event.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
-    )}
-    <View style={styles.cardBody}>
-      <Text style={styles.eventName}>{event.name}</Text>
-      {!!event.venue && <Text style={styles.eventMeta}>📍 {event.venue}</Text>}
-      {!!event.event_date && (
-        <Text style={styles.eventMeta}>🗓  {formatEventDate(event.event_date)}</Text>
+const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyTextChange, onSendReply }) => {
+  const ps = replyState ?? {};
+  const replyCount = ps.replies?.length ?? 0;
+  return (
+    <View style={styles.card}>
+      {!!event.photo_url && (
+        <Image source={{ uri: event.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
       )}
-      {!!event.description && (
-        <Text style={styles.eventDesc}>{event.description}</Text>
-      )}
-      <TouchableOpacity style={styles.goingBtn} onPress={onGoing} activeOpacity={0.8}>
-        <Text style={styles.goingBtnText}>I'm Going →</Text>
-      </TouchableOpacity>
+      <View style={styles.cardBody}>
+        <Text style={styles.eventName}>{event.name}</Text>
+        {!!event.venue && <Text style={styles.eventMeta}>📍 {event.venue}</Text>}
+        {!!event.event_date && (
+          <Text style={styles.eventMeta}>🗓  {formatEventDate(event.event_date)}</Text>
+        )}
+        {!!event.description && (
+          <Text style={styles.eventDesc}>{event.description}</Text>
+        )}
+        <TouchableOpacity style={styles.goingBtn} onPress={onGoing} activeOpacity={0.8}>
+          <Text style={styles.goingBtnText}>I'm Going →</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(event.id)}>
+          <Text style={styles.replyToggleText}>
+            💬 {ps.expanded ? t('happenings.hideReplies') : `${t('happenings.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
+          </Text>
+        </TouchableOpacity>
+
+        {ps.expanded && (
+          <View style={styles.repliesSection}>
+            {ps.loading ? (
+              <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
+            ) : (
+              <>
+                {(ps.replies ?? []).length === 0 && (
+                  <Text style={styles.noReplies}>{t('happenings.noReplies')}</Text>
+                )}
+                {(ps.replies ?? []).map((r) => (
+                  <View key={r.id} style={styles.replyRow}>
+                    <Text style={styles.replyName}>{r.profiles?.full_name ?? 'Someone'}</Text>
+                    <Text style={styles.replyText}>{r.message}</Text>
+                    <Text style={styles.replyTime}>{formatAgo(r.created_at)}</Text>
+                  </View>
+                ))}
+                <View style={styles.replyInputRow}>
+                  <TextInput
+                    style={styles.replyInput}
+                    placeholder={t('happenings.replyPlaceholder')}
+                    placeholderTextColor={COLORS.textMuted}
+                    value={ps.text ?? ''}
+                    onChangeText={(v) => onReplyTextChange(event.id, v)}
+                    returnKeyType="send"
+                    onSubmitEditing={() => onSendReply(event.id)}
+                  />
+                  <TouchableOpacity
+                    style={styles.sendBtn}
+                    onPress={() => onSendReply(event.id)}
+                    disabled={ps.sending}
+                  >
+                    {ps.sending
+                      ? <ActivityIndicator size="small" color={COLORS.black} />
+                      : <Text style={styles.sendBtnText}>{t('happenings.send')}</Text>
+                    }
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        )}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const ActivityEventsScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -48,6 +102,7 @@ const ActivityEventsScreen = ({ navigation, route }) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [replyState, setReplyState] = useState({});
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -58,6 +113,33 @@ const ActivityEventsScreen = ({ navigation, route }) => {
   }, [filter]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const patchReply = (id, patch) =>
+    setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const toggleReplies = async (eventId) => {
+    const cur = replyState[eventId] ?? {};
+    if (cur.expanded) { patchReply(eventId, { expanded: false }); return; }
+    patchReply(eventId, { expanded: true, loading: true });
+    const { data, error } = await getActivityEventReplies(eventId);
+    patchReply(eventId, { loading: false, replies: error ? [] : (data ?? []) });
+  };
+
+  const handleReply = async (eventId) => {
+    const text = (replyState[eventId]?.text ?? '').trim();
+    if (!text) return;
+    const { data: { session } } = await getSession();
+    if (!session) return;
+    patchReply(eventId, { sending: true });
+    const { error } = await createActivityEventReply(session.user.id, eventId, text);
+    if (error) {
+      Alert.alert(t('common.error'), t('happenings.errors.replyFailed'));
+      patchReply(eventId, { sending: false });
+    } else {
+      const { data } = await getActivityEventReplies(eventId);
+      patchReply(eventId, { sending: false, text: '', replies: data ?? [] });
+    }
+  };
 
   const handleGoing = (event) => {
     navigation.navigate(ROUTES.CREATE_HAPPENING, {
@@ -98,7 +180,15 @@ const ActivityEventsScreen = ({ navigation, route }) => {
           <Text style={styles.empty}>No events listed yet — check back soon!</Text>
         }
         renderItem={({ item }) => (
-          <EventCard event={item} onGoing={() => handleGoing(item)} />
+          <EventCard
+            event={item}
+            onGoing={() => handleGoing(item)}
+            t={t}
+            replyState={replyState[item.id]}
+            onToggleReplies={toggleReplies}
+            onReplyTextChange={(id, v) => patchReply(id, { text: v })}
+            onSendReply={handleReply}
+          />
         )}
       />
 
@@ -138,6 +228,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   goingBtnText: { color: COLORS.background, fontWeight: '800', fontSize: 14 },
+  replyToggle: { alignSelf: 'flex-start', marginTop: 12 },
+  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
+  noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
+  replyRow: { marginBottom: 10 },
+  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  replyText: { fontSize: 13, color: COLORS.text, marginTop: 1 },
+  replyTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
+  replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  replyInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    backgroundColor: COLORS.surfaceAlt,
+    color: COLORS.text,
+  },
+  sendBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
   fab: {
     position: 'absolute',
     bottom: 24, right: 24,

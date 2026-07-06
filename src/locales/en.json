@@ -191,7 +191,10 @@
     "requestsNobody": "Nobody",
     "requestsNobodyDesc": "Friend requests are closed — no one can add you",
     "save": "Save Settings",
-    "saveFailed": "Could not save settings"
+    "saveFailed": "Could not save settings",
+    "blockedMembers": "Blocked members",
+    "unblock": "Unblock",
+    "unblockFailed": "Could not unblock member"
   },
   "venues": {
     "title": "Where to Go",

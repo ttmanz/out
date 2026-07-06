@@ -20,6 +20,16 @@ export const createActivityEvent = ({ category, name, venue, event_date, descrip
     .from('activity_events')
     .insert({ category, name, venue, event_date, description, photo_url, active: true });
 
+export const getActivityEventReplies = (eventId) =>
+  supabase
+    .from('activity_event_replies')
+    .select('*, profiles:user_id(full_name)')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: true });
+
+export const createActivityEventReply = (userId, eventId, message) =>
+  supabase.from('activity_event_replies').insert({ event_id: eventId, user_id: userId, message });
+
 // Maps an event_date to the nearest WHEN_OPTIONS key for pre-filling the post form.
 // Always resolves to one of the 3 reachable Happening buckets — never falls through
 // to null, since CreateHappeningScreen's `prefill.when ?? 'today'` would silently
