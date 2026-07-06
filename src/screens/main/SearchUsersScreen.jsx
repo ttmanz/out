@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -8,6 +8,7 @@ import { useUser } from '../../contexts/UserContext';
 import AuthInput from '../../components/auth/AuthInput';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import BackHeader from '../../components/common/BackHeader';
 
 const Avatar = ({ name }) => (
   <View style={styles.avatar}>
@@ -17,62 +18,64 @@ const Avatar = ({ name }) => (
 
 const sharedCount = (a = [], b = []) => a.filter((i) => b.includes(i)).length;
 
+// Directory-style search: the whole visible member list is loaded once and
+// shown alphabetically; typing narrows it locally letter by letter. No
+// per-keystroke server round-trips.
 const SearchUsersScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
-  // The session is the source of truth for who I am — profile is only used for
-  // interests. (Relying on profile.id left userId null until the profile
-  // loaded, which made every search come back empty.)
   const [userId, setUserId] = useState(null);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
+  const [directory, setDirectory] = useState([]);
   const [sentIds, setSentIds] = useState(new Set());
   const [blockedIds, setBlockedIds] = useState(new Set());
-  const [searching, setSearching] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [blockingId, setBlockingId] = useState(null);
+
+  const loadDirectory = async (uid) => {
+    setLoading(true);
+    setLoadError(false);
+    // Empty prefix matches everyone the caller is allowed to see
+    const { data, error } = await searchUsers('', uid);
+    if (error) {
+      setLoadError(true);
+    } else {
+      setDirectory((data ?? []).sort((a, b) =>
+        (a.full_name ?? '').localeCompare(b.full_name ?? '', undefined, { sensitivity: 'base' })
+      ));
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     getSession().then(({ data: { session } }) => {
-      if (session) setUserId(session.user.id);
+      const uid = session?.user?.id ?? null;
+      setUserId(uid);
+      loadDirectory(uid);
+      if (!uid) return;
+      Promise.all([
+        getSentRequestIds(uid),
+        getMyBlockedIds(uid),
+      ]).then(([sentRes, blockedRes]) => {
+        setSentIds(new Set((sentRes.data ?? []).map((r) => r.addressee_id)));
+        setBlockedIds(new Set((blockedRes.data ?? []).map((r) => r.blocked_id)));
+      });
     });
   }, []);
 
-  useEffect(() => {
-    if (!userId) return;
-    Promise.all([
-      getSentRequestIds(userId),
-      getMyBlockedIds(userId),
-    ]).then(([sentRes, blockedRes]) => {
-      setSentIds(new Set((sentRes.data ?? []).map((r) => r.addressee_id)));
-      setBlockedIds(new Set((blockedRes.data ?? []).map((r) => r.blocked_id)));
+  const myInterests = profile?.interests ?? [];
+
+  // Narrow letter by letter: match the start of the full name or of any word in it
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return directory.filter((r) => {
+      if (blockedIds.has(r.id)) return false;
+      if (!q) return true;
+      const name = (r.full_name ?? '').toLowerCase();
+      return name.startsWith(q) || name.split(/\s+/).some((w) => w.startsWith(q));
     });
-  }, [userId]);
-
-  const handleSearch = async (showErrors = false) => {
-    if (!query.trim()) { setResults([]); return; }
-    setSearching(true);
-    const { data, error } = await searchUsers(query.trim(), userId);
-    setSearching(false);
-    if (error) {
-      // Only alert on an explicit search — the debounced live search would spam
-      if (showErrors) Alert.alert(t('common.error'), t('friends.errors.searchFailed'));
-      return;
-    }
-    const myInterests = profile?.interests ?? [];
-    const filtered = (data ?? []).filter((r) => !blockedIds.has(r.id));
-    const sorted = filtered.sort(
-      (a, b) => sharedCount(b.interests, myInterests) - sharedCount(a.interests, myInterests)
-    );
-    setResults(sorted);
-  };
-
-  // Live "starts with" search as the user types, debounced to avoid a request
-  // per keystroke. Deliberately NOT gated on userId — the RPC is null-safe, so
-  // a search must always fire even if the session id hasn't resolved yet.
-  useEffect(() => {
-    const timer = setTimeout(() => handleSearch(), 300);
-    return () => clearTimeout(timer);
-  }, [query, userId]);
+  }, [directory, query, blockedIds]);
 
   const handleAdd = async (addresseeId) => {
     const { error } = await sendFriendRequest(userId, addresseeId);
@@ -102,7 +105,6 @@ const SearchUsersScreen = ({ navigation }) => {
               Alert.alert(t('common.error'), t('friends.errors.blockFailed'));
             } else {
               setBlockedIds((prev) => new Set([...prev, targetId]));
-              setResults((prev) => prev.filter((r) => r.id !== targetId));
             }
           },
         },
@@ -110,91 +112,101 @@ const SearchUsersScreen = ({ navigation }) => {
     );
   };
 
-  const myInterests = profile?.interests ?? [];
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>{t('friends.search')}</Text>
+    <View style={styles.safe}>
+      <BackHeader title={t('friends.search')} onBack={() => navigation.goBack()} />
 
-      <AuthInput
-        placeholder={t('friends.searchPlaceholder')}
-        value={query}
-        onChangeText={setQuery}
-        onSubmitEditing={() => handleSearch(true)}
-        returnKeyType="search"
-      />
+      <View style={styles.body}>
+        <AuthInput
+          placeholder={t('friends.searchPlaceholder')}
+          value={query}
+          onChangeText={setQuery}
+          returnKeyType="search"
+        />
 
-      <TouchableOpacity style={styles.searchBtn} onPress={() => handleSearch(true)}>
-        {searching
-          ? <ActivityIndicator color={COLORS.white} />
-          : <Text style={styles.searchBtnText}>{t('friends.search')}</Text>
-        }
-      </TouchableOpacity>
+        {loading ? (
+          <View style={styles.center}>
+            <ActivityIndicator size="large" color={COLORS.primary} />
+          </View>
+        ) : loadError ? (
+          <View style={styles.center}>
+            <Text style={styles.empty}>{t('friends.errors.searchFailed')}</Text>
+            <TouchableOpacity style={styles.retryBtn} onPress={() => loadDirectory(userId)}>
+              <Text style={styles.retryText}>{t('friends.retry')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item.id}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={() => (
+              <>
+                <AdBanner page="SearchUsers" />
+                <ProfileBanner navigation={navigation} />
+              </>
+            )}
+            ListEmptyComponent={<Text style={styles.empty}>{t('friends.noResults')}</Text>}
+            renderItem={({ item }) => {
+              const sent = sentIds.has(item.id);
+              const requestsClosed = !item.allow_friend_requests;
+              const isBlocking = blockingId === item.id;
+              const shared = sharedCount(item.interests, myInterests);
 
-      <FlatList
-        data={results}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={() => (
-          <>
-            <AdBanner page="SearchUsers" />
-            <ProfileBanner navigation={navigation} />
-          </>
-        )}
-        ListEmptyComponent={query && !searching ? <Text style={styles.empty}>{t('friends.noResults')}</Text> : null}
-        renderItem={({ item }) => {
-          const sent = sentIds.has(item.id);
-          const requestsClosed = !item.allow_friend_requests;
-          const isBlocking = blockingId === item.id;
-          const shared = sharedCount(item.interests, myInterests);
-
-          return (
-            <View style={styles.row}>
-              <Avatar name={item.full_name} />
-              <View style={styles.nameWrap}>
-                <Text style={styles.name}>{item.full_name}</Text>
-                {shared > 0 && (
-                  <Text style={styles.sharedBadge}>✦ {shared} shared interest{shared > 1 ? 's' : ''}</Text>
-                )}
-              </View>
-              {requestsClosed ? (
-                <View style={styles.closedBadge}>
-                  <Text style={styles.closedBadgeText}>{t('friends.requestsClosed')}</Text>
+              return (
+                <View style={styles.row}>
+                  <Avatar name={item.full_name} />
+                  <View style={styles.nameWrap}>
+                    <Text style={styles.name}>{item.full_name}</Text>
+                    {shared > 0 && (
+                      <Text style={styles.sharedBadge}>✦ {shared} shared interest{shared > 1 ? 's' : ''}</Text>
+                    )}
+                  </View>
+                  {requestsClosed ? (
+                    <View style={styles.closedBadge}>
+                      <Text style={styles.closedBadgeText}>{t('friends.requestsClosed')}</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={[styles.addBtn, sent && styles.addBtnSent]}
+                      onPress={() => !sent && handleAdd(item.id)}
+                      disabled={sent}
+                    >
+                      <Text style={styles.addBtnText}>
+                        {sent ? t('friends.requestSent') : t('friends.addFriend')}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    style={styles.blockBtn}
+                    onPress={() => handleBlock(item.id, item.full_name)}
+                    disabled={isBlocking}
+                  >
+                    {isBlocking
+                      ? <ActivityIndicator size="small" color={COLORS.error} />
+                      : <Text style={styles.blockBtnText}>⊘</Text>
+                    }
+                  </TouchableOpacity>
                 </View>
-              ) : (
-                <TouchableOpacity
-                  style={[styles.addBtn, sent && styles.addBtnSent]}
-                  onPress={() => !sent && handleAdd(item.id)}
-                  disabled={sent}
-                >
-                  <Text style={styles.addBtnText}>
-                    {sent ? t('friends.requestSent') : t('friends.addFriend')}
-                  </Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity
-                style={styles.blockBtn}
-                onPress={() => handleBlock(item.id, item.full_name)}
-                disabled={isBlocking}
-              >
-                {isBlocking
-                  ? <ActivityIndicator size="small" color={COLORS.error} />
-                  : <Text style={styles.blockBtnText}>⊘</Text>
-                }
-              </TouchableOpacity>
-            </View>
-          );
-        }}
-      />
+              );
+            }}
+          />
+        )}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, padding: 20, paddingTop: 60 },
-  title: { fontSize: 28, fontWeight: '800', color: COLORS.primary, marginBottom: 16 },
-  searchBtn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 12, alignItems: 'center', marginBottom: 16 },
-  searchBtnText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
+  safe: { flex: 1, backgroundColor: COLORS.background },
+  body: { flex: 1, padding: 20, paddingTop: 12 },
+  center: { alignItems: 'center', marginTop: 40, gap: 14 },
   empty: { color: COLORS.textMuted, fontSize: 14, textAlign: 'center', marginTop: 20 },
+  retryBtn: {
+    backgroundColor: COLORS.primary, borderRadius: 10,
+    paddingHorizontal: 22, paddingVertical: 10,
+  },
+  retryText: { color: COLORS.black, fontWeight: '700', fontSize: 14 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },

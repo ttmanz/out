@@ -38,7 +38,7 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handlePress = (item) => {
     if (item.type === 'friend_request') {
-      navigation.navigate('FriendsTab');
+      navigation.navigate('HomeTab', { screen: ROUTES.PENDING_REQUESTS });
     } else if (item.type === 'reply') {
       if (item.reference_type === 'spur') navigation.navigate('HomeTab', { screen: ROUTES.SPUR_OF_MOMENT });
       else if (item.reference_type === 'open_chat') navigation.navigate('HomeTab', { screen: ROUTES.OPEN_CHAT });

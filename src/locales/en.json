@@ -93,7 +93,12 @@
       "requestsClosed": "This member is not accepting friend requests",
       "blockFailed": "Could not block member",
       "searchFailed": "Could not search — please try again"
-    }
+    },
+    "hubFriendsDesc": "All your friends, A to Z",
+    "hubPendingDesc": "People waiting for your answer",
+    "hubSearchDesc": "Type a name — the list narrows as you go",
+    "noPending": "No pending requests",
+    "retry": "Retry"
   },
   "home": {
     "myStory": "My Story",
@@ -114,7 +119,9 @@
     "venueDesc": "Explore venues, trends & reviews",
     "market": "The Market",
     "marketDesc": "Buy & sell with members",
-    "tagline": "Explore. Connect. Experience."
+    "tagline": "Explore. Connect. Experience.",
+    "friends": "Friends",
+    "friendsDesc": "Your people — list, requests & search"
   },
   "atVenue": {
     "locationRequired": "Location access is required to see members nearby.",

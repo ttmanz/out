@@ -33,7 +33,9 @@ import VenueReviewsScreen from '../screens/main/VenueReviewsScreen';
 import MembersAtScreen from '../screens/main/MembersAtScreen';
 import TrendingVenuesScreen from '../screens/main/TrendingVenuesScreen';
 import TopVenuesScreen from '../screens/main/TopVenuesScreen';
-import FriendsScreen from '../screens/main/FriendsScreen';
+import FriendsHubScreen from '../screens/main/FriendsHubScreen';
+import FriendsListScreen from '../screens/main/FriendsListScreen';
+import PendingRequestsScreen from '../screens/main/PendingRequestsScreen';
 import SearchUsersScreen from '../screens/main/SearchUsersScreen';
 import MessagesScreen from '../screens/main/MessagesScreen';
 import ChatScreen from '../screens/main/ChatScreen';
@@ -53,7 +55,6 @@ import CreateMarketListingScreen from '../screens/main/CreateMarketListingScreen
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
-const FriendsStack = createNativeStackNavigator();
 const MessagesStack = createNativeStackNavigator();
 const NotificationsStack = createNativeStackNavigator();
 const AdminStack = createNativeStackNavigator();
@@ -61,6 +62,11 @@ const AdminStack = createNativeStackNavigator();
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
     <HomeStack.Screen name={ROUTES.HOME} component={HomeScreen} />
+    <HomeStack.Screen name={ROUTES.FRIENDS_HUB} component={FriendsHubScreen} />
+    <HomeStack.Screen name={ROUTES.FRIENDS_LIST} component={FriendsListScreen} />
+    <HomeStack.Screen name={ROUTES.PENDING_REQUESTS} component={PendingRequestsScreen} />
+    <HomeStack.Screen name={ROUTES.SEARCH_USERS} component={SearchUsersScreen} />
+    <HomeStack.Screen name={ROUTES.CHAT} component={ChatScreen} />
     <HomeStack.Screen name={ROUTES.WHAT_HAPPENING} component={WhatHappeningScreen} />
     <HomeStack.Screen name={ROUTES.HAPPENING_FEED} component={HappeningFeedScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_HAPPENING} component={CreateHappeningScreen} />
@@ -91,15 +97,6 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.MARKET}                  component={MarketScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_MARKET_LISTING}   component={CreateMarketListingScreen} />
   </HomeStack.Navigator>
-);
-
-const FriendsStackNavigator = () => (
-  <FriendsStack.Navigator screenOptions={{ headerShown: false }}>
-    <FriendsStack.Screen name={ROUTES.FRIENDS} component={FriendsScreen} />
-    <FriendsStack.Screen name={ROUTES.SEARCH_USERS} component={SearchUsersScreen} />
-    <FriendsStack.Screen name={ROUTES.MEMBER_PROFILE} component={MemberProfileScreen} />
-    <FriendsStack.Screen name={ROUTES.CHAT} component={ChatScreen} />
-  </FriendsStack.Navigator>
 );
 
 const MessagesStackNavigator = () => (
@@ -218,19 +215,6 @@ const MainNavigator = () => {
           ),
         }}
       />
-
-      {!isRestricted && (
-        <Tab.Screen
-          name="FriendsTab"
-          component={FriendsStackNavigator}
-          options={{
-            tabBarLabel: 'Friends',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons name={focused ? 'people' : 'people-outline'} size={24} color={color} />
-            ),
-          }}
-        />
-      )}
 
       {!isRestricted && (
         <Tab.Screen
