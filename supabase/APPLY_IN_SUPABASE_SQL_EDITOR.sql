@@ -1,4 +1,7 @@
 -- ============================================================================
+-- ✅ APPLIED to the live database on 2026-07-06 via the Management API.
+--    Kept for reference/disaster recovery — safe to re-run (idempotent).
+--
 -- RUN THIS ONCE in Supabase Dashboard → SQL Editor (project mwvtciffmvxjvdphezka)
 --
 -- It consolidates every migration in supabase/migrations/ dated 2026-07-03
@@ -379,7 +382,12 @@ end $$;
 -- ----------------------------------------------------------------------------
 -- 7. Allow the Coffee category on top_venues (20260708000000)
 --    FIXES: admin can't save Coffee venues / Coffee filter chip empty
+--    NOTE: the 20260618 add-category migration was never applied either, so
+--    the column itself must be created first.
 -- ----------------------------------------------------------------------------
+alter table public.top_venues
+  add column if not exists category text;
+
 alter table public.top_venues
   drop constraint if exists top_venues_category_check;
 
