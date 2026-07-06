@@ -66,9 +66,10 @@ const SearchUsersScreen = ({ navigation }) => {
     setResults(sorted);
   };
 
-  // Live "starts with" search as the user types, debounced to avoid a request per keystroke
+  // Live "starts with" search as the user types, debounced to avoid a request
+  // per keystroke. Deliberately NOT gated on userId — the RPC is null-safe, so
+  // a search must always fire even if the session id hasn't resolved yet.
   useEffect(() => {
-    if (!userId) return;
     const timer = setTimeout(() => handleSearch(), 300);
     return () => clearTimeout(timer);
   }, [query, userId]);
