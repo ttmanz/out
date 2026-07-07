@@ -16,7 +16,7 @@ const Avatar = ({ name }) => (
   </View>
 );
 
-const sharedCount = (a = [], b = []) => a.filter((i) => b.includes(i)).length;
+const sharedCount = (a, b) => (a ?? []).filter((i) => (b ?? []).includes(i)).length;
 
 // Directory-style search: the whole visible member list is loaded once and
 // shown alphabetically; typing narrows it locally letter by letter. No
