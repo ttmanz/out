@@ -41,4 +41,7 @@ export const ROUTES = {
   ADMIN_TOP_VENUES: 'AdminTopVenues',
   MARKET: 'Market',
   CREATE_MARKET_LISTING: 'CreateMarketListing',
+  OPEN_GROUPS: 'OpenGroups',
+  GROUP_DETAIL: 'GroupDetail',
+  ADMIN_OPEN_GROUPS: 'AdminOpenGroups',
 };

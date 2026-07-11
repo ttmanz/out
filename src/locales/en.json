@@ -115,6 +115,8 @@
     "atVenueDesc": "See who's around you right now",
     "clubGroups": "Club Groups",
     "clubGroupsDesc": "Join & create interest groups",
+    "openGroups": "Open Groups",
+    "openGroupsDesc": "Post & chat in topic groups",
     "venue": "Venues",
     "venueDesc": "Explore venues, trends & reviews",
     "market": "The Market",
@@ -360,6 +362,43 @@
       "postFailed": "Could not post your plan",
       "replyFailed": "Could not send reply"
     }
+  },
+  "openGroups": {
+    "title": "Open Groups",
+    "empty": "No groups yet — check back soon!",
+    "noPosts": "No posts yet — be the first!",
+    "noFriendPosts": "No posts from friends yet.",
+    "composePlaceholder": "Share something with the group...",
+    "post": "Post",
+    "viewReplies": "View replies",
+    "hideReplies": "Hide replies",
+    "noReplies": "No replies yet — be the first!",
+    "replyPlaceholder": "Reply...",
+    "send": "Send",
+    "flaggedTitle": "Post not allowed",
+    "flaggedBody": "Your message was flagged for: {{reason}}.\nPlease revise it before posting.",
+    "errors": {
+      "postFailed": "Could not post",
+      "replyFailed": "Could not send reply"
+    }
+  },
+  "adminGroups": {
+    "title": "Open Groups",
+    "addTitle": "Add Group",
+    "editTitle": "Edit Group",
+    "addBtn": "Add",
+    "edit": "Edit",
+    "empty": "No groups yet — tap + Add to create your first.",
+    "nameLabel": "Group Name",
+    "namePlaceholder": "e.g. Single Parents",
+    "descLabel": "Description (optional)",
+    "descPlaceholder": "A short description...",
+    "save": "Save",
+    "nameRequired": "Please enter a group name.",
+    "saveFailed": "Could not save group. Please try again.",
+    "deleteTitle": "Delete Group",
+    "deleteDesc": "Remove {{name}} and all its posts?",
+    "delete": "Delete"
   },
   "activityEvents": {
     "post": "Post Event",

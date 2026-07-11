@@ -52,6 +52,9 @@ import StoryFeedScreen from '../screens/main/StoryFeedScreen';
 import CreateStoryScreen from '../screens/main/CreateStoryScreen';
 import MarketScreen from '../screens/main/MarketScreen';
 import CreateMarketListingScreen from '../screens/main/CreateMarketListingScreen';
+import OpenGroupsScreen from '../screens/main/OpenGroupsScreen';
+import GroupDetailScreen from '../screens/main/GroupDetailScreen';
+import AdminOpenGroupsScreen from '../screens/main/AdminOpenGroupsScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -96,6 +99,8 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.SUBSCRIPTION}            component={SubscriptionScreen} />
     <HomeStack.Screen name={ROUTES.MARKET}                  component={MarketScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_MARKET_LISTING}   component={CreateMarketListingScreen} />
+    <HomeStack.Screen name={ROUTES.OPEN_GROUPS}             component={OpenGroupsScreen} />
+    <HomeStack.Screen name={ROUTES.GROUP_DETAIL}            component={GroupDetailScreen} />
   </HomeStack.Navigator>
 );
 
@@ -118,6 +123,7 @@ const AdminStackNavigator = () => (
     <AdminStack.Screen name="Admin" component={AdminScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_TOP_VENUES} component={AdminTopVenuesScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_OPEN_GROUPS} component={AdminOpenGroupsScreen} />
   </AdminStack.Navigator>
 );
 

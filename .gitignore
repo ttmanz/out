@@ -49,3 +49,4 @@ google-service-account.json
 
 # supabase local temp
 supabase/.temp/
+.supabase-token

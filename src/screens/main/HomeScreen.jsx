@@ -16,6 +16,7 @@ const FEATURES = [
   { emoji: '💬', titleKey: 'home.openChat',        descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      watermark: '💭' },
   { emoji: '📍', titleKey: 'home.atVenue',         descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       watermark: '👥' },
   { emoji: '🏛️', titleKey: 'home.clubGroups',      descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    watermark: '🎭' },
+  { emoji: '🧩', titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    watermark: '🌐' },
   { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍' },
   { emoji: '🛍️', titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         watermark: '🏷️' },
 ];
