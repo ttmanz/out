@@ -31,7 +31,7 @@ const NotificationsScreen = ({ navigation }) => {
     const { data, error } = await getNotifications(uid);
     if (!error) setNotifications(data ?? []);
     setLoading(false);
-    markAllNotificationsRead(uid);
+    await markAllNotificationsRead(uid);
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));

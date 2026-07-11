@@ -28,12 +28,12 @@ const ChatScreen = ({ navigation, route }) => {
     const { data, error } = await getMessages(conversationId);
     if (!error) setMessages(data ?? []);
     setLoading(false);
-    if (uid) markMessagesRead(conversationId, uid);
+    if (uid) await markMessagesRead(conversationId, uid);
   }, [conversationId]);
 
-  const appendMessage = useCallback((row, uid) => {
+  const appendMessage = useCallback(async (row, uid) => {
     setMessages((prev) => (prev.some((m) => m.id === row.id) ? prev : [...prev, row]));
-    if (uid && row.sender_id !== uid) markMessagesRead(conversationId, uid);
+    if (uid && row.sender_id !== uid) await markMessagesRead(conversationId, uid);
   }, [conversationId]);
 
   useFocusEffect(useCallback(() => {
