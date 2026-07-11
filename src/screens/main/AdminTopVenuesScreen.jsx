@@ -13,6 +13,80 @@ const CATS = VENUE_CATEGORIES.filter((c) => c.id !== 'all');
 const MEDALS = ['🥇', '🥈', '🥉'];
 const BLANK = { name: '', address: '', description: '', rank: '', category: 'eat' };
 
+// Defined outside the screen so its identity is stable across renders — nesting
+// this inside AdminTopVenuesScreen made React remount the TextInputs (and drop
+// the keyboard) on every keystroke, since setField() re-renders the parent.
+const FormCard = ({ form, setField, saving, onSave, onCancel, t }) => (
+  <View style={styles.formCard}>
+    <Text style={styles.formTitle}>{form?.id ? t('adminVenues.editTitle') : t('adminVenues.addTitle')}</Text>
+
+    <Text style={styles.fieldLabel}>{t('adminVenues.nameLabel')} *</Text>
+    <TextInput
+      style={styles.input}
+      value={form?.name ?? ''}
+      onChangeText={(v) => setField('name', v)}
+      placeholder={t('adminVenues.namePlaceholder')}
+      placeholderTextColor={COLORS.textMuted}
+    />
+
+    <Text style={styles.fieldLabel}>{t('adminVenues.addressLabel')}</Text>
+    <TextInput
+      style={styles.input}
+      value={form?.address ?? ''}
+      onChangeText={(v) => setField('address', v)}
+      placeholder={t('adminVenues.addressPlaceholder')}
+      placeholderTextColor={COLORS.textMuted}
+    />
+
+    <Text style={styles.fieldLabel}>{t('adminVenues.descLabel')}</Text>
+    <TextInput
+      style={[styles.input, styles.inputMulti]}
+      value={form?.description ?? ''}
+      onChangeText={(v) => setField('description', v)}
+      placeholder={t('adminVenues.descPlaceholder')}
+      placeholderTextColor={COLORS.textMuted}
+      multiline
+    />
+
+    <Text style={styles.fieldLabel}>{t('adminVenues.rankLabel')} *</Text>
+    <TextInput
+      style={styles.input}
+      value={form?.rank ?? ''}
+      onChangeText={(v) => setField('rank', v.replace(/[^0-9]/g, ''))}
+      placeholder="1"
+      placeholderTextColor={COLORS.textMuted}
+      keyboardType="number-pad"
+    />
+
+    <Text style={styles.fieldLabel}>{t('adminVenues.categoryLabel')}</Text>
+    <View style={styles.catRow}>
+      {CATS.map((c) => (
+        <TouchableOpacity
+          key={c.id}
+          style={[styles.catChip, form?.category === c.id && { backgroundColor: c.pinColor, borderColor: c.pinColor }]}
+          onPress={() => setField('category', c.id)}
+        >
+          <Text style={[styles.catChipText, form?.category === c.id && styles.catChipTextActive]}>
+            {c.emoji}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+
+    <View style={styles.formBtns}>
+      <TouchableOpacity style={styles.cancelBtn} onPress={onCancel}>
+        <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.saveBtn} onPress={onSave} disabled={saving}>
+        {saving
+          ? <ActivityIndicator color={COLORS.black} size="small" />
+          : <Text style={styles.saveBtnText}>{t('adminVenues.save')}</Text>
+        }
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
 const AdminTopVenuesScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [venues, setVenues] = useState([]);
@@ -92,77 +166,6 @@ const AdminTopVenuesScreen = ({ navigation }) => {
     );
   };
 
-  const FormCard = () => (
-    <View style={styles.formCard}>
-      <Text style={styles.formTitle}>{form?.id ? t('adminVenues.editTitle') : t('adminVenues.addTitle')}</Text>
-
-      <Text style={styles.fieldLabel}>{t('adminVenues.nameLabel')} *</Text>
-      <TextInput
-        style={styles.input}
-        value={form?.name ?? ''}
-        onChangeText={(v) => setField('name', v)}
-        placeholder={t('adminVenues.namePlaceholder')}
-        placeholderTextColor={COLORS.textMuted}
-      />
-
-      <Text style={styles.fieldLabel}>{t('adminVenues.addressLabel')}</Text>
-      <TextInput
-        style={styles.input}
-        value={form?.address ?? ''}
-        onChangeText={(v) => setField('address', v)}
-        placeholder={t('adminVenues.addressPlaceholder')}
-        placeholderTextColor={COLORS.textMuted}
-      />
-
-      <Text style={styles.fieldLabel}>{t('adminVenues.descLabel')}</Text>
-      <TextInput
-        style={[styles.input, styles.inputMulti]}
-        value={form?.description ?? ''}
-        onChangeText={(v) => setField('description', v)}
-        placeholder={t('adminVenues.descPlaceholder')}
-        placeholderTextColor={COLORS.textMuted}
-        multiline
-      />
-
-      <Text style={styles.fieldLabel}>{t('adminVenues.rankLabel')} *</Text>
-      <TextInput
-        style={styles.input}
-        value={form?.rank ?? ''}
-        onChangeText={(v) => setField('rank', v.replace(/[^0-9]/g, ''))}
-        placeholder="1"
-        placeholderTextColor={COLORS.textMuted}
-        keyboardType="number-pad"
-      />
-
-      <Text style={styles.fieldLabel}>{t('adminVenues.categoryLabel')}</Text>
-      <View style={styles.catRow}>
-        {CATS.map((c) => (
-          <TouchableOpacity
-            key={c.id}
-            style={[styles.catChip, form?.category === c.id && { backgroundColor: c.pinColor, borderColor: c.pinColor }]}
-            onPress={() => setField('category', c.id)}
-          >
-            <Text style={[styles.catChipText, form?.category === c.id && styles.catChipTextActive]}>
-              {c.emoji}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <View style={styles.formBtns}>
-        <TouchableOpacity style={styles.cancelBtn} onPress={cancelForm}>
-          <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
-          {saving
-            ? <ActivityIndicator color={COLORS.black} size="small" />
-            : <Text style={styles.saveBtnText}>{t('adminVenues.save')}</Text>
-          }
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
     <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <BackHeader
@@ -185,7 +188,9 @@ const AdminTopVenuesScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={form ? <FormCard /> : null}
+          ListHeaderComponent={form ? (
+            <FormCard form={form} setField={setField} saving={saving} onSave={handleSave} onCancel={cancelForm} t={t} />
+          ) : null}
           ListEmptyComponent={!form ? (
             <View style={styles.emptyWrap}>
               <Text style={styles.empty}>{t('adminVenues.empty')}</Text>

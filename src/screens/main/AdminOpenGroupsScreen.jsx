@@ -14,6 +14,48 @@ import PhotoPicker from '../../components/common/PhotoPicker';
 
 const BLANK = { name: '', description: '', photo_url: null };
 
+// Defined outside the screen so its identity is stable across renders — nesting
+// this inside AdminOpenGroupsScreen made React remount the TextInputs (and drop
+// the keyboard) on every keystroke, since setField() re-renders the parent.
+const FormCard = ({ form, setField, saving, onSave, onCancel, t }) => (
+  <View style={styles.formCard}>
+    <Text style={styles.formTitle}>{form?.id ? t('adminGroups.editTitle') : t('adminGroups.addTitle')}</Text>
+
+    <Text style={styles.fieldLabel}>{t('adminGroups.nameLabel')} *</Text>
+    <TextInput
+      style={styles.input}
+      value={form?.name ?? ''}
+      onChangeText={(v) => setField('name', v)}
+      placeholder={t('adminGroups.namePlaceholder')}
+      placeholderTextColor={COLORS.textMuted}
+    />
+
+    <Text style={styles.fieldLabel}>{t('adminGroups.descLabel')}</Text>
+    <TextInput
+      style={[styles.input, styles.inputMulti]}
+      value={form?.description ?? ''}
+      onChangeText={(v) => setField('description', v)}
+      placeholder={t('adminGroups.descPlaceholder')}
+      placeholderTextColor={COLORS.textMuted}
+      multiline
+    />
+
+    <PhotoPicker uri={form?.photo_url} onChange={(uri) => setField('photo_url', uri)} />
+
+    <View style={styles.formBtns}>
+      <TouchableOpacity style={styles.cancelBtn} onPress={onCancel}>
+        <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.saveBtn} onPress={onSave} disabled={saving}>
+        {saving
+          ? <ActivityIndicator color={COLORS.black} size="small" />
+          : <Text style={styles.saveBtnText}>{t('adminGroups.save')}</Text>
+        }
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
 const AdminOpenGroupsScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [userId, setUserId] = useState(null);
@@ -91,45 +133,6 @@ const AdminOpenGroupsScreen = ({ navigation }) => {
     );
   };
 
-  const FormCard = () => (
-    <View style={styles.formCard}>
-      <Text style={styles.formTitle}>{form?.id ? t('adminGroups.editTitle') : t('adminGroups.addTitle')}</Text>
-
-      <Text style={styles.fieldLabel}>{t('adminGroups.nameLabel')} *</Text>
-      <TextInput
-        style={styles.input}
-        value={form?.name ?? ''}
-        onChangeText={(v) => setField('name', v)}
-        placeholder={t('adminGroups.namePlaceholder')}
-        placeholderTextColor={COLORS.textMuted}
-      />
-
-      <Text style={styles.fieldLabel}>{t('adminGroups.descLabel')}</Text>
-      <TextInput
-        style={[styles.input, styles.inputMulti]}
-        value={form?.description ?? ''}
-        onChangeText={(v) => setField('description', v)}
-        placeholder={t('adminGroups.descPlaceholder')}
-        placeholderTextColor={COLORS.textMuted}
-        multiline
-      />
-
-      <PhotoPicker uri={form?.photo_url} onChange={(uri) => setField('photo_url', uri)} />
-
-      <View style={styles.formBtns}>
-        <TouchableOpacity style={styles.cancelBtn} onPress={cancelForm}>
-          <Text style={styles.cancelBtnText}>{t('common.cancel')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
-          {saving
-            ? <ActivityIndicator color={COLORS.black} size="small" />
-            : <Text style={styles.saveBtnText}>{t('adminGroups.save')}</Text>
-          }
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
-
   return (
     <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <BackHeader
@@ -152,7 +155,9 @@ const AdminOpenGroupsScreen = ({ navigation }) => {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={form ? <FormCard /> : null}
+          ListHeaderComponent={form ? (
+            <FormCard form={form} setField={setField} saving={saving} onSave={handleSave} onCancel={cancelForm} t={t} />
+          ) : null}
           ListEmptyComponent={!form ? (
             <View style={styles.emptyWrap}>
               <Text style={styles.empty}>{t('adminGroups.empty')}</Text>
