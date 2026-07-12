@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, Image, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl, TextInput, Alert, KeyboardAvoidingView, Platform,
+  ActivityIndicator, RefreshControl, TextInput, Alert,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -223,7 +224,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
   }
 
   return (
-    <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={groupName ?? t('openGroups.title')} onBack={() => navigation.goBack()} />
 
       <View style={styles.toggleBar}>

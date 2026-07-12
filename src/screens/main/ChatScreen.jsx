@@ -1,8 +1,9 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  TextInput, KeyboardAvoidingView, Keyboard, Platform, ActivityIndicator, SafeAreaView, Alert,
+  TextInput, ActivityIndicator, SafeAreaView, Alert,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -23,21 +24,6 @@ const ChatScreen = ({ navigation, route }) => {
   const [sending, setSending] = useState(false);
   const flatListRef = useRef(null);
   const intervalRef = useRef(null);
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-  // Android's windowSoftInputMode=adjustResize doesn't reliably shrink the
-  // visible area on newer OS versions (edge-to-edge enforcement), leaving the
-  // input row under the keyboard. Track the real keyboard height directly and
-  // push the input row up ourselves instead of relying on native resize.
-  useEffect(() => {
-    if (Platform.OS !== 'android') return;
-    const showSub = Keyboard.addListener('keyboardDidShow', (e) => setKeyboardHeight(e.endCoordinates.height));
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboardHeight(0));
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
   const loadMessages = useCallback(async (uid) => {
     const { data, error } = await getMessages(conversationId);
@@ -122,11 +108,7 @@ const ChatScreen = ({ navigation, route }) => {
         <View style={{ width: 40 }} />
       </View>
 
-      <KeyboardAvoidingView
-        style={[styles.flex, Platform.OS === 'android' && { paddingBottom: keyboardHeight }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
-      >
+      <KeyboardAvoidingView style={styles.flex} behavior="padding">
         <FlatList
           ref={flatListRef}
           data={messages}

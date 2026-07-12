@@ -2,6 +2,7 @@ import './src/lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { onAuthStateChange, getSession } from './src/lib/auth';
 import AuthNavigator from './src/navigation/AuthNavigator';
@@ -33,12 +34,14 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        {session
-          ? <UserProvider><MainNavigator /></UserProvider>
-          : <AuthNavigator />
-        }
-      </NavigationContainer>
+      <KeyboardProvider>
+        <NavigationContainer>
+          {session
+            ? <UserProvider><MainNavigator /></UserProvider>
+            : <AuthNavigator />
+          }
+        </NavigationContainer>
+      </KeyboardProvider>
     </SafeAreaProvider>
   );
 }
