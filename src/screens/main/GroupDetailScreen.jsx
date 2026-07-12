@@ -252,9 +252,6 @@ const GroupDetailScreen = ({ navigation, route }) => {
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
       >
-        <AdBanner page="OpenGroupDetail" />
-        <ProfileBanner navigation={navigation} />
-
         <View style={styles.composeBox}>
           <TextInput
             style={styles.composeInput}
@@ -273,6 +270,9 @@ const GroupDetailScreen = ({ navigation, route }) => {
             }
           </TouchableOpacity>
         </View>
+
+        <AdBanner page="OpenGroupDetail" />
+        <ProfileBanner navigation={navigation} />
 
         {posts.length === 0 ? (
           <Text style={styles.empty}>
