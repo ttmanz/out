@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, FlatList, ScrollView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -182,20 +182,24 @@ const AdminTopVenuesScreen = ({ navigation }) => {
         <View style={styles.center}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
+      ) : form ? (
+        // Rendered as a plain ScrollView, not a FlatList header — putting the
+        // TextInputs inside FlatList's ListHeaderComponent caused Android to
+        // drop keyboard focus on every keystroke (VirtualizedList re-measures
+        // the header on every layout change while the keyboard is open).
+        <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled">
+          <FormCard form={form} setField={setField} saving={saving} onSave={handleSave} onCancel={cancelForm} t={t} />
+        </ScrollView>
       ) : (
         <FlatList
           data={venues}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
-          keyboardShouldPersistTaps="handled"
-          ListHeaderComponent={form ? (
-            <FormCard form={form} setField={setField} saving={saving} onSave={handleSave} onCancel={cancelForm} t={t} />
-          ) : null}
-          ListEmptyComponent={!form ? (
+          ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <Text style={styles.empty}>{t('adminVenues.empty')}</Text>
             </View>
-          ) : null}
+          }
           renderItem={({ item }) => {
             const cat = VENUE_CATEGORIES.find((c) => c.id === item.category);
             const isDeleting = deletingId === item.id;

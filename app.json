@@ -30,6 +30,7 @@
     "android": {
       "package": "com.ttleisureland.findmee",
       "versionCode": 1,
+      "softwareKeyboardLayoutMode": "resize",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyCYZnZoP137iDKTHUK2zFZIHfAT9unrvjw"
