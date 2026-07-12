@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
-  View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
+  View, Text, Image, ScrollView, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -139,12 +139,12 @@ const GroupDetailScreen = ({ navigation, route }) => {
     await load();
   };
 
-  const renderPost = ({ item }) => {
+  const renderPost = (item) => {
     const ps = replyState[item.id] ?? {};
     const replyCount = ps.replies?.length ?? 0;
 
     return (
-      <View style={styles.card}>
+      <View key={item.id} style={styles.card}>
         <View style={styles.cardHeader}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
@@ -245,45 +245,43 @@ const GroupDetailScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
+      <ScrollView
         contentContainerStyle={styles.list}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
-        keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={() => (
-          <>
-            <AdBanner page="OpenGroupDetail" />
-            <ProfileBanner navigation={navigation} />
-            <View style={styles.composeBox}>
-              <TextInput
-                style={styles.composeInput}
-                placeholder={t('openGroups.composePlaceholder')}
-                placeholderTextColor={COLORS.textMuted}
-                value={postText}
-                onChangeText={setPostText}
-                multiline
-              />
-              <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
-              <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
-              <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
-                {posting
-                  ? <ActivityIndicator size="small" color={COLORS.black} />
-                  : <Text style={styles.postBtnText}>{t('openGroups.post')}</Text>
-                }
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
-        ListEmptyComponent={
+      >
+        <AdBanner page="OpenGroupDetail" />
+        <ProfileBanner navigation={navigation} />
+
+        <View style={styles.composeBox}>
+          <TextInput
+            style={styles.composeInput}
+            placeholder={t('openGroups.composePlaceholder')}
+            placeholderTextColor={COLORS.textMuted}
+            value={postText}
+            onChangeText={setPostText}
+            multiline
+          />
+          <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
+          <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
+          <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
+            {posting
+              ? <ActivityIndicator size="small" color={COLORS.black} />
+              : <Text style={styles.postBtnText}>{t('openGroups.post')}</Text>
+            }
+          </TouchableOpacity>
+        </View>
+
+        {posts.length === 0 ? (
           <Text style={styles.empty}>
             {mode === 'friends' ? t('openGroups.noFriendPosts') : t('openGroups.noPosts')}
           </Text>
-        }
-        renderItem={renderPost}
-      />
+        ) : (
+          posts.map(renderPost)
+        )}
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
