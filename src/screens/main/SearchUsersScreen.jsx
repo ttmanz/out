@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { searchUsers, sendFriendRequest, getSentRequestIds, getMyBlockedIds, blockMember } from '../../lib/friends';
+import { searchUsers, sendFriendRequest, getSentRequestIds, getFriendIds, getMyBlockedIds, blockMember } from '../../lib/friends';
 import { getSession } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
 import AuthInput from '../../components/auth/AuthInput';
@@ -28,6 +29,7 @@ const SearchUsersScreen = ({ navigation }) => {
   const [query, setQuery] = useState('');
   const [directory, setDirectory] = useState([]);
   const [sentIds, setSentIds] = useState(new Set());
+  const [friendIds, setFriendIds] = useState(new Set());
   const [blockedIds, setBlockedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -48,7 +50,7 @@ const SearchUsersScreen = ({ navigation }) => {
     setLoading(false);
   };
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     getSession().then(({ data: { session } }) => {
       const uid = session?.user?.id ?? null;
       setUserId(uid);
@@ -56,13 +58,15 @@ const SearchUsersScreen = ({ navigation }) => {
       if (!uid) return;
       Promise.all([
         getSentRequestIds(uid),
+        getFriendIds(uid),
         getMyBlockedIds(uid),
-      ]).then(([sentRes, blockedRes]) => {
+      ]).then(([sentRes, friendRes, blockedRes]) => {
         setSentIds(new Set((sentRes.data ?? []).map((r) => r.addressee_id)));
+        setFriendIds(new Set(friendRes.data ?? []));
         setBlockedIds(new Set((blockedRes.data ?? []).map((r) => r.blocked_id)));
       });
     });
-  }, []);
+  }, []));
 
   const myInterests = profile?.interests ?? [];
 
@@ -70,12 +74,12 @@ const SearchUsersScreen = ({ navigation }) => {
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     return directory.filter((r) => {
-      if (blockedIds.has(r.id)) return false;
+      if (blockedIds.has(r.id) || friendIds.has(r.id)) return false;
       if (!q) return true;
       const name = (r.full_name ?? '').toLowerCase();
       return name.startsWith(q) || name.split(/\s+/).some((w) => w.startsWith(q));
     });
-  }, [directory, query, blockedIds]);
+  }, [directory, query, blockedIds, friendIds]);
 
   const handleAdd = async (addresseeId) => {
     const { error } = await sendFriendRequest(userId, addresseeId);

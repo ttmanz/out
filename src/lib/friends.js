@@ -73,6 +73,19 @@ export const getPendingRequests = (userId) =>
 export const getSentRequestIds = (userId) =>
   supabase.from('friendships').select('addressee_id').eq('requester_id', userId);
 
+// Get IDs of the current user's accepted friends (both directions), so
+// screens like Search People can hide people who are already friends
+export const getFriendIds = async (userId) => {
+  const { data, error } = await supabase
+    .from('friendships')
+    .select('requester_id, addressee_id')
+    .eq('status', 'accepted')
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+  if (error) return { data: [], error };
+  const ids = (data ?? []).map((f) => (f.requester_id === userId ? f.addressee_id : f.requester_id));
+  return { data: ids, error: null };
+};
+
 // Block a member
 export const blockMember = (blockerId, blockedId) =>
   supabase.from('member_blocks').insert({ blocker_id: blockerId, blocked_id: blockedId });
