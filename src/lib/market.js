@@ -15,3 +15,7 @@ export const createMarketListing = (userId, description, photoUrl) =>
 
 export const deleteMarketListing = (id, userId) =>
   supabase.from('market_listings').delete().eq('id', id).eq('user_id', userId);
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteListing = (id) =>
+  supabase.from('market_listings').delete().eq('id', id);

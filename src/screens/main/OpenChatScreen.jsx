@@ -9,11 +9,12 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import {
   getOpenChatPosts, getOpenChatReplies, createOpenChatReply,
-  getPostBlocks, blockUserFromPost,
+  getPostBlocks, blockUserFromPost, adminDeleteOpenChatPost,
 } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { moderateContent } from '../../lib/moderation';
+import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
@@ -21,6 +22,8 @@ import BackHeader from '../../components/common/BackHeader';
 
 const OpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
   const [userId, setUserId] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -117,6 +120,25 @@ const OpenChatScreen = ({ navigation }) => {
     });
   };
 
+  const handleAdminDelete = (postId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteOpenChatPost(postId);
+            if (error) Alert.alert(t('common.error'), t('common.error'));
+            else setPosts((prev) => prev.filter((p) => p.id !== postId));
+          },
+        },
+      ]
+    );
+  };
+
   const renderPost = ({ item }) => {
     const ps = replyState[item.id] ?? {};
     const isOwner = userId === item.user_id;
@@ -137,6 +159,11 @@ const OpenChatScreen = ({ navigation }) => {
             </TouchableOpacity>
             <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
           </View>
+          {isAdmin && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
+              <Text style={styles.adminDeleteBtnText}>🗑</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <Text style={styles.title}>{item.title}</Text>
@@ -281,6 +308,8 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  adminDeleteBtnText: { fontSize: 18 },
   title: { fontSize: 16, fontWeight: '600', color: COLORS.text, marginBottom: 6, lineHeight: 22 },
   venue: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10, marginBottom: 10 },

@@ -40,3 +40,7 @@ export const getSpurReplies = (spurId) =>
 
 export const createSpurReply = (userId, spurId, message) =>
   supabase.from('spur_replies').insert({ spur_id: spurId, user_id: userId, message });
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteSpurPost = (id) =>
+  supabase.from('spur_posts').delete().eq('id', id);

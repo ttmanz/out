@@ -10,7 +10,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import {
   getGroupPosts, getFriendGroupPosts, createGroupPost,
-  getGroupPostReplies, createGroupPostReply,
+  getGroupPostReplies, createGroupPostReply, adminDeleteGroupPost,
 } from '../../lib/groups';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -27,7 +27,8 @@ import BackHeader from '../../components/common/BackHeader';
 const GroupDetailScreen = ({ navigation, route }) => {
   const { groupId, groupName } = route.params;
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { hasAccess, profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
 
   const [userId, setUserId] = useState(null);
   const [mode, setMode] = useState('all');
@@ -140,6 +141,24 @@ const GroupDetailScreen = ({ navigation, route }) => {
     await load();
   };
 
+  const handleAdminDelete = (postId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteGroupPost(postId);
+            if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
+          },
+        },
+      ]
+    );
+  };
+
   const renderPost = (item) => {
     const ps = replyState[item.id] ?? {};
     const replyCount = ps.replies?.length ?? 0;
@@ -156,6 +175,11 @@ const GroupDetailScreen = ({ navigation, route }) => {
             </TouchableOpacity>
             <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
           </View>
+          {isAdmin && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
+              <Text style={styles.adminDeleteBtnText}>🗑</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {!!item.text && <Text style={styles.postText}>{item.text}</Text>}
@@ -325,6 +349,8 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  adminDeleteBtnText: { fontSize: 18 },
   postText: { fontSize: 14, color: COLORS.text, lineHeight: 20, marginBottom: 8 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10, marginBottom: 8 },
   replyToggle: { alignSelf: 'flex-start' },

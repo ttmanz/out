@@ -46,3 +46,7 @@ export const getPostBlocks = (postId) =>
 
 export const blockUserFromPost = (postId, blockedUserId, blockedBy) =>
   supabase.from('post_blocks').insert({ post_id: postId, blocked_user_id: blockedUserId, blocked_by: blockedBy });
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteOpenChatPost = (id) =>
+  supabase.from('open_chat_posts').delete().eq('id', id);

@@ -40,3 +40,7 @@ export const getFriendStories = async (userId) => {
 
 export const createStory = (userId, { text, photo_url, video_url }) =>
   supabase.from('stories').insert({ user_id: userId, text, photo_url, video_url });
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteStory = (id) =>
+  supabase.from('stories').delete().eq('id', id);

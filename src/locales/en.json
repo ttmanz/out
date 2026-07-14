@@ -5,7 +5,10 @@
     "or": "or",
     "done": "Done",
     "cancel": "Cancel",
-    "photoUploadFailed": "Photo upload failed. Please try again."
+    "photoUploadFailed": "Photo upload failed. Please try again.",
+    "delete": "Delete",
+    "deletePostTitle": "Delete post?",
+    "deletePostDesc": "This will permanently remove this post."
   },
   "club": {
     "create": "Start a Club",

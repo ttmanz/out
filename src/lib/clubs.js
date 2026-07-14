@@ -46,3 +46,7 @@ export const getClubPosts = (clubId) =>
 
 export const createClubPost = (clubId, userId, { text, photo_url = null }) =>
   supabase.from('club_posts').insert({ club_id: clubId, user_id: userId, text, photo_url });
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteClubPost = (id) =>
+  supabase.from('club_posts').delete().eq('id', id);

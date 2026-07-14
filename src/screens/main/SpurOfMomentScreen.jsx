@@ -7,9 +7,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getSpurPosts, getSpurReplies, createSpurReply } from '../../lib/spur';
+import { getSpurPosts, getSpurReplies, createSpurReply, adminDeleteSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
@@ -17,6 +18,8 @@ import BackHeader from '../../components/common/BackHeader';
 
 const SpurOfMomentScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -59,6 +62,24 @@ const SpurOfMomentScreen = ({ navigation }) => {
     }
   };
 
+  const handleAdminDelete = (postId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteSpurPost(postId);
+            if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
+          },
+        },
+      ]
+    );
+  };
+
   const renderPost = ({ item }) => {
     const ps = replyState[item.id] ?? {};
     const replyCount = ps.replies?.length ?? 0;
@@ -76,6 +97,11 @@ const SpurOfMomentScreen = ({ navigation }) => {
             </TouchableOpacity>
             <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
           </View>
+          {isAdmin && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
+              <Text style={styles.adminDeleteBtnText}>🗑</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <Text style={styles.cardTitle}>{item.title}</Text>
@@ -194,6 +220,8 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.primary },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  adminDeleteBtnText: { fontSize: 18 },
   cardTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 8, lineHeight: 22 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10, marginBottom: 10 },
   replyToggle: { alignSelf: 'flex-start' },

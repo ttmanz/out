@@ -7,9 +7,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getActivityEvents, deriveWhen, getActivityEventReplies, createActivityEventReply } from '../../lib/activityEvents';
+import { getActivityEvents, deriveWhen, getActivityEventReplies, createActivityEventReply, adminDeleteActivityEvent } from '../../lib/activityEvents';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
@@ -22,7 +23,7 @@ const formatEventDate = (iso) => {
   });
 };
 
-const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyTextChange, onSendReply }) => {
+const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
@@ -31,7 +32,14 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
         <Image source={{ uri: event.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
       )}
       <View style={styles.cardBody}>
-        <Text style={styles.eventName}>{event.name}</Text>
+        <View style={styles.cardTitleRow}>
+          <Text style={[styles.eventName, { flex: 1 }]}>{event.name}</Text>
+          {isAdmin && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(event.id)}>
+              <Text style={styles.adminDeleteBtnText}>🗑</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {!!event.venue && <Text style={styles.eventMeta}>📍 {event.venue}</Text>}
         {!!event.event_date && (
           <Text style={styles.eventMeta}>🗓  {formatEventDate(event.event_date)}</Text>
@@ -97,6 +105,8 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
 
 const ActivityEventsScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
   const { filter } = route.params;
 
   const [events, setEvents] = useState([]);
@@ -151,6 +161,24 @@ const ActivityEventsScreen = ({ navigation, route }) => {
     });
   };
 
+  const handleAdminDelete = (eventId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteActivityEvent(eventId);
+            if (!error) setEvents((prev) => prev.filter((e) => e.id !== eventId));
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -188,6 +216,8 @@ const ActivityEventsScreen = ({ navigation, route }) => {
             onToggleReplies={toggleReplies}
             onReplyTextChange={(id, v) => patchReply(id, { text: v })}
             onSendReply={handleReply}
+            isAdmin={isAdmin}
+            onAdminDelete={handleAdminDelete}
           />
         )}
       />
@@ -217,6 +247,9 @@ const styles = StyleSheet.create({
   },
   cardPhoto: { width: '100%', height: 180 },
   cardBody: { padding: 16 },
+  cardTitleRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 2, marginLeft: 6 },
+  adminDeleteBtnText: { fontSize: 18 },
   eventName: { fontSize: 17, fontWeight: '800', color: COLORS.text, marginBottom: 6 },
   eventMeta: { fontSize: 13, color: COLORS.textMuted, marginBottom: 3 },
   eventDesc: { fontSize: 13, color: COLORS.text, lineHeight: 18, marginTop: 6, marginBottom: 4 },

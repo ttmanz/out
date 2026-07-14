@@ -32,3 +32,7 @@ export const getHappeningReplies = (happeningId) =>
 
 export const createHappeningReply = (userId, happeningId, message) =>
   supabase.from('happening_replies').insert({ happening_id: happeningId, user_id: userId, message });
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteHappening = (id) =>
+  supabase.from('happenings').delete().eq('id', id);

@@ -1,15 +1,16 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl,
+  ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getStories, getFriendStories, STORY_EXPIRY_DAYS } from '../../lib/stories';
+import { getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory } from '../../lib/stories';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import BackHeader from '../../components/common/BackHeader';
 
@@ -30,7 +31,7 @@ const ExpiryBadge = ({ createdAt }) => {
   );
 };
 
-const StoryCard = ({ item, navigation }) => (
+const StoryCard = ({ item, navigation, isAdmin, onAdminDelete }) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
       <TouchableOpacity
@@ -56,6 +57,11 @@ const StoryCard = ({ item, navigation }) => (
         <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
       </View>
       <ExpiryBadge createdAt={item.created_at} />
+      {isAdmin && (
+        <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
+          <Text style={styles.adminDeleteBtnText}>🗑</Text>
+        </TouchableOpacity>
+      )}
     </View>
     {!!item.text && <Text style={styles.storyText}>{item.text}</Text>}
     {!!item.photo_url && (
@@ -72,6 +78,8 @@ const StoryCard = ({ item, navigation }) => (
 
 const StoryFeedScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
   const [mode, setMode] = useState('all');
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -99,6 +107,24 @@ const StoryFeedScreen = ({ navigation }) => {
     setLoading(true);
     load();
   }, [mode]);
+
+  const handleAdminDelete = (storyId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteStory(storyId);
+            if (!error) setStories((prev) => prev.filter((s) => s.id !== storyId));
+          },
+        },
+      ]
+    );
+  };
 
   if (loading) {
     return (
@@ -144,7 +170,9 @@ const StoryFeedScreen = ({ navigation }) => {
             {mode === 'friends' ? t('stories.noFriendStories') : t('stories.noStories')}
           </Text>
         }
-        renderItem={({ item }) => <StoryCard item={item} navigation={navigation} />}
+        renderItem={({ item }) => (
+          <StoryCard item={item} navigation={navigation} isAdmin={isAdmin} onAdminDelete={handleAdminDelete} />
+        )}
       />
 
       <TouchableOpacity
@@ -190,6 +218,8 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4, marginLeft: 6 },
+  adminDeleteBtnText: { fontSize: 18 },
   expiryBadge: {
     backgroundColor: 'rgba(200,128,10,0.12)',
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,

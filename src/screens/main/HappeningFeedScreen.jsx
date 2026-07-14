@@ -7,15 +7,16 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getHappenings, getHappeningReplies, createHappeningReply } from '../../lib/happenings';
+import { getHappenings, getHappeningReplies, createHappeningReply, adminDeleteHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
+import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
 
-const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply }) => {
+const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
@@ -32,6 +33,11 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
           </TouchableOpacity>
           <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
         </View>
+        {isAdmin && (
+          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
+            <Text style={styles.adminDeleteBtnText}>🗑</Text>
+          </TouchableOpacity>
+        )}
       </View>
       <Text style={styles.title}>{item.title}</Text>
       {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
@@ -92,6 +98,8 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
 
 const HappeningFeedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const { profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
   const filter = route.params?.filter ?? 'today';
 
   const [happenings, setHappenings] = useState([]);
@@ -141,6 +149,24 @@ const HappeningFeedScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleAdminDelete = (happeningId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteHappening(happeningId);
+            if (!error) setHappenings((prev) => prev.filter((h) => h.id !== happeningId));
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -178,6 +204,8 @@ const HappeningFeedScreen = ({ navigation, route }) => {
             onToggleReplies={toggleReplies}
             onReplyTextChange={(id, v) => patchReply(id, { text: v })}
             onSendReply={handleReply}
+            isAdmin={isAdmin}
+            onAdminDelete={handleAdminDelete}
           />
         )}
       />
@@ -222,6 +250,8 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  adminDeleteBtnText: { fontSize: 18 },
   title: { fontSize: 16, fontWeight: '700', color: COLORS.text, marginBottom: 6 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10, marginTop: 8 },
   meta: { fontSize: 13, color: COLORS.textMuted, marginBottom: 3 },

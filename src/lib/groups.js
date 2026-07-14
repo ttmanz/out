@@ -73,3 +73,7 @@ export const getGroupPostReplies = (postId) =>
 
 export const createGroupPostReply = (userId, postId, message) =>
   supabase.from('group_post_replies').insert({ post_id: postId, user_id: userId, message });
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const adminDeleteGroupPost = (id) =>
+  supabase.from('group_posts').delete().eq('id', id);

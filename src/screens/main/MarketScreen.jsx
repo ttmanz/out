@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getMarketListings, deleteMarketListing } from '../../lib/market';
+import { getMarketListings, deleteMarketListing, adminDeleteListing } from '../../lib/market';
 import { getSession } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
@@ -16,7 +16,8 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 
 const MarketScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { hasAccess, profile } = useUser();
+  const isAdmin = profile?.is_admin === true;
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,13 +47,16 @@ const MarketScreen = ({ navigation }) => {
   };
 
   const handleDelete = (item) => {
+    const isOwn = item.user_id === myId;
     Alert.alert(t('market.deleteTitle'), t('market.deleteDesc'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
         text: t('market.delete'), style: 'destructive',
         onPress: async () => {
-          await deleteMarketListing(item.id, myId);
-          setListings((prev) => prev.filter((l) => l.id !== item.id));
+          const { error } = isOwn
+            ? await deleteMarketListing(item.id, myId)
+            : await adminDeleteListing(item.id);
+          if (!error) setListings((prev) => prev.filter((l) => l.id !== item.id));
         },
       },
     ]);
@@ -114,7 +118,7 @@ const MarketScreen = ({ navigation }) => {
                     <Text style={styles.sellerName}>{sellerName}</Text>
                   </View>
                   <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
-                  {isOwn && (
+                  {(isOwn || isAdmin) && (
                     <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteBtn}>
                       <Text style={styles.deleteText}>✕</Text>
                     </TouchableOpacity>

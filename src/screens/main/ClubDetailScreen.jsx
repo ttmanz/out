@@ -7,16 +7,19 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
-  getClubPosts, createClubPost,
+  getClubPosts, createClubPost, adminDeleteClubPost,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { formatAgo } from '../../utils/format';
+import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
 import PhotoPicker from '../../components/common/PhotoPicker';
 
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
+  const { profile } = useUser();
+  const isSiteAdmin = profile?.is_admin === true;
 
   const [userId, setUserId] = useState(null);
   const [club, setClub] = useState(null);
@@ -119,6 +122,24 @@ const ClubDetailScreen = ({ navigation, route }) => {
     setPostText('');
     setPostPhotoUri(null);
     await load();
+  };
+
+  const handleAdminDelete = (postId) => {
+    Alert.alert(
+      'Delete post?',
+      'This will permanently remove this post.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteClubPost(postId);
+            if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
+          },
+        },
+      ]
+    );
   };
 
   if (loading || !club) {
@@ -257,6 +278,11 @@ const ClubDetailScreen = ({ navigation, route }) => {
                       <Text style={styles.memberName}>{p.profiles?.full_name ?? 'Unknown'}</Text>
                       <Text style={styles.postTime}>{formatAgo(p.created_at)}</Text>
                     </View>
+                    {isSiteAdmin && (
+                      <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(p.id)}>
+                        <Text style={styles.adminDeleteBtnText}>🗑</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                   {!!p.text && <Text style={styles.postText}>{p.text}</Text>}
                   {!!p.photo_url && <Image source={{ uri: p.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
@@ -362,6 +388,8 @@ const styles = StyleSheet.create({
   postTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 1 },
   postText: { fontSize: 14, color: COLORS.text, lineHeight: 20, marginBottom: 8 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10 },
+  adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },
+  adminDeleteBtnText: { fontSize: 18 },
 });
 
 export default ClubDetailScreen;
