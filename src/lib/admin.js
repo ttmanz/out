@@ -9,5 +9,8 @@ export const getAllMembers = () =>
 export const setMemberStatus = (userId, status) =>
   supabase.from('profiles').update({ status }).eq('id', userId);
 
+export const banMember = (userId) => setMemberStatus(userId, 'banned');
+export const unbanMember = (userId) => setMemberStatus(userId, 'active');
+
 export const setStaffStatus = (userId, is_staff) =>
   supabase.from('profiles').update({ is_staff }).eq('id', userId);

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
-import { getAllMembers, setMemberStatus, setStaffStatus } from '../../lib/admin';
+import { getAllMembers, setMemberStatus, setStaffStatus, banMember, unbanMember } from '../../lib/admin';
 import { useUser } from '../../contexts/UserContext';
 import { ROUTES } from '../../constants/routes';
 
@@ -14,11 +14,13 @@ const STATUS_COLOR = {
   active: '#2ecc71',
   restricted: '#f39c12',
   disabled: '#e74c3c',
+  banned: '#e74c3c',
 };
 const STATUS_LABEL = {
   active: 'Active',
   restricted: 'Restricted',
   disabled: 'Disabled',
+  banned: 'Banned',
 };
 
 const AdminScreen = ({ navigation }) => {
@@ -27,6 +29,7 @@ const AdminScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(null);
   const [staffUpdating, setStaffUpdating] = useState(null);
+  const [blockUpdating, setBlockUpdating] = useState(null);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async () => {
@@ -58,9 +61,40 @@ const AdminScreen = ({ navigation }) => {
     );
   };
 
+  const handleBlockToggle = (member) => {
+    if (member.id === profile?.id) {
+      Alert.alert('Cannot block your own account.');
+      return;
+    }
+    const blocking = member.status !== 'banned';
+    Alert.alert(
+      blocking ? 'Block Member' : 'Unblock Member',
+      blocking
+        ? `Block ${member.full_name ?? 'this member'}? They'll be hidden from search and locked out of the app.`
+        : `Unblock ${member.full_name ?? 'this member'} and restore normal access?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          style: blocking ? 'destructive' : 'default',
+          onPress: async () => {
+            setBlockUpdating(member.id);
+            await (blocking ? banMember(member.id) : unbanMember(member.id));
+            setBlockUpdating(null);
+            load();
+          },
+        },
+      ]
+    );
+  };
+
   const handleStatusPress = (member) => {
     if (member.id === profile?.id) {
       Alert.alert('Cannot change your own status.');
+      return;
+    }
+    if (member.status === 'banned') {
+      Alert.alert('This member is blocked — unblock them first to change their status.');
       return;
     }
     const next = STATUS_CYCLE[member.status ?? 'active'];
@@ -123,6 +157,8 @@ const AdminScreen = ({ navigation }) => {
           const status = item.status ?? 'active';
           const isUpdating = updating === item.id;
           const isStaffUpdating = staffUpdating === item.id;
+          const isBlockUpdating = blockUpdating === item.id;
+          const isBanned = status === 'banned';
           return (
             <View style={styles.row}>
               <View style={styles.avatar}>
@@ -155,6 +191,18 @@ const AdminScreen = ({ navigation }) => {
                   ? <ActivityIndicator size="small" color={STATUS_COLOR[status]} />
                   : <Text style={[styles.statusText, { color: STATUS_COLOR[status] }]}>
                       {STATUS_LABEL[status]}
+                    </Text>
+                }
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.blockChip, isBanned && styles.blockChipActive]}
+                onPress={() => handleBlockToggle(item)}
+                disabled={isBlockUpdating}
+              >
+                {isBlockUpdating
+                  ? <ActivityIndicator size="small" color={isBanned ? COLORS.black : COLORS.error} />
+                  : <Text style={[styles.blockChipText, isBanned && styles.blockChipTextActive]}>
+                      {isBanned ? 'Unblock' : 'Block'}
                     </Text>
                 }
               </TouchableOpacity>
@@ -231,6 +279,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statusText: { fontSize: 12, fontWeight: '700' },
+  blockChip: {
+    borderWidth: 1,
+    borderColor: COLORS.error,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginLeft: 8,
+    minWidth: 64,
+    alignItems: 'center',
+  },
+  blockChipActive: {
+    backgroundColor: COLORS.error,
+    borderColor: COLORS.error,
+  },
+  blockChipText: { fontSize: 11, fontWeight: '700', color: COLORS.error },
+  blockChipTextActive: { color: COLORS.black },
 });
 
 export default AdminScreen;

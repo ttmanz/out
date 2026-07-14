@@ -3,8 +3,7 @@ import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { signInWithEmail, signInWithGoogle, signInWithFacebook, signInWithApple, signOut, getSession } from '../../lib/auth';
-import { getProfile } from '../../lib/profile';
+import { signInWithEmail, signInWithGoogle, signInWithFacebook, signInWithApple } from '../../lib/auth';
 import AuthInput from '../../components/auth/AuthInput';
 import SocialButton from '../../components/auth/SocialButton';
 import PrimaryButton from '../../components/common/PrimaryButton';
@@ -25,16 +24,6 @@ const LoginScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
 
-  const checkAndBlockDisabled = async () => {
-    const { data: { session } } = await getSession();
-    if (!session) return;
-    const { data: profile } = await getProfile(session.user.id);
-    if (profile?.status === 'disabled') {
-      await signOut();
-      Alert.alert('Account Disabled', 'Your account has been disabled. Please contact support.');
-    }
-  };
-
   const handleEmailLogin = async () => {
     const error = validateLogin(email, password, t);
     if (error) { setFieldError(error); return; }
@@ -44,8 +33,6 @@ const LoginScreen = ({ navigation }) => {
       const { error: authError } = await signInWithEmail(email, password);
       if (authError) {
         Alert.alert(t('auth.errors.loginFailed'), authError.message);
-      } else {
-        await checkAndBlockDisabled();
       }
     } catch (e) {
       Alert.alert(t('common.error'), e.message);
