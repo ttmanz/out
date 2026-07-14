@@ -28,7 +28,6 @@ export const COLORS = {
   // Social auth
   google: '#DB4437',
   facebook: '#1877F2',
-  apple: '#FFFFFF',
   white: '#FFFFFF',
   black: '#000000',
 

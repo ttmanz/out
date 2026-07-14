@@ -1,6 +1,7 @@
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { makeRedirectUri } from 'expo-auth-session';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from './supabase';
 
 WebBrowser.maybeCompleteAuthSession();
@@ -40,7 +41,26 @@ export const signUpWithEmail = (email, password, fullName) =>
 
 export const signInWithGoogle   = () => oauthSignIn('google');
 export const signInWithFacebook = () => oauthSignIn('facebook');
-export const signInWithApple    = () => oauthSignIn('apple');
+
+// Native Sign in with Apple — verifies the identity token's signature
+// against Apple's public keys directly, no browser redirect or
+// Services ID/client-secret needed (that's only required for the
+// classic web OAuth code-exchange flow).
+export const signInWithApple = async () => {
+  try {
+    const credential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      ],
+    });
+    if (!credential.identityToken) return { error: new Error('No identity token returned') };
+    return supabase.auth.signInWithIdToken({ provider: 'apple', token: credential.identityToken });
+  } catch (e) {
+    if (e.code === 'ERR_REQUEST_CANCELED') return { error: null };
+    return { error: e };
+  }
+};
 
 export const signOut = () => supabase.auth.signOut();
 

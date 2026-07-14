@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { signUpWithEmail, signInWithGoogle, signInWithFacebook, signInWithApple } from '../../lib/auth';
@@ -103,12 +104,15 @@ const RegisterScreen = ({ navigation }) => {
         onPress={() => handleSocialLogin('facebook', signInWithFacebook)}
         loading={socialLoading === 'facebook'}
       />
-      <SocialButton
-        label={t('auth.continueWithApple')}
-        color={COLORS.apple}
-        onPress={() => handleSocialLogin('apple', signInWithApple)}
-        loading={socialLoading === 'apple'}
-      />
+      {Platform.OS === 'ios' && (
+        <AppleAuthentication.AppleAuthenticationButton
+          buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+          cornerRadius={10}
+          style={styles.appleBtn}
+          onPress={() => handleSocialLogin('apple', signInWithApple)}
+        />
+      )}
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>{t('auth.hasAccount')} </Text>
@@ -124,6 +128,7 @@ const styles = StyleSheet.create({
   container: { flexGrow: 1, padding: 24, backgroundColor: COLORS.background, justifyContent: 'center' },
   title: { fontSize: 32, fontWeight: '800', color: COLORS.primary, textAlign: 'center', marginBottom: 4 },
   subtitle: { fontSize: 18, color: COLORS.textMuted, textAlign: 'center', marginBottom: 32 },
+  appleBtn: { height: 46, marginBottom: 12 },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 8 },
   footerText: { color: COLORS.textMuted, fontSize: 14 },
   link: { color: COLORS.primary, fontSize: 14, fontWeight: '600' },

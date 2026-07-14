@@ -50,3 +50,4 @@ google-service-account.json
 # supabase local temp
 supabase/.temp/
 .supabase-token
+AuthKey_*.p8
