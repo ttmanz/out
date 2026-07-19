@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  watermark: { fontSize: 55, opacity: 0.07 },
+  watermark: { fontSize: 55, opacity: 0.18 },
   iconRing: {
     width: 58, height: 58, borderRadius: 29,
     borderWidth: 1.5,
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   cardEmoji: { fontSize: 24 },
   textWrap: { flex: 1 },
   cardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
-  cardDesc: { fontSize: 11, color: COLORS.textMuted, lineHeight: 15 },
+  cardDesc: { fontSize: 11, color: COLORS.textLight, lineHeight: 15 },
   chevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
 });
 

@@ -16,6 +16,7 @@ export const COLORS = {
   text: '#FFFFFF',
   textSecondary: '#D4943A',
   textMuted: '#5A4A2A',
+  textLight: '#FBE3D1',
 
   // Semantic
   error: '#EF4444',
