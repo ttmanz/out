@@ -17,7 +17,6 @@ const Avatar = ({ name, size = 44 }) => (
 
 const PendingRequestsScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const [userId, setUserId] = useState(null);
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState(null);
@@ -25,7 +24,6 @@ const PendingRequestsScreen = ({ navigation }) => {
   const load = useCallback(async () => {
     const { data: { session } } = await getSession();
     if (!session) return;
-    setUserId(session.user.id);
     const { data, error } = await getPendingRequests(session.user.id);
     if (!error) setPending(data ?? []);
     setLoading(false);

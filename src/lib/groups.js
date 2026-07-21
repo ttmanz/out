@@ -3,9 +3,6 @@ import { supabase } from './supabase';
 export const getOpenGroups = () =>
   supabase.from('open_groups').select('id, name, description, photo_url, created_at').order('name', { ascending: true });
 
-export const getOpenGroup = (groupId) =>
-  supabase.from('open_groups').select('id, name, description, photo_url, created_at').eq('id', groupId).single();
-
 export const createOpenGroup = (adminId, { name, description, photo_url }) =>
   supabase
     .from('open_groups')
