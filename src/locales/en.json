@@ -185,6 +185,9 @@
   },
   "profileSettings": {
     "title": "Profile Settings",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "Your name...",
+    "errorName": "Please enter your name.",
     "whoCanFind": "Who can find me?",
     "everyone": "Everyone",
     "everyoneDesc": "Any Find - Mee member can find and view your profile",
@@ -259,6 +262,7 @@
     "title": "Venue Reviews",
     "rate": "Rate",
     "venueNamePlaceholder": "Venue name...",
+    "bodyPlaceholder": "Write your review...",
     "submit": "Post",
     "empty": "No ratings yet — be the first!",
     "deleteConfirm": "Delete this rating?",
@@ -266,7 +270,8 @@
     "delete": "Delete",
     "errorTitle": "Missing info",
     "errorVenue": "Please enter a venue name.",
-    "errorRating": "Please pick a star rating."
+    "errorRating": "Please pick a star rating.",
+    "errorBody": "Please write a short review."
   },
   "profile": {
     "activity": "Recent activity",
@@ -282,6 +287,12 @@
     "submitPost": "Post Story",
     "noStories": "No stories yet — be the first to share!",
     "noFriendStories": "No stories from friends yet.",
+    "viewReplies": "View replies",
+    "hideReplies": "Hide replies",
+    "noReplies": "No replies yet — be the first!",
+    "replyPlaceholder": "Write a reply...",
+    "send": "Send",
+    "errorReplyFailed": "Could not send your reply. Please try again.",
     "errors": {
       "contentRequired": "Please add some text or a photo/video",
       "mediaFailed": "Media upload failed. Post without media?",

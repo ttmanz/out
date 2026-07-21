@@ -1,13 +1,17 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl, Alert,
+  ActivityIndicator, RefreshControl, Alert, TextInput,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory } from '../../lib/stories';
+import {
+  getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory,
+  getStoryReplies, createStoryReply,
+} from '../../lib/stories';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -31,50 +35,105 @@ const ExpiryBadge = ({ createdAt }) => {
   );
 };
 
-const StoryCard = ({ item, navigation, isAdmin, onAdminDelete }) => (
-  <View style={styles.card}>
-    <View style={styles.cardHeader}>
-      <TouchableOpacity
-        style={styles.avatar}
-        onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {
-          userId: item.user_id,
-          fullName: item.profiles?.full_name,
-        })}
-      >
-        <Text style={styles.avatarText}>
-          {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
-        </Text>
-      </TouchableOpacity>
-      <View style={{ flex: 1 }}>
+const StoryCard = ({
+  item, navigation, isAdmin, onAdminDelete, t,
+  replyState, onToggleReplies, onReplyTextChange, onSendReply,
+}) => {
+  const ps = replyState ?? {};
+  const replyCount = ps.replies?.length ?? 0;
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
         <TouchableOpacity
+          style={styles.avatar}
           onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {
             userId: item.user_id,
             fullName: item.profiles?.full_name,
           })}
         >
-          <Text style={styles.posterName}>{item.profiles?.full_name ?? 'Someone'}</Text>
+          <Text style={styles.avatarText}>
+            {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {
+              userId: item.user_id,
+              fullName: item.profiles?.full_name,
+            })}
+          >
+            <Text style={styles.posterName}>{item.profiles?.full_name ?? 'Someone'}</Text>
+          </TouchableOpacity>
+          <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
+        </View>
+        <ExpiryBadge createdAt={item.created_at} />
+        {isAdmin && (
+          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
+            <Text style={styles.adminDeleteBtnText}>🗑</Text>
+          </TouchableOpacity>
+        )}
       </View>
-      <ExpiryBadge createdAt={item.created_at} />
-      {isAdmin && (
-        <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
-          <Text style={styles.adminDeleteBtnText}>🗑</Text>
-        </TouchableOpacity>
+      {!!item.text && <Text style={styles.storyText}>{item.text}</Text>}
+      {!!item.photo_url && (
+        <Image source={{ uri: item.photo_url }} style={styles.media} resizeMode="cover" />
+      )}
+      {!!item.video_url && (
+        <View style={styles.videoBadge}>
+          <Text style={styles.videoBadgeIcon}>🎬</Text>
+          <Text style={styles.videoBadgeText}>Video</Text>
+        </View>
+      )}
+
+      <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(item.id)}>
+        <Text style={styles.replyToggleText}>
+          💬 {ps.expanded ? t('stories.hideReplies') : `${t('stories.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
+        </Text>
+      </TouchableOpacity>
+
+      {ps.expanded && (
+        <View style={styles.repliesSection}>
+          {ps.loading ? (
+            <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
+          ) : (
+            <>
+              {(ps.replies ?? []).length === 0 && (
+                <Text style={styles.noReplies}>{t('stories.noReplies')}</Text>
+              )}
+              {(ps.replies ?? []).map((r) => (
+                <View key={r.id} style={styles.replyRow}>
+                  <Text style={styles.replyName}>{r.profiles?.full_name ?? 'Someone'}</Text>
+                  <Text style={styles.replyText}>{r.message}</Text>
+                  <Text style={styles.replyTime}>{formatAgo(r.created_at)}</Text>
+                </View>
+              ))}
+              <View style={styles.replyInputRow}>
+                <TextInput
+                  style={styles.replyInput}
+                  placeholder={t('stories.replyPlaceholder')}
+                  placeholderTextColor={COLORS.textMuted}
+                  value={ps.text ?? ''}
+                  onChangeText={(v) => onReplyTextChange(item.id, v)}
+                  returnKeyType="send"
+                  onSubmitEditing={() => onSendReply(item.id)}
+                />
+                <TouchableOpacity
+                  style={styles.sendBtn}
+                  onPress={() => onSendReply(item.id)}
+                  disabled={ps.sending}
+                >
+                  {ps.sending
+                    ? <ActivityIndicator size="small" color={COLORS.black} />
+                    : <Text style={styles.sendBtnText}>{t('stories.send')}</Text>
+                  }
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
+        </View>
       )}
     </View>
-    {!!item.text && <Text style={styles.storyText}>{item.text}</Text>}
-    {!!item.photo_url && (
-      <Image source={{ uri: item.photo_url }} style={styles.media} resizeMode="cover" />
-    )}
-    {!!item.video_url && (
-      <View style={styles.videoBadge}>
-        <Text style={styles.videoBadgeIcon}>🎬</Text>
-        <Text style={styles.videoBadgeText}>Video</Text>
-      </View>
-    )}
-  </View>
-);
+  );
+};
 
 const StoryFeedScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -84,6 +143,7 @@ const StoryFeedScreen = ({ navigation }) => {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [replyState, setReplyState] = useState({});
   const firstRender = useRef(true);
 
   const load = useCallback(async (isRefresh = false) => {
@@ -107,6 +167,33 @@ const StoryFeedScreen = ({ navigation }) => {
     setLoading(true);
     load();
   }, [mode]);
+
+  const patchReply = (id, patch) =>
+    setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const toggleReplies = async (storyId) => {
+    const cur = replyState[storyId] ?? {};
+    if (cur.expanded) { patchReply(storyId, { expanded: false }); return; }
+    patchReply(storyId, { expanded: true, loading: true });
+    const { data, error } = await getStoryReplies(storyId);
+    patchReply(storyId, { loading: false, replies: error ? [] : (data ?? []) });
+  };
+
+  const handleReply = async (storyId) => {
+    const text = (replyState[storyId]?.text ?? '').trim();
+    if (!text) return;
+    const { data: { session } } = await getSession();
+    if (!session) return;
+    patchReply(storyId, { sending: true });
+    const { error } = await createStoryReply(session.user.id, storyId, text);
+    if (error) {
+      Alert.alert(t('common.error'), t('stories.errorReplyFailed'));
+      patchReply(storyId, { sending: false });
+    } else {
+      const { data } = await getStoryReplies(storyId);
+      patchReply(storyId, { sending: false, text: '', replies: data ?? [] });
+    }
+  };
 
   const handleAdminDelete = (storyId) => {
     Alert.alert(
@@ -135,7 +222,7 @@ const StoryFeedScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.safe}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={t('stories.title')} onBack={() => navigation.goBack()} />
 
       <View style={styles.toggleBar}>
@@ -171,7 +258,17 @@ const StoryFeedScreen = ({ navigation }) => {
           </Text>
         }
         renderItem={({ item }) => (
-          <StoryCard item={item} navigation={navigation} isAdmin={isAdmin} onAdminDelete={handleAdminDelete} />
+          <StoryCard
+            item={item}
+            navigation={navigation}
+            isAdmin={isAdmin}
+            onAdminDelete={handleAdminDelete}
+            t={t}
+            replyState={replyState[item.id]}
+            onToggleReplies={toggleReplies}
+            onReplyTextChange={(id, v) => patchReply(id, { text: v })}
+            onSendReply={handleReply}
+          />
         )}
       />
 
@@ -181,7 +278,7 @@ const StoryFeedScreen = ({ navigation }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -237,6 +334,33 @@ const styles = StyleSheet.create({
   },
   videoBadgeIcon: { fontSize: 16 },
   videoBadgeText: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  replyToggle: { alignSelf: 'flex-start', marginTop: 10 },
+  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
+  noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
+  replyRow: { marginBottom: 10 },
+  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  replyText: { fontSize: 13, color: COLORS.text, marginTop: 1 },
+  replyTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
+  replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  replyInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    backgroundColor: COLORS.surfaceAlt,
+    color: COLORS.text,
+  },
+  sendBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
   fab: {
     position: 'absolute', bottom: 24, right: 24,
     width: 56, height: 56, borderRadius: 28,

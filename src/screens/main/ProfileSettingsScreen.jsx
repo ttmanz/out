@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity,
+  View, Text, StyleSheet, TouchableOpacity, TextInput,
   ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ const VISIBILITY_OPTIONS = [
 const ProfileSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [userId, setUserId] = useState(null);
+  const [fullName, setFullName] = useState('');
   const [visibility, setVisibility] = useState('everyone');
   const [allowRequests, setAllowRequests] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -45,6 +46,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
         getMyBlockedProfiles(uid),
       ]);
       if (!profileRes.error) {
+        setFullName(profileRes.data?.full_name ?? '');
         setVisibility(profileRes.data?.visibility ?? 'everyone');
         setAllowRequests(profileRes.data?.allow_friend_requests ?? true);
       }
@@ -64,8 +66,11 @@ const ProfileSettingsScreen = ({ navigation }) => {
   };
 
   const handleSave = async () => {
+    if (!fullName.trim()) { Alert.alert(t('common.error'), t('profileSettings.errorName')); return; }
     setSaving(true);
-    const { error } = await updateProfileSettings(userId, { visibility, allow_friend_requests: allowRequests });
+    const { error } = await updateProfileSettings(userId, {
+      visibility, allow_friend_requests: allowRequests, full_name: fullName.trim(),
+    });
     setSaving(false);
     if (error) Alert.alert(t('common.error'), t('profileSettings.saveFailed'));
     else navigation.goBack();
@@ -101,6 +106,16 @@ const ProfileSettingsScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <AdBanner page="ProfileSettings" />
         <ProfileBanner navigation={navigation} />
+
+        <Text style={styles.sectionLabel}>{t('profileSettings.fullNameLabel')}</Text>
+        <TextInput
+          style={styles.nameInput}
+          value={fullName}
+          onChangeText={setFullName}
+          placeholder={t('profileSettings.fullNamePlaceholder')}
+          placeholderTextColor={COLORS.textMuted}
+          maxLength={80}
+        />
 
         <TouchableOpacity
           style={styles.editProfileBtn}
@@ -262,6 +277,12 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 13, fontWeight: '700', color: COLORS.primary,
     textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 12, marginTop: 8,
+  },
+  nameInput: {
+    backgroundColor: COLORS.surface,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+    borderRadius: 14, padding: 16, marginBottom: 20,
+    fontSize: 15, color: COLORS.text,
   },
   option: {
     flexDirection: 'row', alignItems: 'center',

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput,
-  KeyboardAvoidingView, Platform, Alert, ActivityIndicator,
+  Platform, Alert, ActivityIndicator,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -90,7 +91,7 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
 
   return (
     <View style={styles.safe}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <BackHeader
           title={`${t('activityEvents.post')} — ${t(`happenings.${category}`)}`}
           onBack={() => navigation.goBack()}

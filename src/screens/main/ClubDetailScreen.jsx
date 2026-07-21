@@ -3,6 +3,7 @@ import {
   View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
   ActivityIndicator, Alert, RefreshControl, TextInput,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import {
@@ -151,7 +152,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
   }
 
   return (
-    <View style={styles.safe}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={club.name} onBack={() => navigation.goBack()} />
 
       <ScrollView
@@ -292,7 +293,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
           </View>
         )}
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

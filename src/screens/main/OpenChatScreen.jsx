@@ -3,6 +3,7 @@ import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -256,7 +257,7 @@ const OpenChatScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.safe}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={t('openChat.title')} onBack={() => navigation.goBack()} />
 
       <FlatList
@@ -282,7 +283,7 @@ const OpenChatScreen = ({ navigation }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

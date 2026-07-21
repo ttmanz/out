@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  TextInput, ActivityIndicator, SafeAreaView, Alert,
+  TextInput, ActivityIndicator, SafeAreaView, Alert, StatusBar,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
@@ -24,6 +24,7 @@ const ChatScreen = ({ navigation, route }) => {
   const [sending, setSending] = useState(false);
   const flatListRef = useRef(null);
   const intervalRef = useRef(null);
+  const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const loadMessages = useCallback(async (uid) => {
     const { data, error } = await getMessages(conversationId);
@@ -95,7 +96,7 @@ const ChatScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>

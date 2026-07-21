@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
-  ActivityIndicator, Alert, Platform, KeyboardAvoidingView,
+  ActivityIndicator, Alert,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -36,6 +37,7 @@ const VenueReviewsScreen = ({ navigation }) => {
   const [composing, setComposing] = useState(false);
   const [venueName, setVenueName] = useState('');
   const [rating, setRating] = useState(0);
+  const [body, setBody] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
@@ -54,12 +56,14 @@ const VenueReviewsScreen = ({ navigation }) => {
     if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
     if (!venueName.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorVenue'));
     if (rating === 0) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorRating'));
+    if (!body.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorBody'));
     setSubmitting(true);
-    const { error } = await createVenueReview(userId, venueName, rating);
+    const { error } = await createVenueReview(userId, venueName, rating, body);
     setSubmitting(false);
     if (error) return Alert.alert(t('common.error'), error.message);
     setVenueName('');
     setRating(0);
+    setBody('');
     setComposing(false);
     load();
   };
@@ -75,7 +79,7 @@ const VenueReviewsScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader
         title={t('venueReviews.title')}
         onBack={() => navigation.goBack()}
@@ -94,6 +98,15 @@ const VenueReviewsScreen = ({ navigation }) => {
             placeholderTextColor={COLORS.textMuted}
             value={venueName}
             onChangeText={setVenueName}
+          />
+          <TextInput
+            style={[styles.input, styles.bodyInput]}
+            placeholder={t('venueReviews.bodyPlaceholder')}
+            placeholderTextColor={COLORS.textMuted}
+            value={body}
+            onChangeText={setBody}
+            multiline
+            maxLength={500}
           />
           <View style={styles.composeFooter}>
             <StarRow value={rating} onChange={setRating} />
@@ -134,6 +147,7 @@ const VenueReviewsScreen = ({ navigation }) => {
                 <Text style={styles.venueName}>{item.venue_name}</Text>
                 <Text style={styles.stars}>{STAR_DISPLAY[item.rating] ?? ''}</Text>
               </View>
+              {!!item.body && <Text style={styles.reviewBody}>{item.body}</Text>}
               <View style={styles.cardFooter}>
                 <Text style={styles.author}>{item.author?.full_name ?? t('notifications.someone')}</Text>
                 <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
@@ -170,6 +184,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 10, fontSize: 14,
     color: COLORS.text, backgroundColor: COLORS.background, marginBottom: 10,
   },
+  bodyInput: { minHeight: 70, textAlignVertical: 'top' },
   composeFooter: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   starRow: { flexDirection: 'row', gap: 4 },
   star: { fontSize: 24, color: COLORS.primary },
@@ -191,6 +206,7 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   venueName: { fontSize: 15, fontWeight: '700', color: COLORS.primary, flex: 1, marginRight: 8 },
   stars: { fontSize: 13, color: COLORS.primary },
+  reviewBody: { fontSize: 13, color: COLORS.textLight, lineHeight: 18, marginBottom: 8 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   author: { fontSize: 12, color: COLORS.textMuted, fontWeight: '600', flex: 1 },
   time: { fontSize: 11, color: COLORS.textMuted },

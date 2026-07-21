@@ -3,6 +3,7 @@ import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -176,7 +177,7 @@ const HappeningFeedScreen = ({ navigation, route }) => {
   }
 
   return (
-    <View style={styles.safe}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={t(`happenings.${filter}`).toUpperCase()} onBack={() => navigation.goBack()} />
 
       <FlatList
@@ -216,7 +217,7 @@ const HappeningFeedScreen = ({ navigation, route }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

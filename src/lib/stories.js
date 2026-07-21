@@ -44,3 +44,13 @@ export const createStory = (userId, { text, photo_url, video_url }) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteStory = (id) =>
   supabase.from('stories').delete().eq('id', id);
+
+export const getStoryReplies = (storyId) =>
+  supabase
+    .from('story_replies')
+    .select('*, profiles:user_id(full_name)')
+    .eq('story_id', storyId)
+    .order('created_at', { ascending: true });
+
+export const createStoryReply = (userId, storyId, message) =>
+  supabase.from('story_replies').insert({ story_id: storyId, user_id: userId, message });

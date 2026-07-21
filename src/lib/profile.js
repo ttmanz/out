@@ -7,8 +7,8 @@ export const getProfile = (userId) =>
     .eq('id', userId)
     .single();
 
-export const updateProfileSettings = (userId, { visibility, allow_friend_requests }) =>
-  supabase.from('profiles').update({ visibility, allow_friend_requests }).eq('id', userId);
+export const updateProfileSettings = (userId, { visibility, allow_friend_requests, full_name }) =>
+  supabase.from('profiles').update({ visibility, allow_friend_requests, full_name }).eq('id', userId);
 
 export const updateFullProfile = (userId, fields) =>
   supabase.from('profiles').update({ ...fields, profile_completed: true }).eq('id', userId);
