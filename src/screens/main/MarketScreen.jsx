@@ -1,13 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert, Image, StatusBar, RefreshControl,
+  ActivityIndicator, Alert, Image, StatusBar, RefreshControl, TextInput,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getMarketListings, deleteMarketListing, adminDeleteListing } from '../../lib/market';
+import {
+  getMarketListings, deleteMarketListing, adminDeleteListing,
+  getMarketListingReplies, createMarketListingReply,
+} from '../../lib/market';
 import { getSession } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
@@ -22,6 +26,7 @@ const MarketScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [myId, setMyId] = useState(null);
+  const [replyState, setReplyState] = useState({});
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async (isRefresh = false) => {
@@ -44,6 +49,33 @@ const MarketScreen = ({ navigation }) => {
       return;
     }
     navigation.navigate(ROUTES.CREATE_MARKET_LISTING);
+  };
+
+  const patchReply = (id, patch) =>
+    setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const toggleReplies = async (listingId) => {
+    const cur = replyState[listingId] ?? {};
+    if (cur.expanded) { patchReply(listingId, { expanded: false }); return; }
+    patchReply(listingId, { expanded: true, loading: true });
+    const { data, error } = await getMarketListingReplies(listingId);
+    patchReply(listingId, { loading: false, replies: error ? [] : (data ?? []) });
+  };
+
+  const handleReply = async (listingId) => {
+    const text = (replyState[listingId]?.text ?? '').trim();
+    if (!text) return;
+    const { data: { session } } = await getSession();
+    if (!session) return;
+    patchReply(listingId, { sending: true });
+    const { error } = await createMarketListingReply(session.user.id, listingId, text);
+    if (error) {
+      Alert.alert(t('common.error'), t('market.errorReplyFailed'));
+      patchReply(listingId, { sending: false });
+    } else {
+      const { data } = await getMarketListingReplies(listingId);
+      patchReply(listingId, { sending: false, text: '', replies: data ?? [] });
+    }
   };
 
   const handleDelete = (item) => {
@@ -71,7 +103,7 @@ const MarketScreen = ({ navigation }) => {
   }
 
   return (
-    <View style={styles.safe}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
@@ -103,6 +135,8 @@ const MarketScreen = ({ navigation }) => {
         renderItem={({ item }) => {
           const isOwn = item.user_id === myId;
           const sellerName = item.profiles?.full_name ?? t('market.unknownSeller');
+          const ps = replyState[item.id] ?? {};
+          const replyCount = ps.replies?.length ?? 0;
           return (
             <View style={styles.card}>
               {item.photo_url ? (
@@ -124,12 +158,60 @@ const MarketScreen = ({ navigation }) => {
                     </TouchableOpacity>
                   )}
                 </View>
+
+                <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
+                  <Text style={styles.replyToggleText}>
+                    💬 {ps.expanded ? t('market.hideReplies') : `${t('market.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
+                  </Text>
+                </TouchableOpacity>
+
+                {ps.expanded && (
+                  <View style={styles.repliesSection}>
+                    {ps.loading ? (
+                      <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
+                    ) : (
+                      <>
+                        {(ps.replies ?? []).length === 0 && (
+                          <Text style={styles.noReplies}>{t('market.noReplies')}</Text>
+                        )}
+                        {(ps.replies ?? []).map((r) => (
+                          <View key={r.id} style={styles.replyRow}>
+                            <Text style={styles.replyName}>{r.profiles?.full_name ?? 'Someone'}</Text>
+                            <Text style={styles.replyText}>{r.message}</Text>
+                            <Text style={styles.replyTime}>{formatAgo(r.created_at)}</Text>
+                          </View>
+                        ))}
+                        <View style={styles.replyInputRow}>
+                          <TextInput
+                            style={styles.replyInput}
+                            placeholder={t('market.replyPlaceholder')}
+                            placeholderTextColor={COLORS.textMuted}
+                            value={ps.text ?? ''}
+                            onChangeText={(v) => patchReply(item.id, { text: v })}
+                            returnKeyType="send"
+                            onSubmitEditing={() => handleReply(item.id)}
+                          />
+                          <TouchableOpacity
+                            style={styles.sendBtn}
+                            onPress={() => handleReply(item.id)}
+                            disabled={ps.sending}
+                          >
+                            {ps.sending
+                              ? <ActivityIndicator size="small" color={COLORS.black} />
+                              : <Text style={styles.sendBtnText}>{t('market.send')}</Text>
+                            }
+                          </TouchableOpacity>
+                        </View>
+                      </>
+                    )}
+                  </View>
+                )}
               </View>
             </View>
           );
         }}
       />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -179,6 +261,33 @@ const styles = StyleSheet.create({
   time: { fontSize: 11, color: COLORS.textMuted },
   deleteBtn: { paddingHorizontal: 6, paddingVertical: 2 },
   deleteText: { color: COLORS.error, fontSize: 13, fontWeight: '700' },
+  replyToggle: { alignSelf: 'flex-start', marginTop: 10 },
+  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
+  noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
+  replyRow: { marginBottom: 10 },
+  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
+  replyText: { fontSize: 13, color: COLORS.text, marginTop: 1 },
+  replyTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
+  replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  replyInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    backgroundColor: COLORS.surfaceAlt,
+    color: COLORS.text,
+  },
+  sendBtn: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+  },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
 });
 
 export default MarketScreen;

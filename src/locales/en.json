@@ -317,7 +317,13 @@
     "unknownSeller": "Member",
     "deleteTitle": "Remove listing?",
     "deleteDesc": "This will permanently remove your listing.",
-    "delete": "Remove"
+    "delete": "Remove",
+    "viewReplies": "View replies",
+    "hideReplies": "Hide replies",
+    "noReplies": "No replies yet — be the first!",
+    "replyPlaceholder": "Write a reply...",
+    "send": "Send",
+    "errorReplyFailed": "Could not send your reply. Please try again."
   },
   "adminVenues": {
     "title": "Top Venues",

@@ -19,3 +19,13 @@ export const deleteMarketListing = (id, userId) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteListing = (id) =>
   supabase.from('market_listings').delete().eq('id', id);
+
+export const getMarketListingReplies = (listingId) =>
+  supabase
+    .from('market_listing_replies')
+    .select('*, profiles:user_id(full_name)')
+    .eq('listing_id', listingId)
+    .order('created_at', { ascending: true });
+
+export const createMarketListingReply = (userId, listingId, message) =>
+  supabase.from('market_listing_replies').insert({ listing_id: listingId, user_id: userId, message });
