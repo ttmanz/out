@@ -20,11 +20,19 @@ const VISIBILITY_OPTIONS = [
   { key: 'private',       emoji: '🔒', labelKey: 'profileSettings.private',       descKey: 'profileSettings.privateDesc' },
 ];
 
+const VENUE_VISIBILITY_OPTIONS = [
+  { key: 'invisible',          emoji: '🙈', labelKey: 'profileSettings.venueInvisible',        descKey: 'profileSettings.venueInvisibleDesc' },
+  { key: 'friends',            emoji: '👥', labelKey: 'profileSettings.venueFriends',          descKey: 'profileSettings.venueFriendsDesc' },
+  { key: 'friends_of_friends', emoji: '🔗', labelKey: 'profileSettings.venueFriendsOfFriends', descKey: 'profileSettings.venueFriendsOfFriendsDesc' },
+  { key: 'everyone',           emoji: '🌍', labelKey: 'profileSettings.venueEveryone',          descKey: 'profileSettings.venueEveryoneDesc' },
+];
+
 const ProfileSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
   const [userId, setUserId] = useState(null);
   const [fullName, setFullName] = useState('');
   const [visibility, setVisibility] = useState('everyone');
+  const [venueVisibility, setVenueVisibility] = useState('everyone');
   const [allowRequests, setAllowRequests] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,6 +56,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
       if (!profileRes.error) {
         setFullName(profileRes.data?.full_name ?? '');
         setVisibility(profileRes.data?.visibility ?? 'everyone');
+        setVenueVisibility(profileRes.data?.venue_visibility ?? 'everyone');
         setAllowRequests(profileRes.data?.allow_friend_requests ?? true);
       }
       if (!friendsRes.error) setFriends(friendsRes.data ?? []);
@@ -70,6 +79,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
     setSaving(true);
     const { error } = await updateProfileSettings(userId, {
       visibility, allow_friend_requests: allowRequests, full_name: fullName.trim(),
+      venue_visibility: venueVisibility,
     });
     setSaving(false);
     if (error) Alert.alert(t('common.error'), t('profileSettings.saveFailed'));
@@ -184,6 +194,29 @@ const ProfileSettingsScreen = ({ navigation }) => {
               key={String(val)}
               style={[styles.option, selected && styles.optionSelected]}
               onPress={() => setAllowRequests(val)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.optionEmoji}>{emoji}</Text>
+              <View style={styles.optionText}>
+                <Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>{t(labelKey)}</Text>
+                <Text style={styles.optionDesc}>{t(descKey)}</Text>
+              </View>
+              <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                {selected && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t('profileSettings.whoSeesAtVenue')}</Text>
+
+        {VENUE_VISIBILITY_OPTIONS.map(({ key, emoji, labelKey, descKey }) => {
+          const selected = venueVisibility === key;
+          return (
+            <TouchableOpacity
+              key={key}
+              style={[styles.option, selected && styles.optionSelected]}
+              onPress={() => setVenueVisibility(key)}
               activeOpacity={0.7}
             >
               <Text style={styles.optionEmoji}>{emoji}</Text>

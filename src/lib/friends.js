@@ -86,6 +86,27 @@ export const getFriendIds = async (userId) => {
   return { data: ids, error: null };
 };
 
+// Second-degree connections: friends of the given friendIds, excluding the
+// user themself and their direct friends. Used by At Venue's
+// "friends_of_friends" visibility option.
+export const getFriendOfFriendIds = async (userId, friendIds) => {
+  if (!friendIds.length) return { data: [], error: null };
+  const { data, error } = await supabase
+    .from('friendships')
+    .select('requester_id, addressee_id')
+    .eq('status', 'accepted')
+    .or(friendIds.map((id) => `requester_id.eq.${id},addressee_id.eq.${id}`).join(','));
+  if (error) return { data: [], error };
+
+  const excluded = new Set([userId, ...friendIds]);
+  const ids = new Set();
+  (data ?? []).forEach((f) => {
+    if (!excluded.has(f.requester_id)) ids.add(f.requester_id);
+    if (!excluded.has(f.addressee_id)) ids.add(f.addressee_id);
+  });
+  return { data: [...ids], error: null };
+};
+
 // Block a member
 export const blockMember = (blockerId, blockedId) =>
   supabase.from('member_blocks').insert({ blocker_id: blockerId, blocked_id: blockedId });

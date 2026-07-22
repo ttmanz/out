@@ -11,6 +11,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { upsertCheckin, getRecentCheckins } from '../../lib/checkins';
+import { getFriendIds, getFriendOfFriendIds } from '../../lib/friends';
 import { distanceKm } from '../../utils/geo';
 import BackHeader from '../../components/common/BackHeader';
 
@@ -52,16 +53,35 @@ const AtVenueScreen = ({ navigation }) => {
     const { latitude, longitude } = position.coords;
     setMyLocation({ latitude, longitude });
 
-    const [, { data: checkins }] = await Promise.all([
-      session ? upsertCheckin(session.user.id, latitude, longitude) : Promise.resolve(),
-      getRecentCheckins(),
-    ]);
     const myId = session?.user?.id;
+
+    const [, { data: checkins }, { data: friendIds }] = await Promise.all([
+      session ? upsertCheckin(myId, latitude, longitude) : Promise.resolve(),
+      getRecentCheckins(),
+      myId ? getFriendIds(myId) : Promise.resolve({ data: [] }),
+    ]);
+
+    const { data: fofIds } = myId && friendIds.length
+      ? await getFriendOfFriendIds(myId, friendIds)
+      : { data: [] };
+
+    const friendSet = new Set(friendIds ?? []);
+    const fofSet = new Set(fofIds ?? []);
+
+    const canBeSeenBy = (profile, userId) => {
+      if (profile?.visibility === 'private') return false;
+      switch (profile?.venue_visibility ?? 'everyone') {
+        case 'invisible': return false;
+        case 'friends': return friendSet.has(userId);
+        case 'friends_of_friends': return friendSet.has(userId) || fofSet.has(userId);
+        default: return true;
+      }
+    };
 
     const nearby = (checkins ?? []).filter(
       (c) =>
         c.user_id !== myId &&
-        c.profiles?.visibility !== 'private' &&
+        canBeSeenBy(c.profiles, c.user_id) &&
         distanceKm(latitude, longitude, c.latitude, c.longitude) <= VENUE_RADIUS_KM
     );
 
