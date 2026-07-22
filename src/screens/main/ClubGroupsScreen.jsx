@@ -20,7 +20,12 @@ const ClubCard = ({ club, onPress }) => (
       : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🏛️</Text></View>
     }
     <View style={styles.cardBody}>
-      <Text style={styles.cardName}>{club.name}</Text>
+      <View style={styles.cardTitleRow}>
+        <Text style={styles.cardName}>{club.name}</Text>
+        {club.status === 'suspended' && (
+          <View style={styles.suspendedBadge}><Text style={styles.suspendedBadgeText}>Suspended</Text></View>
+        )}
+      </View>
       {!!club.description && <Text style={styles.cardDesc} numberOfLines={2}>{club.description}</Text>}
       <Text style={styles.cardMeta}>by {club.admin?.full_name ?? 'Unknown'} · {formatAgo(club.created_at)}</Text>
     </View>
@@ -148,7 +153,14 @@ const styles = StyleSheet.create({
   },
   cardPhotoEmoji: { fontSize: 40 },
   cardBody: { padding: 14 },
-  cardName: { fontSize: 17, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
+  cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  cardName: { fontSize: 17, fontWeight: '800', color: COLORS.text },
+  suspendedBadge: {
+    backgroundColor: 'rgba(200,128,10,0.12)', borderRadius: 8,
+    paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  suspendedBadgeText: { fontSize: 10, fontWeight: '700', color: COLORS.primary, textTransform: 'uppercase' },
   cardDesc: { fontSize: 13, color: COLORS.textMuted, marginBottom: 6, lineHeight: 18 },
   cardMeta: { fontSize: 11, color: COLORS.textMuted },
   fab: {

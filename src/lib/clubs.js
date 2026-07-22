@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-const CLUB_FIELDS = 'id, name, description, photo_url, admin_id, created_at, admin:profiles!clubs_admin_id_fkey(full_name)';
+const CLUB_FIELDS = 'id, name, description, photo_url, admin_id, status, created_at, admin:profiles!clubs_admin_id_fkey(full_name)';
 
 export const getClubs = () =>
   supabase.from('clubs').select(CLUB_FIELDS).order('created_at', { ascending: false });
@@ -71,3 +71,12 @@ export const adminDeleteClubPost = (id) =>
 // club_members and club_posts cascade on delete, so this also removes them.
 export const adminDeleteClub = (id) =>
   supabase.from('clubs').delete().eq('id', id);
+
+// Admin-only: RLS restricts this to profiles.is_admin = true. Hides the
+// club from everyone but its own admin, site admins, and its already-
+// approved members, and blocks new posts/joins — no data is removed.
+export const suspendClub = (id) =>
+  supabase.from('clubs').update({ status: 'suspended' }).eq('id', id);
+
+export const unsuspendClub = (id) =>
+  supabase.from('clubs').update({ status: 'active' }).eq('id', id);

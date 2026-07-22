@@ -9,7 +9,7 @@ import { COLORS } from '../../constants/colors';
 import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
   getClubPosts, createClubPost, adminDeleteClubPost, adminDeleteClub,
-  getClubBlocks, blockClubMember, unblockClubMember,
+  getClubBlocks, blockClubMember, unblockClubMember, suspendClub, unsuspendClub,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -63,7 +63,8 @@ const ClubDetailScreen = ({ navigation, route }) => {
 
   const isAdmin = club?.admin_id === userId;
   const canModerate = isAdmin || isSiteAdmin;
-  const canPost = isAdmin || myStatus === 'approved';
+  const isSuspended = club?.status === 'suspended';
+  const canPost = (isAdmin || myStatus === 'approved') && !isSuspended;
   const pending = members.filter((m) => m.status === 'pending');
   const approved = members.filter((m) => m.status === 'approved');
   const isViewerBlocked = blocked.some((b) => b.blocked_user_id === userId);
@@ -176,6 +177,28 @@ const ClubDetailScreen = ({ navigation, route }) => {
     await load();
   };
 
+  const handleSuspendToggle = () => {
+    const suspending = !isSuspended;
+    Alert.alert(
+      suspending ? 'Suspend this club?' : 'Reactivate this club?',
+      suspending
+        ? 'Members won\'t be able to post or join while suspended. Nothing is deleted.'
+        : 'The club becomes visible and postable again.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: suspending ? 'Suspend' : 'Reactivate',
+          style: suspending ? 'destructive' : 'default',
+          onPress: async () => {
+            const { error } = suspending ? await suspendClub(clubId) : await unsuspendClub(clubId);
+            if (error) Alert.alert('Error', 'Could not update club status.');
+            else await load();
+          },
+        },
+      ]
+    );
+  };
+
   const handleAdminDeleteClub = () => {
     Alert.alert(
       'Delete this club?',
@@ -227,11 +250,24 @@ const ClubDetailScreen = ({ navigation, route }) => {
             {approved.length} member{approved.length !== 1 ? 's' : ''}
           </Text>
           {isSiteAdmin && (
-            <TouchableOpacity style={styles.deleteClubBtn} onPress={handleAdminDeleteClub}>
-              <Text style={styles.deleteClubBtnText}>🗑  Delete Club</Text>
-            </TouchableOpacity>
+            <View style={styles.adminBtnRow}>
+              <TouchableOpacity style={styles.suspendClubBtn} onPress={handleSuspendToggle}>
+                <Text style={styles.suspendClubBtnText}>
+                  {isSuspended ? '▶  Reactivate Club' : '⏸  Suspend Club'}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteClubBtn} onPress={handleAdminDeleteClub}>
+                <Text style={styles.deleteClubBtnText}>🗑  Delete Club</Text>
+              </TouchableOpacity>
+            </View>
           )}
         </View>
+
+        {isSuspended && (
+          <View style={styles.suspendedBanner}>
+            <Text style={styles.suspendedBannerText}>⏸ This club is suspended — posting and joining are disabled</Text>
+          </View>
+        )}
 
         {/* Join button — shown to non-members who aren't admin */}
         {!isAdmin && isViewerBlocked && (
@@ -239,7 +275,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
             <Text style={styles.pendingBannerText}>🚫 You've been removed from this club</Text>
           </View>
         )}
-        {!isAdmin && !isViewerBlocked && myStatus === null && (
+        {!isAdmin && !isViewerBlocked && !isSuspended && myStatus === null && (
           <TouchableOpacity style={styles.joinBtn} onPress={handleJoin}>
             <Text style={styles.joinBtnText}>Request to Join</Text>
           </TouchableOpacity>
@@ -422,13 +458,27 @@ const styles = StyleSheet.create({
   clubDesc: { fontSize: 14, color: COLORS.textMuted, lineHeight: 20, marginBottom: 10 },
   clubMeta: { fontSize: 12, color: COLORS.textMuted, marginBottom: 4 },
   memberCount: { fontSize: 13, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
+  adminBtnRow: { flexDirection: 'row', gap: 8, marginTop: 14 },
   deleteClubBtn: {
-    marginTop: 14, alignSelf: 'flex-start',
+    alignSelf: 'flex-start',
     borderWidth: 1, borderColor: COLORS.error, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 8,
     backgroundColor: 'rgba(231,76,60,0.08)',
   },
   deleteClubBtnText: { color: COLORS.error, fontWeight: '700', fontSize: 13 },
+  suspendClubBtn: {
+    alignSelf: 'flex-start',
+    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    backgroundColor: 'rgba(200,128,10,0.08)',
+  },
+  suspendClubBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
+  suspendedBanner: {
+    marginHorizontal: 16, marginBottom: 12,
+    backgroundColor: 'rgba(200,128,10,0.1)', borderRadius: 12, padding: 14,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  suspendedBannerText: { fontSize: 13, color: COLORS.primary, fontWeight: '600', textAlign: 'center' },
   joinBtn: {
     marginHorizontal: 16, marginBottom: 12,
     backgroundColor: COLORS.primary, borderRadius: 12,
