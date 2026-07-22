@@ -27,17 +27,6 @@ const categoryOfType = (type) => TYPE_TO_CATEGORY[type] ?? null;
 export const matchesCategory = (selectedId, venueCategory) =>
   selectedId === 'all' || selectedId === venueCategory;
 
-export const logVenueSearch = (userId, venueName) =>
-  supabase.from('venue_searches').insert({ user_id: userId, venue_name: venueName.trim() });
-
-export const getRecentVenueSearches = () => {
-  const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  return supabase
-    .from('venue_searches')
-    .select('venue_name')
-    .gte('created_at', cutoff);
-};
-
 export const getTopVenues = () =>
   supabase
     .from('top_venues')

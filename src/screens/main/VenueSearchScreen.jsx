@@ -5,8 +5,6 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { getSession } from '../../lib/auth';
-import { logVenueSearch } from '../../lib/venues';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
@@ -20,8 +18,6 @@ const VenueSearchScreen = ({ navigation }) => {
     const name = query.trim();
     if (!name) return;
     setLoading(true);
-    const { data: { session } } = await getSession();
-    if (session) logVenueSearch(session.user.id, name);
     const url = `https://www.google.com/maps/search/${encodeURIComponent(name)}`;
     const canOpen = await Linking.canOpenURL(url);
     setLoading(false);

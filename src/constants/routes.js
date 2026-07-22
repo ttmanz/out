@@ -28,7 +28,6 @@ export const ROUTES = {
   VENUE_SEARCH: 'VenueSearch',
   VENUE_REVIEWS: 'VenueReviews',
   MEMBERS_AT: 'MembersAt',
-  TRENDING_VENUES: 'TrendingVenues',
   TOP_VENUES: 'TopVenues',
   COMPLETE_PROFILE: 'CompleteProfile',
   ACTIVITIES: 'Activities',

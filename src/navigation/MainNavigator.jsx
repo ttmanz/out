@@ -31,7 +31,6 @@ import VenueHubScreen from '../screens/main/VenueHubScreen';
 import VenueSearchScreen from '../screens/main/VenueSearchScreen';
 import VenueReviewsScreen from '../screens/main/VenueReviewsScreen';
 import MembersAtScreen from '../screens/main/MembersAtScreen';
-import TrendingVenuesScreen from '../screens/main/TrendingVenuesScreen';
 import TopVenuesScreen from '../screens/main/TopVenuesScreen';
 import FriendsHubScreen from '../screens/main/FriendsHubScreen';
 import FriendsListScreen from '../screens/main/FriendsListScreen';
@@ -88,7 +87,6 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.VENUE_SEARCH}     component={VenueSearchScreen} />
     <HomeStack.Screen name={ROUTES.VENUE_REVIEWS}   component={VenueReviewsScreen} />
     <HomeStack.Screen name={ROUTES.MEMBERS_AT}       component={MembersAtScreen} />
-    <HomeStack.Screen name={ROUTES.TRENDING_VENUES}  component={TrendingVenuesScreen} />
     <HomeStack.Screen name={ROUTES.TOP_VENUES}        component={TopVenuesScreen} />
     <HomeStack.Screen name={ROUTES.COMPLETE_PROFILE}  component={CompleteProfileScreen} />
     <HomeStack.Screen name={ROUTES.ACTIVITIES}        component={ActivitiesScreen} />
