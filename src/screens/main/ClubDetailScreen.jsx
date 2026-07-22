@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
-  getClubPosts, createClubPost, adminDeleteClubPost,
+  getClubPosts, createClubPost, adminDeleteClubPost, adminDeleteClub,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -143,6 +143,25 @@ const ClubDetailScreen = ({ navigation, route }) => {
     );
   };
 
+  const handleAdminDeleteClub = () => {
+    Alert.alert(
+      'Delete this club?',
+      'This will permanently remove the club, its members, and all its posts.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await adminDeleteClub(clubId);
+            if (error) Alert.alert('Error', 'Could not delete club.');
+            else navigation.goBack();
+          },
+        },
+      ]
+    );
+  };
+
   if (loading || !club) {
     return (
       <View style={styles.center}>
@@ -174,6 +193,11 @@ const ClubDetailScreen = ({ navigation, route }) => {
           <Text style={styles.memberCount}>
             {approved.length} member{approved.length !== 1 ? 's' : ''}
           </Text>
+          {isSiteAdmin && (
+            <TouchableOpacity style={styles.deleteClubBtn} onPress={handleAdminDeleteClub}>
+              <Text style={styles.deleteClubBtnText}>🗑  Delete Club</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Join button — shown to non-members who aren't admin */}
@@ -317,6 +341,13 @@ const styles = StyleSheet.create({
   clubDesc: { fontSize: 14, color: COLORS.textMuted, lineHeight: 20, marginBottom: 10 },
   clubMeta: { fontSize: 12, color: COLORS.textMuted, marginBottom: 4 },
   memberCount: { fontSize: 13, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
+  deleteClubBtn: {
+    marginTop: 14, alignSelf: 'flex-start',
+    borderWidth: 1, borderColor: COLORS.error, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    backgroundColor: 'rgba(231,76,60,0.08)',
+  },
+  deleteClubBtnText: { color: COLORS.error, fontWeight: '700', fontSize: 13 },
   joinBtn: {
     marginHorizontal: 16, marginBottom: 12,
     backgroundColor: COLORS.primary, borderRadius: 12,

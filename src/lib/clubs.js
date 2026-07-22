@@ -50,3 +50,8 @@ export const createClubPost = (clubId, userId, { text, photo_url = null }) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteClubPost = (id) =>
   supabase.from('club_posts').delete().eq('id', id);
+
+// Admin-only: RLS restricts this to profiles.is_admin = true.
+// club_members and club_posts cascade on delete, so this also removes them.
+export const adminDeleteClub = (id) =>
+  supabase.from('clubs').delete().eq('id', id);
