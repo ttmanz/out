@@ -37,6 +37,22 @@ export const rejectMember = (clubId, userId) =>
 export const getMemberStatus = (clubId, userId) =>
   supabase.from('club_members').select('status').eq('club_id', clubId).eq('user_id', userId).maybeSingle();
 
+export const getClubBlocks = (clubId) =>
+  supabase
+    .from('club_blocks')
+    .select('id, blocked_user_id, profiles:blocked_user_id(full_name)')
+    .eq('club_id', clubId);
+
+// Kicks the member (if currently in club_members) and blocks them from
+// rejoining this specific club — leaves their existing posts untouched.
+export const blockClubMember = async (clubId, userId, blockedBy) => {
+  await supabase.from('club_members').delete().eq('club_id', clubId).eq('user_id', userId);
+  return supabase.from('club_blocks').insert({ club_id: clubId, blocked_user_id: userId, blocked_by: blockedBy });
+};
+
+export const unblockClubMember = (clubId, userId) =>
+  supabase.from('club_blocks').delete().eq('club_id', clubId).eq('blocked_user_id', userId);
+
 export const getClubPosts = (clubId) =>
   supabase
     .from('club_posts')

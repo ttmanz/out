@@ -9,6 +9,7 @@ import { COLORS } from '../../constants/colors';
 import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
   getClubPosts, createClubPost, adminDeleteClubPost, adminDeleteClub,
+  getClubBlocks, blockClubMember, unblockClubMember,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -33,20 +34,24 @@ const ClubDetailScreen = ({ navigation, route }) => {
   const [postText, setPostText] = useState('');
   const [postPhotoUri, setPostPhotoUri] = useState(null);
   const [posting, setPosting] = useState(false);
+  const [blocked, setBlocked] = useState([]);
+  const [blockActionId, setBlockActionId] = useState(null);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-    const [{ data: { session } }, clubRes, membersRes, postsRes] = await Promise.all([
+    const [{ data: { session } }, clubRes, membersRes, postsRes, blocksRes] = await Promise.all([
       getSession(),
       getClub(clubId),
       getClubMembers(clubId),
       getClubPosts(clubId),
+      getClubBlocks(clubId),
     ]);
     const uid = session?.user?.id ?? null;
     setUserId(uid);
     setClub(clubRes.data ?? null);
     setMembers(membersRes.data ?? []);
     setPosts(postsRes.data ?? []);
+    setBlocked(blocksRes.data ?? []);
 
     const statusRes = uid ? await getMemberStatus(clubId, uid) : { data: null };
     setMyStatus(statusRes.data?.status ?? null);
@@ -57,9 +62,11 @@ const ClubDetailScreen = ({ navigation, route }) => {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const isAdmin = club?.admin_id === userId;
+  const canModerate = isAdmin || isSiteAdmin;
   const canPost = isAdmin || myStatus === 'approved';
   const pending = members.filter((m) => m.status === 'pending');
   const approved = members.filter((m) => m.status === 'approved');
+  const isViewerBlocked = blocked.some((b) => b.blocked_user_id === userId);
 
   const handleJoin = async () => {
     const { error } = await requestToJoin(clubId, userId);
@@ -143,6 +150,32 @@ const ClubDetailScreen = ({ navigation, route }) => {
     );
   };
 
+  const handleBlockMember = (memberUserId, memberName) => {
+    Alert.alert(
+      'Block member',
+      `Remove ${memberName} from this club and stop them from rejoining?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Block', style: 'destructive',
+          onPress: async () => {
+            setBlockActionId(memberUserId);
+            await blockClubMember(clubId, memberUserId, userId);
+            setBlockActionId(null);
+            await load();
+          },
+        },
+      ]
+    );
+  };
+
+  const handleUnblockMember = async (memberUserId) => {
+    setBlockActionId(memberUserId);
+    await unblockClubMember(clubId, memberUserId);
+    setBlockActionId(null);
+    await load();
+  };
+
   const handleAdminDeleteClub = () => {
     Alert.alert(
       'Delete this club?',
@@ -201,7 +234,12 @@ const ClubDetailScreen = ({ navigation, route }) => {
         </View>
 
         {/* Join button — shown to non-members who aren't admin */}
-        {!isAdmin && myStatus === null && (
+        {!isAdmin && isViewerBlocked && (
+          <View style={styles.pendingBanner}>
+            <Text style={styles.pendingBannerText}>🚫 You've been removed from this club</Text>
+          </View>
+        )}
+        {!isAdmin && !isViewerBlocked && myStatus === null && (
           <TouchableOpacity style={styles.joinBtn} onPress={handleJoin}>
             <Text style={styles.joinBtnText}>Request to Join</Text>
           </TouchableOpacity>
@@ -254,19 +292,62 @@ const ClubDetailScreen = ({ navigation, route }) => {
           <Text style={styles.sectionTitle}>Members</Text>
           {approved.length === 0
             ? <Text style={styles.empty}>No approved members yet.</Text>
-            : approved.map((m) => (
-              <View key={m.id} style={styles.memberRow}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{m.member?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
+            : approved.map((m) => {
+              const busy = blockActionId === m.user_id;
+              return (
+                <View key={m.id} style={styles.memberRow}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{m.member?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
+                  </View>
+                  <Text style={styles.memberName}>{m.member?.full_name ?? 'Unknown'}</Text>
+                  {m.user_id === club.admin_id && (
+                    <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>Admin</Text></View>
+                  )}
+                  {canModerate && m.user_id !== club.admin_id && (
+                    <TouchableOpacity
+                      style={styles.blockBtn}
+                      onPress={() => !busy && handleBlockMember(m.user_id, m.member?.full_name ?? 'this member')}
+                      disabled={busy}
+                    >
+                      {busy
+                        ? <ActivityIndicator size="small" color={COLORS.error} />
+                        : <Text style={styles.blockBtnText}>Block</Text>
+                      }
+                    </TouchableOpacity>
+                  )}
                 </View>
-                <Text style={styles.memberName}>{m.member?.full_name ?? 'Unknown'}</Text>
-                {m.user_id === club.admin_id && (
-                  <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>Admin</Text></View>
-                )}
-              </View>
-            ))
+              );
+            })
           }
         </View>
+
+        {/* Blocked members — visible only to whoever can moderate this club */}
+        {canModerate && blocked.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Blocked Members ({blocked.length})</Text>
+            {blocked.map((b) => {
+              const busy = blockActionId === b.blocked_user_id;
+              return (
+                <View key={b.id} style={styles.memberRow}>
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{b.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
+                  </View>
+                  <Text style={styles.memberName}>{b.profiles?.full_name ?? 'Unknown'}</Text>
+                  <TouchableOpacity
+                    style={styles.unblockBtn}
+                    onPress={() => !busy && handleUnblockMember(b.blocked_user_id)}
+                    disabled={busy}
+                  >
+                    {busy
+                      ? <ActivityIndicator size="small" color={COLORS.primary} />
+                      : <Text style={styles.unblockBtnText}>Unblock</Text>
+                    }
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
+          </View>
+        )}
 
         {/* Posts — visible/postable only to approved members and the admin */}
         {canPost && (
@@ -389,6 +470,18 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
   adminBadgeText: { fontSize: 11, fontWeight: '700', color: COLORS.primary },
+  blockBtn: {
+    borderWidth: 1, borderColor: COLORS.error, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6, marginLeft: 8,
+    backgroundColor: 'rgba(231,76,60,0.08)',
+  },
+  blockBtnText: { fontSize: 12, fontWeight: '700', color: COLORS.error },
+  unblockBtn: {
+    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 8,
+    paddingHorizontal: 10, paddingVertical: 6,
+    backgroundColor: 'rgba(200,128,10,0.08)',
+  },
+  unblockBtnText: { fontSize: 12, fontWeight: '700', color: COLORS.primary },
   approveBtn: {
     backgroundColor: COLORS.primary, borderRadius: 8,
     paddingHorizontal: 12, paddingVertical: 6, marginRight: 8,
