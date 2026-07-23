@@ -102,8 +102,8 @@ const AtVenueScreen = ({ navigation }) => {
         title={t('home.atVenue')}
         onBack={() => navigation.goBack()}
         right={(
-          <TouchableOpacity onPress={load} style={styles.refreshBtn}>
-            <Text style={styles.refreshText}>↻</Text>
+          <TouchableOpacity onPress={load} style={styles.refreshBtn} activeOpacity={0.7}>
+            <Text style={styles.refreshText}>↻ {t('common.refresh')}</Text>
           </TouchableOpacity>
         )}
       />
@@ -180,12 +180,17 @@ const AtVenueScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
-  refreshBtn: { width: 40, alignItems: 'flex-end' },
-  refreshText: { fontSize: 22, color: COLORS.primary },
+  refreshBtn: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(200,128,10,0.18)',
+    borderWidth: 1, borderColor: COLORS.primary,
+    borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6,
+  },
+  refreshText: { fontSize: 14, fontWeight: '700', color: COLORS.primary },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { color: COLORS.textMuted, fontSize: 14 },
   deniedIcon: { fontSize: 40, marginBottom: 8 },
-  deniedText: { color: COLORS.textMuted, fontSize: 15, textAlign: 'center', paddingHorizontal: 32 },
+  deniedText: { color: COLORS.textLight, fontSize: 15, textAlign: 'center', paddingHorizontal: 32 },
   map: { flex: 1 },
 
   // Member pin on map
@@ -207,7 +212,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.borderAccent,
     alignItems: 'center',
   },
-  emptyText: { color: COLORS.textMuted, fontSize: 14, textAlign: 'center' },
+  emptyText: { color: COLORS.textLight, fontSize: 14, textAlign: 'center' },
 
   // Selected member bottom card
   card: {

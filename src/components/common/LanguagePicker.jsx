@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     borderColor: COLORS.primary,
   },
-  label: { fontSize: 12, fontWeight: '700', color: COLORS.textMuted },
+  label: { fontSize: 12, fontWeight: '700', color: COLORS.textLight },
   labelActive: { color: COLORS.black },
 });
 

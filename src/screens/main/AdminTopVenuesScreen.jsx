@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   cardInfo: { flex: 1 },
   venueName: { fontSize: 15, fontWeight: '800', color: COLORS.text, marginBottom: 3 },
   venueAddr: { fontSize: 12, color: COLORS.textMuted, marginBottom: 3 },
-  venueDesc: { fontSize: 12, color: COLORS.textMuted, lineHeight: 17 },
+  venueDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 17 },
   catBadge: {
     width: 34, height: 34, borderRadius: 17,
     borderWidth: 1, justifyContent: 'center', alignItems: 'center',

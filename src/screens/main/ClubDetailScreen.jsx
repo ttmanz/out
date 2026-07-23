@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
   clubName: { fontSize: 22, fontWeight: '800', color: COLORS.text, marginBottom: 6 },
-  clubDesc: { fontSize: 14, color: COLORS.textMuted, lineHeight: 20, marginBottom: 10 },
+  clubDesc: { fontSize: 14, color: COLORS.textLight, lineHeight: 20, marginBottom: 10 },
   clubMeta: { fontSize: 12, color: COLORS.textMuted, marginBottom: 4 },
   memberCount: { fontSize: 13, fontWeight: '700', color: COLORS.primary, marginTop: 4 },
   adminBtnRow: { flexDirection: 'row', gap: 8, marginTop: 14 },

@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   emoji: { fontSize: 24 },
   textWrap: { flex: 1 },
   cardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
-  cardDesc: { fontSize: 12, color: COLORS.textMuted, lineHeight: 16 },
+  cardDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 16 },
   chevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
 });
 

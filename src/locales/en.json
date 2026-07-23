@@ -4,6 +4,7 @@
     "error": "Something went wrong",
     "or": "or",
     "done": "Done",
+    "refresh": "Refresh",
     "cancel": "Cancel",
     "photoUploadFailed": "Photo upload failed. Please try again.",
     "delete": "Delete",
@@ -130,7 +131,7 @@
   },
   "atVenue": {
     "locationRequired": "Location access is required to see members nearby.",
-    "noMembers": "No other members detected at this venue right now.",
+    "noMembers": "No other members detected at this venue right now. Please refresh.",
     "viewProfile": "View Profile",
     "private": "Private profile"
   },

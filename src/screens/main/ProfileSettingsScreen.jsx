@@ -331,7 +331,7 @@ const styles = StyleSheet.create({
   optionText: { flex: 1 },
   optionLabel: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
   optionLabelSelected: { color: COLORS.primary },
-  optionDesc: { fontSize: 12, color: COLORS.textMuted, lineHeight: 17 },
+  optionDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 17 },
   checkbox: {
     width: 24, height: 24, borderRadius: 12,
     borderWidth: 2, borderColor: COLORS.borderAccent,
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     padding: 14, marginBottom: 16, marginTop: 4,
     borderWidth: 1, borderColor: COLORS.border,
   },
-  infoText: { fontSize: 13, color: COLORS.textMuted, lineHeight: 19 },
+  infoText: { fontSize: 13, color: COLORS.textLight, lineHeight: 19 },
   friendRow: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.surface, borderRadius: 12,
@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
   editProfileEmoji: { fontSize: 26, marginRight: 14 },
   editProfileText: { flex: 1 },
   editProfileLabel: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
-  editProfileDesc: { fontSize: 12, color: COLORS.textMuted },
+  editProfileDesc: { fontSize: 12, color: COLORS.textLight },
   editProfileChevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
 
   saveBtn: {

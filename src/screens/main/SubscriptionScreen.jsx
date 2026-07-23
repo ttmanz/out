@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   },
   badgeText: { fontSize: 11, fontWeight: '800', color: COLORS.black },
   planPrice: { fontSize: 22, fontWeight: '800', color: COLORS.primary, marginBottom: 6 },
-  planDesc: { fontSize: 13, color: COLORS.textMuted, lineHeight: 19, marginBottom: 14 },
+  planDesc: { fontSize: 13, color: COLORS.textLight, lineHeight: 19, marginBottom: 14 },
   subscribeBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 13, alignItems: 'center', marginTop: 8,

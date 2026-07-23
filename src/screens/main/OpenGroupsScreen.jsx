@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   cardPhotoEmoji: { fontSize: 40 },
   cardBody: { padding: 14 },
   cardName: { fontSize: 17, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
-  cardDesc: { fontSize: 13, color: COLORS.textMuted, lineHeight: 18 },
+  cardDesc: { fontSize: 13, color: COLORS.textLight, lineHeight: 18 },
 });
 
 export default OpenGroupsScreen;

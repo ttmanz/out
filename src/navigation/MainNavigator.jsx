@@ -201,7 +201,7 @@ const MainNavigator = () => {
           elevation: 20,
         },
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: '#3A2E10',
+        tabBarInactiveTintColor: COLORS.textLight,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',

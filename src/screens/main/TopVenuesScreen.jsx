@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
   cardContent: { flex: 1, paddingHorizontal: 12 },
   venueName: { fontSize: 16, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
   address: { fontSize: 12, color: COLORS.textMuted, marginBottom: 4 },
-  desc: { fontSize: 13, color: COLORS.textMuted, lineHeight: 18 },
+  desc: { fontSize: 13, color: COLORS.textLight, lineHeight: 18 },
   mapsHint: { fontSize: 22 },
 });
 

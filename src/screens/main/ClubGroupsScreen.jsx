@@ -161,7 +161,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
   suspendedBadgeText: { fontSize: 10, fontWeight: '700', color: COLORS.primary, textTransform: 'uppercase' },
-  cardDesc: { fontSize: 13, color: COLORS.textMuted, marginBottom: 6, lineHeight: 18 },
+  cardDesc: { fontSize: 13, color: COLORS.textLight, marginBottom: 6, lineHeight: 18 },
   cardMeta: { fontSize: 11, color: COLORS.textMuted },
   fab: {
     position: 'absolute', bottom: 24, right: 24,

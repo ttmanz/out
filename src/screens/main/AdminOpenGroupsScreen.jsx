@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   cardInfo: { flex: 1 },
   groupName: { fontSize: 15, fontWeight: '800', color: COLORS.text, marginBottom: 3 },
-  groupDesc: { fontSize: 12, color: COLORS.textMuted, lineHeight: 17 },
+  groupDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 17 },
   cardActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
   editBtn: {
     borderWidth: 1, borderColor: COLORS.borderAccent,
