@@ -53,20 +53,20 @@ const hasActivePlan = (profile) => {
 };
 
 // Resolves whether a member can currently post/write to a given feature,
-// given the global subscription mode + that feature's paid flag. Staff and
-// any member with an active subscription plan always bypass per-feature
-// paid gating (they don't pay per post on top of a plan).
+// given the global subscription mode + that feature's paid flag.
 //
 // - 'free': everyone has full access everywhere.
 // - 'free_except': everyone has full access, except the features on the
-//   paid list, which cost their one-off price unless subscribed.
+//   paid list, which cost their one-off price unless subscribed. Any
+//   active subscription (any account type) fully bypasses this.
 // - 'free_until': full access for everyone until the date. Once it passes,
-//   a subscription becomes required for EVERY feature — there's no
-//   per-feature paid list or one-off-payment fallback in this mode; it's
-//   "subscribe (regular or venue-owner price) or you can't post at all."
+//   a subscription becomes the minimum requirement for EVERYTHING — no
+//   subscription, no posting anywhere, full stop. On top of that, the
+//   same paid list becomes a premium tier: a regular member's subscription
+//   does not cover those features (they must also pay the one-off price),
+//   while a venue owner's subscription does cover them.
 export const canAccessFeature = (featureKey, { profile, settings, featureMap }) => {
   if (profile?.is_staff) return { allowed: true };
-  if (hasActivePlan(profile)) return { allowed: true };
 
   const mode = settings?.mode ?? 'free';
 
@@ -75,11 +75,19 @@ export const canAccessFeature = (featureKey, { profile, settings, featureMap }) 
   if (mode === 'free_until') {
     const stillFree = settings?.free_until && new Date(settings.free_until) > new Date();
     if (stillFree) return { allowed: true };
-    // Date has passed — subscription required for everything, no one-off option
-    return { allowed: false };
+
+    if (!hasActivePlan(profile)) return { allowed: false };
+
+    // Subscribed — but the premium list still requires the venue-owner
+    // tier specifically; a regular member's subscription alone isn't enough.
+    const feature = featureMap?.[featureKey];
+    if (!feature?.is_paid) return { allowed: true };
+    if (profile?.account_type === 'venue_owner') return { allowed: true };
+    return { allowed: false, price: feature.one_off_price };
   }
 
-  // mode === 'free_except' — only the features on the paid list cost anything
+  // mode === 'free_except' — any active subscription bypasses the paid list entirely
+  if (hasActivePlan(profile)) return { allowed: true };
   const feature = featureMap?.[featureKey];
   if (!feature?.is_paid) return { allowed: true };
   return { allowed: false, price: feature.one_off_price };

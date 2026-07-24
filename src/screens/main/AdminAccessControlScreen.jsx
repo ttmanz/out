@@ -12,8 +12,8 @@ import BackHeader from '../../components/common/BackHeader';
 
 const MODES = [
   { key: 'free', label: 'Free', desc: 'Everyone has full access to every feature' },
-  { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, a subscription becomes required for every feature (the paid list below does not apply in this mode)' },
-  { key: 'free_except', label: 'Free Except…', desc: 'Everyone keeps full access, except the paid list below, which costs its one-off price unless subscribed' },
+  { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, a subscription is required just to post anywhere, and the premium list below needs the Venue Owner tier specifically (a regular subscription alone won’t cover those)' },
+  { key: 'free_except', label: 'Free Except…', desc: 'Everyone keeps full access, except the paid list below, which costs its one-off price unless subscribed (any plan, any tier)' },
 ];
 
 const AdminAccessControlScreen = ({ navigation }) => {
@@ -138,14 +138,13 @@ const AdminAccessControlScreen = ({ navigation }) => {
           </>
         )}
 
-        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Paid Features</Text>
+        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Paid / Premium Features</Text>
         <Text style={styles.sectionHint}>
-          A member with an active subscription always posts free, regardless of these settings.{' '}
           {mode === 'free_except'
-            ? 'These prices are in effect right now for members without a subscription.'
+            ? 'Right now: any subscribed member (any tier) posts these for free. Without a subscription, the one-off price applies.'
             : mode === 'free_until'
-              ? 'Not in effect in "Free Until" mode — once the date passes, a subscription is required for everything instead of these per-feature prices.'
-              : 'Not in effect while mode is "Free."'}
+              ? 'Right now: this list only matters once "Free Until" passes its date. From then on, these become premium — a regular member’s subscription won’t cover them (they also pay the one-off price below), but a Venue Owner subscription does.'
+              : 'Not in effect while mode is "Free" — nobody is charged for anything.'}
         </Text>
 
         {features.map((f) => (
