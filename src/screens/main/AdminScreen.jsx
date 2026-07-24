@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert, StatusBar,
+  ActivityIndicator, Alert, StatusBar, ScrollView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
@@ -128,6 +128,8 @@ const AdminScreen = ({ navigation }) => {
     <View style={styles.safe}>
       <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <Text style={styles.title}>Members</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.navRow} contentContainerStyle={styles.navRowContent}>
         <TouchableOpacity
           style={styles.plansBtn}
           onPress={() => navigation.navigate(ROUTES.ADMIN_TOP_VENUES)}
@@ -146,7 +148,19 @@ const AdminScreen = ({ navigation }) => {
         >
           <Text style={styles.plansBtnText}>⭐ Plans</Text>
         </TouchableOpacity>
-      </View>
+        <TouchableOpacity
+          style={styles.plansBtn}
+          onPress={() => navigation.navigate(ROUTES.ADMIN_ADS)}
+        >
+          <Text style={styles.plansBtnText}>📢 Ads</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.plansBtn}
+          onPress={() => navigation.navigate(ROUTES.ADMIN_ACCESS_CONTROL)}
+        >
+          <Text style={styles.plansBtnText}>💳 Access</Text>
+        </TouchableOpacity>
+      </ScrollView>
       <Text style={styles.count}>{members.length} members</Text>
 
       <FlatList
@@ -219,14 +233,13 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
   },
   title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
+  navRow: { flexGrow: 0, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  navRowContent: { paddingHorizontal: 20, paddingVertical: 10, gap: 8 },
   count: { fontSize: 13, color: COLORS.textMuted, paddingHorizontal: 20, paddingVertical: 8 },
   plansBtn: {
     backgroundColor: 'rgba(200,128,10,0.12)',

@@ -16,7 +16,7 @@ import BackHeader from '../../components/common/BackHeader';
 
 const CreateMarketListingScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const [userId, setUserId] = useState(null);
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -29,8 +29,9 @@ const CreateMarketListingScreen = ({ navigation }) => {
   }, []);
 
   const handleCreate = async () => {
-    if (!hasAccess) {
-      Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody'));
+    const access = canAccessFeature('market');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
       return;
     }
     if (!description.trim()) {

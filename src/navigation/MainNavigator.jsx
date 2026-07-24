@@ -57,6 +57,8 @@ import CreateMarketListingScreen from '../screens/main/CreateMarketListingScreen
 import OpenGroupsScreen from '../screens/main/OpenGroupsScreen';
 import GroupDetailScreen from '../screens/main/GroupDetailScreen';
 import AdminOpenGroupsScreen from '../screens/main/AdminOpenGroupsScreen';
+import AdminAdsScreen from '../screens/main/AdminAdsScreen';
+import AdminAccessControlScreen from '../screens/main/AdminAccessControlScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -128,6 +130,8 @@ const AdminStackNavigator = () => (
     <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_TOP_VENUES} component={AdminTopVenuesScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_OPEN_GROUPS} component={AdminOpenGroupsScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_ADS} component={AdminAdsScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_ACCESS_CONTROL} component={AdminAccessControlScreen} />
   </AdminStack.Navigator>
 );
 

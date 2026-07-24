@@ -27,7 +27,7 @@ import BackHeader from '../../components/common/BackHeader';
 const GroupDetailScreen = ({ navigation, route }) => {
   const { groupId, groupName } = route.params;
   const { t } = useTranslation();
-  const { hasAccess, profile } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const isAdmin = profile?.is_admin === true;
 
   const [userId, setUserId] = useState(null);
@@ -99,7 +99,11 @@ const GroupDetailScreen = ({ navigation, route }) => {
   };
 
   const handlePost = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('open_groups');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     const text = postText.trim();
     if (!text && !postPhotoUri) return;
 

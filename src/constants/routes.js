@@ -46,4 +46,6 @@ export const ROUTES = {
   OPEN_GROUPS: 'OpenGroups',
   GROUP_DETAIL: 'GroupDetail',
   ADMIN_OPEN_GROUPS: 'AdminOpenGroups',
+  ADMIN_ADS: 'AdminAds',
+  ADMIN_ACCESS_CONTROL: 'AdminAccessControl',
 };

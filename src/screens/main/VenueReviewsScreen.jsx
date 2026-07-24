@@ -30,7 +30,7 @@ const StarRow = ({ value, onChange }) => (
 
 const VenueReviewsScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
@@ -53,7 +53,11 @@ const VenueReviewsScreen = ({ navigation }) => {
   useFocusEffect(load);
 
   const handleSubmit = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('venue_hub');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     if (!venueName.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorVenue'));
     if (rating === 0) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorRating'));
     if (!body.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorBody'));

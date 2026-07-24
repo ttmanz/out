@@ -18,7 +18,7 @@ import { useUser } from '../../contexts/UserContext';
 
 const CreateOpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const [message, setMessage] = useState('');
   const [venue, setVenue] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -27,7 +27,11 @@ const CreateOpenChatScreen = ({ navigation }) => {
   const [messageError, setMessageError] = useState('');
 
   const handlePost = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('open_chat');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     if (!message.trim()) {
       setMessageError(t('openChat.errors.messageRequired'));
       return;

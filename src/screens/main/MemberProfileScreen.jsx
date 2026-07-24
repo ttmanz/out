@@ -30,7 +30,7 @@ const POST_TYPE_LABEL = {
 
 const MemberProfileScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const { userId: targetId, fullName } = route.params;
   const [myId, setMyId] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -87,7 +87,11 @@ const MemberProfileScreen = ({ navigation, route }) => {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const handleAddFriend = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('friends');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     setRequesting(true);
     const { error } = await sendFriendRequest(myId, targetId);
     setRequesting(false);

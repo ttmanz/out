@@ -15,7 +15,7 @@ import { useUser } from '../../contexts/UserContext';
 
 const ChatScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const { conversationId, friendName } = route.params;
   const [myId, setMyId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -76,7 +76,11 @@ const ChatScreen = ({ navigation, route }) => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('messages');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     const content = text.trim();
     if (!content || !myId) return;
     setText('');

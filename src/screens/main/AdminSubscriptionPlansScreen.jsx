@@ -1,11 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
-  ActivityIndicator, Alert, ScrollView, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
-import { getSubscriptionPlans, updateSubscriptionPlan } from '../../lib/subscription';
+import { getAllSubscriptionPlans, updateSubscriptionPlan } from '../../lib/subscription';
 import BackHeader from '../../components/common/BackHeader';
 
 const AdminSubscriptionPlansScreen = ({ navigation }) => {
@@ -16,11 +17,11 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const { data, error } = await getSubscriptionPlans();
+    const { data, error } = await getAllSubscriptionPlans();
     if (!error && data) {
       setPlans(data);
       const initial = {};
-      data.forEach((p) => { initial[p.id] = { label: p.label, price_display: p.price_display, badge: p.badge ?? '', description: p.description ?? '' }; });
+      data.forEach((p) => { initial[p.id] = { label: p.label, price_display: p.price_display, badge: p.badge ?? '', description: p.description ?? '', stripe_price_id: p.stripe_price_id ?? '' }; });
       setDrafts(initial);
     }
     setLoading(false);
@@ -43,6 +44,7 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
       price_display: d.price_display.trim(),
       badge: d.badge.trim() || null,
       description: d.description.trim() || null,
+      stripe_price_id: d.stripe_price_id.trim() || null,
     });
     setSaving(null);
     if (error) Alert.alert('Error', error.message);
@@ -50,7 +52,7 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title="Subscription Plans" onBack={() => navigation.goBack()} />
 
       {loading ? (
@@ -101,6 +103,16 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
                   placeholderTextColor={COLORS.textMuted}
                   placeholder="Short description..."
                   multiline
+                />
+
+                <Text style={styles.fieldLabel}>Stripe Price ID (for when Stripe is set up)</Text>
+                <TextInput
+                  style={styles.input}
+                  value={d.stripe_price_id ?? ''}
+                  onChangeText={(v) => setField(plan.id, 'stripe_price_id', v)}
+                  placeholderTextColor={COLORS.textMuted}
+                  placeholder="price_..."
+                  autoCapitalize="none"
                 />
 
                 <TouchableOpacity

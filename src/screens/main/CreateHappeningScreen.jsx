@@ -17,7 +17,7 @@ import { useUser } from '../../contexts/UserContext';
 
 const CreateHappeningScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const prefill = route.params?.prefill ?? {};
   const [title, setTitle] = useState(prefill.title ?? '');
   const [venue, setVenue] = useState(prefill.venue ?? '');
@@ -29,7 +29,11 @@ const CreateHappeningScreen = ({ navigation, route }) => {
   const [titleError, setTitleError] = useState('');
 
   const handlePost = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('whats_happening');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     if (!title.trim()) { setTitleError(t('happenings.errors.titleRequired')); return; }
     setTitleError('');
 

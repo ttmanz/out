@@ -48,3 +48,15 @@ export const uploadStoryMedia = async (userId, uri) => {
   if (error) return { error };
   return { url, isVideo };
 };
+
+// Admin ad creatives — reuses the story-media bucket (already supports
+// image/video) rather than provisioning a new bucket just for this.
+export const uploadAdMedia = async (userId, uri) => {
+  const ext = uri.split('.').pop().split('?')[0].toLowerCase() || 'jpg';
+  const isVideo = VIDEO_EXTS.includes(ext);
+  const path = `${userId}/ads/${Date.now()}.${ext}`;
+  const contentType = isVideo ? `video/${ext === 'mov' ? 'quicktime' : ext}` : `image/${ext}`;
+  const { url, error } = await uploadToBucket('story-media', path, uri, contentType, false);
+  if (error) return { error };
+  return { url, isVideo };
+};

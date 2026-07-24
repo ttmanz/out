@@ -16,13 +16,17 @@ import { useUser } from '../../contexts/UserContext';
 
 const CreateStoryScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handlePost = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('my_story');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     if (!text.trim() && !mediaUri) {
       Alert.alert(t('common.error'), t('stories.errors.contentRequired'));
       return;

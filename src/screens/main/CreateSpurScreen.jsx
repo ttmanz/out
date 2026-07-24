@@ -19,7 +19,7 @@ import { useUser } from '../../contexts/UserContext';
 
 const CreateSpurScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -29,7 +29,11 @@ const CreateSpurScreen = ({ navigation }) => {
   const [activityError, setActivityError] = useState('');
 
   const handlePost = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('spur_of_moment');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     let valid = true;
     if (!venue.trim()) { setVenueError(t('spur.errors.venueRequired')); valid = false; }
     else setVenueError('');

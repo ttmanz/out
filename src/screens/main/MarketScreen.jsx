@@ -20,7 +20,7 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 
 const MarketScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess, profile } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const isAdmin = profile?.is_admin === true;
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,8 +44,9 @@ const MarketScreen = ({ navigation }) => {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const handlePostPress = () => {
-    if (!hasAccess) {
-      Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody'));
+    const access = canAccessFeature('market');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
       return;
     }
     navigation.navigate(ROUTES.CREATE_MARKET_LISTING);

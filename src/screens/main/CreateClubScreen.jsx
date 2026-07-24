@@ -16,14 +16,18 @@ import BackHeader from '../../components/common/BackHeader';
 
 const CreateClubScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('club.subscriptionRequired')); return; }
+    const access = canAccessFeature('club_groups');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('club.subscriptionRequired'));
+      return;
+    }
     if (!name.trim()) {
       Alert.alert(t('common.error'), t('club.nameRequired'));
       return;

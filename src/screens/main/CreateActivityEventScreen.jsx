@@ -16,7 +16,7 @@ import BackHeader from '../../components/common/BackHeader';
 
 const CreateActivityEventScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { hasAccess } = useUser();
+  const { canAccessFeature } = useUser();
   const { category } = route.params;
   const [name, setName] = useState('');
   const [venue, setVenue] = useState('');
@@ -52,7 +52,11 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
   };
 
   const handlePost = async () => {
-    if (!hasAccess) { Alert.alert(t('subscription.requiredTitle'), t('subscription.requiredBody')); return; }
+    const access = canAccessFeature('whats_happening');
+    if (!access.allowed) {
+      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      return;
+    }
     if (!name.trim()) {
       Alert.alert(t('common.error'), t('activityEvents.nameRequired'));
       return;

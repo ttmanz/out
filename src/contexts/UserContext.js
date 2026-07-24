@@ -2,12 +2,32 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Alert } from 'react-native';
 import { getSession, onAuthStateChange, signOut } from '../lib/auth';
 import { getProfile } from '../lib/profile';
-import { subscriptionStatus } from '../lib/subscription';
+import { subscriptionStatus, getSubscriptionSettings, getFeatureAccess, canAccessFeature } from '../lib/subscription';
 
-const UserContext = createContext({ profile: null, refreshProfile: () => {}, hasAccess: true });
+const UserContext = createContext({
+  profile: null,
+  refreshProfile: () => {},
+  hasAccess: true,
+  canAccessFeature: () => ({ allowed: true }),
+});
 
 export const UserProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
+  const [settings, setSettings] = useState(null);
+  const [featureMap, setFeatureMap] = useState({});
+
+  // Global subscription mode + per-feature paid list — small, admin-edited
+  // tables, loaded once and re-checked alongside the profile.
+  const refreshAccessConfig = useCallback(async () => {
+    const [{ data: settingsData }, { data: featuresData }] = await Promise.all([
+      getSubscriptionSettings(),
+      getFeatureAccess(),
+    ]);
+    setSettings(settingsData ?? null);
+    const map = {};
+    (featuresData ?? []).forEach((f) => { map[f.feature_key] = f; });
+    setFeatureMap(map);
+  }, []);
 
   // Checked on every auth state change (fresh login, token refresh, app
   // foreground) — not just at the login screen — so a member who gets
@@ -30,14 +50,20 @@ export const UserProvider = ({ children }) => {
   // so profile-derived state never stays stale for the whole session
   useEffect(() => {
     refreshProfile();
+    refreshAccessConfig();
     const { data: { subscription } } = onAuthStateChange(() => refreshProfile());
     return () => subscription.unsubscribe();
-  }, [refreshProfile]);
+  }, [refreshProfile, refreshAccessConfig]);
 
   const { hasAccess } = subscriptionStatus(profile);
 
+  const checkFeature = useCallback(
+    (featureKey) => canAccessFeature(featureKey, { profile, settings, featureMap }),
+    [profile, settings, featureMap]
+  );
+
   return (
-    <UserContext.Provider value={{ profile, refreshProfile, hasAccess }}>
+    <UserContext.Provider value={{ profile, refreshProfile, hasAccess, canAccessFeature: checkFeature }}>
       {children}
     </UserContext.Provider>
   );
