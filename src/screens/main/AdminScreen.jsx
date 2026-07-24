@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
-import { getAllMembers, setMemberStatus, setStaffStatus, banMember, unbanMember } from '../../lib/admin';
+import { getAllMembers, setMemberStatus, setStaffStatus, setAccountType, banMember, unbanMember } from '../../lib/admin';
 import { useUser } from '../../contexts/UserContext';
 import { ROUTES } from '../../constants/routes';
 
@@ -30,6 +30,7 @@ const AdminScreen = ({ navigation }) => {
   const [updating, setUpdating] = useState(null);
   const [staffUpdating, setStaffUpdating] = useState(null);
   const [blockUpdating, setBlockUpdating] = useState(null);
+  const [typeUpdating, setTypeUpdating] = useState(null);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async () => {
@@ -54,6 +55,26 @@ const AdminScreen = ({ navigation }) => {
             setStaffUpdating(member.id);
             await setStaffStatus(member.id, next);
             setStaffUpdating(null);
+            load();
+          },
+        },
+      ]
+    );
+  };
+
+  const handleAccountTypeToggle = (member) => {
+    const next = member.account_type === 'venue_owner' ? 'member' : 'venue_owner';
+    Alert.alert(
+      'Change Account Type',
+      `Set ${member.full_name ?? 'this member'} to ${next === 'venue_owner' ? 'Venue Owner' : 'Member'}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Confirm',
+          onPress: async () => {
+            setTypeUpdating(member.id);
+            await setAccountType(member.id, next);
+            setTypeUpdating(null);
             load();
           },
         },
@@ -172,54 +193,72 @@ const AdminScreen = ({ navigation }) => {
           const isUpdating = updating === item.id;
           const isStaffUpdating = staffUpdating === item.id;
           const isBlockUpdating = blockUpdating === item.id;
+          const isTypeUpdating = typeUpdating === item.id;
           const isBanned = status === 'banned';
+          const isVenueOwner = item.account_type === 'venue_owner';
           return (
             <View style={styles.row}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {item.full_name?.[0]?.toUpperCase() ?? '?'}
-                </Text>
+              <View style={styles.rowTop}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>
+                    {item.full_name?.[0]?.toUpperCase() ?? '?'}
+                  </Text>
+                </View>
+                <View style={styles.info}>
+                  <Text style={styles.name}>{item.full_name ?? '—'}</Text>
+                  {item.is_admin && <Text style={styles.adminBadge}>Admin</Text>}
+                </View>
               </View>
-              <View style={styles.info}>
-                <Text style={styles.name}>{item.full_name ?? '—'}</Text>
-                {item.is_admin && <Text style={styles.adminBadge}>Admin</Text>}
-              </View>
-              <TouchableOpacity
-                style={[styles.staffChip, item.is_staff && styles.staffChipActive]}
-                onPress={() => handleStaffToggle(item)}
-                disabled={isStaffUpdating}
-              >
-                {isStaffUpdating
-                  ? <ActivityIndicator size="small" color={item.is_staff ? COLORS.black : COLORS.textMuted} />
-                  : <Text style={[styles.staffChipText, item.is_staff && styles.staffChipTextActive]}>
-                      {item.is_staff ? '✓ Staff' : 'Staff'}
-                    </Text>
-                }
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.statusBtn, { borderColor: STATUS_COLOR[status] }]}
-                onPress={() => handleStatusPress(item)}
-                disabled={isUpdating}
-              >
-                {isUpdating
-                  ? <ActivityIndicator size="small" color={STATUS_COLOR[status]} />
-                  : <Text style={[styles.statusText, { color: STATUS_COLOR[status] }]}>
-                      {STATUS_LABEL[status]}
-                    </Text>
-                }
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.blockChip, isBanned && styles.blockChipActive]}
-                onPress={() => handleBlockToggle(item)}
-                disabled={isBlockUpdating}
-              >
-                {isBlockUpdating
-                  ? <ActivityIndicator size="small" color={isBanned ? COLORS.black : COLORS.error} />
-                  : <Text style={[styles.blockChipText, isBanned && styles.blockChipTextActive]}>
-                      {isBanned ? 'Unblock' : 'Block'}
-                    </Text>
-                }
-              </TouchableOpacity>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScrollContent}>
+                <TouchableOpacity
+                  style={[styles.staffChip, item.is_staff && styles.staffChipActive]}
+                  onPress={() => handleStaffToggle(item)}
+                  disabled={isStaffUpdating}
+                >
+                  {isStaffUpdating
+                    ? <ActivityIndicator size="small" color={item.is_staff ? COLORS.black : COLORS.textMuted} />
+                    : <Text style={[styles.staffChipText, item.is_staff && styles.staffChipTextActive]}>
+                        {item.is_staff ? '✓ Staff' : 'Staff'}
+                      </Text>
+                  }
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.venueChip, isVenueOwner && styles.venueChipActive]}
+                  onPress={() => handleAccountTypeToggle(item)}
+                  disabled={isTypeUpdating}
+                >
+                  {isTypeUpdating
+                    ? <ActivityIndicator size="small" color={isVenueOwner ? COLORS.black : COLORS.textMuted} />
+                    : <Text style={[styles.venueChipText, isVenueOwner && styles.venueChipTextActive]}>
+                        {isVenueOwner ? '🍸 Venue Owner' : 'Member'}
+                      </Text>
+                  }
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.statusBtn, { borderColor: STATUS_COLOR[status] }]}
+                  onPress={() => handleStatusPress(item)}
+                  disabled={isUpdating}
+                >
+                  {isUpdating
+                    ? <ActivityIndicator size="small" color={STATUS_COLOR[status]} />
+                    : <Text style={[styles.statusText, { color: STATUS_COLOR[status] }]}>
+                        {STATUS_LABEL[status]}
+                      </Text>
+                  }
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.blockChip, isBanned && styles.blockChipActive]}
+                  onPress={() => handleBlockToggle(item)}
+                  disabled={isBlockUpdating}
+                >
+                  {isBlockUpdating
+                    ? <ActivityIndicator size="small" color={isBanned ? COLORS.black : COLORS.error} />
+                    : <Text style={[styles.blockChipText, isBanned && styles.blockChipTextActive]}>
+                        {isBanned ? 'Unblock' : 'Block'}
+                      </Text>
+                  }
+                </TouchableOpacity>
+              </ScrollView>
             </View>
           );
         }}
@@ -249,14 +288,14 @@ const styles = StyleSheet.create({
   plansBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
   list: { paddingBottom: 40 },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
     backgroundColor: COLORS.surface,
   },
+  rowTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  chipScrollContent: { gap: 8 },
   avatar: {
     width: 42, height: 42, borderRadius: 21,
     backgroundColor: COLORS.primaryDark,
@@ -273,7 +312,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    marginRight: 8,
     minWidth: 58,
     alignItems: 'center',
   },
@@ -283,6 +321,21 @@ const styles = StyleSheet.create({
   },
   staffChipText: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted },
   staffChipTextActive: { color: COLORS.black },
+  venueChip: {
+    borderWidth: 1,
+    borderColor: COLORS.borderAccent,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    minWidth: 58,
+    alignItems: 'center',
+  },
+  venueChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  venueChipText: { fontSize: 11, fontWeight: '700', color: COLORS.textMuted },
+  venueChipTextActive: { color: COLORS.black },
   statusBtn: {
     borderWidth: 1,
     borderRadius: 20,
@@ -298,7 +351,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    marginLeft: 8,
     minWidth: 64,
     alignItems: 'center',
   },

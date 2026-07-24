@@ -11,6 +11,10 @@ import { uploadAvatar } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+const ACCOUNT_TYPES = [
+  { key: 'member', label: 'Member' },
+  { key: 'venue_owner', label: 'Venue Owner' },
+];
 const INTERESTS = [
   '🍸 Cocktail Bars', '🎵 Live Music', '💃 Dancing', '🍔 Food & Drinks',
   '🎮 Gaming', '🎭 Events', '🏖️ Outdoor', '🎨 Arts & Culture', '✏️ Other',
@@ -51,6 +55,7 @@ const CompleteProfileScreen = ({ navigation }) => {
   const [otherInterests, setOtherInterests] = useState('');
   const [phone, setPhone] = useState('');
   const [instagram, setInstagram] = useState('');
+  const [accountType, setAccountType] = useState('member');
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
@@ -75,6 +80,7 @@ const CompleteProfileScreen = ({ navigation }) => {
         }
         setPhone(data.phone ?? '');
         setInstagram(data.instagram ?? '');
+        setAccountType(data.account_type ?? 'member');
       }
       setLoading(false);
     });
@@ -127,6 +133,7 @@ const CompleteProfileScreen = ({ navigation }) => {
       ],
       phone: phone.trim(),
       instagram: instagram.trim().replace(/^@/, ''),
+      account_type: accountType,
     });
     setSaving(false);
     if (error) { Alert.alert('Error', error.message); return; }
@@ -173,6 +180,20 @@ const CompleteProfileScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.form}>
+        <Field label="Account Type">
+          <View style={styles.chipRow}>
+            {ACCOUNT_TYPES.map(({ key, label }) => (
+              <TouchableOpacity
+                key={key}
+                style={[styles.chip, accountType === key && styles.chipActive]}
+                onPress={() => setAccountType(key)}
+              >
+                <Text style={[styles.chipText, accountType === key && styles.chipTextActive]}>{label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </Field>
+
         <Field label="Date of Birth" hint="DD/MM/YYYY">
           <TextInput
             style={styles.input}

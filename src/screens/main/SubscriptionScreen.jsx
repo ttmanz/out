@@ -6,7 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
-import { getSubscriptionPlans, activateSubscription, subscriptionStatus } from '../../lib/subscription';
+import { getSubscriptionPlans, activateSubscription, subscriptionStatus, planPriceFor } from '../../lib/subscription';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
 
@@ -34,7 +34,7 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
     if (!userId) return;
     Alert.alert(
       t('subscription.confirmTitle'),
-      t('subscription.confirmBody', { plan: plan.label, price: plan.price_display }),
+      t('subscription.confirmBody', { plan: plan.label, price: planPriceFor(plan, profile) }),
       [
         { text: t('common.cancel') ?? 'Cancel', style: 'cancel' },
         {
@@ -112,7 +112,7 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
                     </View>
                   ) : null}
                 </View>
-                <Text style={styles.planPrice}>{plan.price_display}</Text>
+                <Text style={styles.planPrice}>{planPriceFor(plan, profile)}</Text>
                 {!!plan.description && (
                   <Text style={styles.planDesc}>{plan.description}</Text>
                 )}

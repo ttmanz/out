@@ -21,7 +21,7 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
     if (!error && data) {
       setPlans(data);
       const initial = {};
-      data.forEach((p) => { initial[p.id] = { label: p.label, price_display: p.price_display, badge: p.badge ?? '', description: p.description ?? '', stripe_price_id: p.stripe_price_id ?? '' }; });
+      data.forEach((p) => { initial[p.id] = { label: p.label, price_display: p.price_display, badge: p.badge ?? '', description: p.description ?? '', stripe_price_id: p.stripe_price_id ?? '', venue_price_display: p.venue_price_display ?? '', venue_stripe_price_id: p.venue_stripe_price_id ?? '' }; });
       setDrafts(initial);
     }
     setLoading(false);
@@ -45,6 +45,8 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
       badge: d.badge.trim() || null,
       description: d.description.trim() || null,
       stripe_price_id: d.stripe_price_id.trim() || null,
+      venue_price_display: d.venue_price_display.trim() || null,
+      venue_stripe_price_id: d.venue_stripe_price_id.trim() || null,
     });
     setSaving(null);
     if (error) Alert.alert('Error', error.message);
@@ -115,6 +117,30 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
                   autoCapitalize="none"
                 />
 
+                <View style={styles.venueSection}>
+                  <Text style={styles.venueSectionTitle}>🍸 Venue Owner Pricing</Text>
+                  <Text style={styles.venueSectionHint}>Leave blank to charge venue owners the same as regular members.</Text>
+
+                  <Text style={styles.fieldLabel}>Venue Owner Price Display</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={d.venue_price_display ?? ''}
+                    onChangeText={(v) => setField(plan.id, 'venue_price_display', v)}
+                    placeholderTextColor={COLORS.textMuted}
+                    placeholder="e.g. €9.99 / month"
+                  />
+
+                  <Text style={styles.fieldLabel}>Venue Owner Stripe Price ID</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={d.venue_stripe_price_id ?? ''}
+                    onChangeText={(v) => setField(plan.id, 'venue_stripe_price_id', v)}
+                    placeholderTextColor={COLORS.textMuted}
+                    placeholder="price_..."
+                    autoCapitalize="none"
+                  />
+                </View>
+
                 <TouchableOpacity
                   style={styles.saveBtn}
                   onPress={() => handleSave(plan)}
@@ -157,6 +183,12 @@ const styles = StyleSheet.create({
     color: COLORS.text, backgroundColor: COLORS.background,
   },
   inputMulti: { height: 70, textAlignVertical: 'top' },
+  venueSection: {
+    marginTop: 18, paddingTop: 14,
+    borderTopWidth: 1, borderTopColor: COLORS.border,
+  },
+  venueSectionTitle: { fontSize: 13, fontWeight: '700', color: COLORS.primary, marginBottom: 4 },
+  venueSectionHint: { fontSize: 11, color: COLORS.textLight, lineHeight: 15, marginBottom: 4 },
   saveBtn: {
     backgroundColor: COLORS.primary, borderRadius: 10,
     paddingVertical: 12, alignItems: 'center', marginTop: 16,

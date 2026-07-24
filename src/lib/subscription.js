@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export const getSubscriptionPlans = () =>
   supabase
     .from('subscription_plans')
-    .select('id, label, price_display, duration_months, badge, description, sort_order')
+    .select('id, label, price_display, venue_price_display, duration_months, badge, description, sort_order')
     .eq('is_active', true)
     .order('sort_order');
 
@@ -11,8 +11,15 @@ export const getSubscriptionPlans = () =>
 export const getAllSubscriptionPlans = () =>
   supabase
     .from('subscription_plans')
-    .select('id, label, price_display, duration_months, badge, description, sort_order, stripe_price_id')
+    .select('id, label, price_display, venue_price_display, duration_months, badge, description, sort_order, stripe_price_id, venue_stripe_price_id')
     .order('sort_order');
+
+// A venue owner sees their own price where the admin has set one;
+// otherwise everyone sees the regular member price.
+export const planPriceFor = (plan, profile) =>
+  (profile?.account_type === 'venue_owner' && plan.venue_price_display)
+    ? plan.venue_price_display
+    : plan.price_display;
 
 export const updateSubscriptionPlan = (id, fields) =>
   supabase.from('subscription_plans').update(fields).eq('id', id);
