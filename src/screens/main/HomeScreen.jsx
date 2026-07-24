@@ -19,6 +19,7 @@ const FEATURES = [
   { emoji: '🧩', titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    watermark: '🌐' },
   { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍' },
   { emoji: '🛍️', titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         watermark: '🏷️' },
+  { emoji: '🎟️', titleKey: 'home.events',          descKey: 'home.eventsDesc',         route: ROUTES.EVENTS,         watermark: '🚀' },
 ];
 
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
