@@ -30,7 +30,8 @@ const POST_TYPE_LABEL = {
 
 const MemberProfileScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { canAccessFeature } = useUser();
+  const { canAccessFeature, profile: myProfile } = useUser();
+  const isAdmin = myProfile?.is_admin === true;
   const { userId: targetId, fullName } = route.params;
   const [myId, setMyId] = useState(null);
   const [profile, setProfile] = useState(null);
@@ -168,7 +169,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
                 <Text style={styles.pendingBadgeText}>⏳ Request received — check Friends tab</Text>
               </View>
             )}
-            {isFriend && targetId !== myId && (
+            {(isFriend || isAdmin) && targetId !== myId && (
               <TouchableOpacity style={styles.messageBtn} onPress={handleMessage} disabled={messaging}>
                 {messaging
                   ? <ActivityIndicator size="small" color={COLORS.white} />
