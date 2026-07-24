@@ -49,7 +49,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
     setMyId(uid);
 
     const [profileRes, happeningsRes, spurRes, openChatRes, friendRes, pendingRes] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, visibility').eq('id', targetId).single(),
+      supabase.from('profiles').select('id, full_name, visibility, is_admin').eq('id', targetId).single(),
       getMemberHappenings(targetId),
       getMemberSpurPosts(targetId),
       getMemberOpenChatPosts(targetId),
@@ -111,6 +111,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
     navigation.navigate(ROUTES.CHAT, {
       conversationId: data.id,
       friendName: profile?.full_name ?? fullName,
+      friendIsAdmin: profile?.is_admin === true,
     });
   };
 

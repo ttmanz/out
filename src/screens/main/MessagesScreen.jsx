@@ -47,6 +47,7 @@ const MessagesScreen = ({ navigation }) => {
     navigation.navigate(ROUTES.CHAT, {
       conversationId: conv.id,
       friendName: partner?.full_name ?? t('messages.unknownMember'),
+      friendIsAdmin: partner?.is_admin === true,
     });
   };
 
@@ -91,7 +92,12 @@ const MessagesScreen = ({ navigation }) => {
             <TouchableOpacity style={styles.row} onPress={() => openChat(item)} activeOpacity={0.7}>
               <Avatar name={partner?.full_name} />
               <View style={styles.rowContent}>
-                <Text style={styles.partnerName}>{partner?.full_name ?? t('messages.unknownMember')}</Text>
+                <View style={styles.nameRow}>
+                  <Text style={styles.partnerName}>{partner?.full_name ?? t('messages.unknownMember')}</Text>
+                  {partner?.is_admin && (
+                    <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>🛡 Admin</Text></View>
+                  )}
+                </View>
                 {!!item.last_message_content && (
                   <Text style={styles.lastMsg} numberOfLines={1}>{item.last_message_content}</Text>
                 )}
@@ -143,7 +149,14 @@ const styles = StyleSheet.create({
   },
   avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 18 },
   rowContent: { flex: 1 },
+  nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   partnerName: { fontSize: 16, fontWeight: '600', color: COLORS.text },
+  adminBadge: {
+    backgroundColor: 'rgba(200,128,10,0.15)', borderRadius: 8,
+    paddingHorizontal: 6, paddingVertical: 2,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  adminBadgeText: { fontSize: 10, fontWeight: '700', color: COLORS.primary },
   lastMsg: { fontSize: 13, color: COLORS.textMuted, marginTop: 2 },
   time: { fontSize: 11, color: COLORS.textMuted, marginLeft: 8 },
 });

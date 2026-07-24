@@ -252,7 +252,8 @@
     "someone": "Кто-то",
     "friendRequest": "{{name}} отправил вам запрос в друзья",
     "reply": "{{name}} ответил на ваш пост: {{post}}",
-    "clubJoinRequest": "{{name}} запросил вступление в {{club}}"
+    "clubJoinRequest": "{{name}} запросил вступление в {{club}}",
+    "adminMessage": "{{name}} (администратор платформы) отправил вам сообщение"
   },
   "venueHub": {
     "search": "Поиск мест",

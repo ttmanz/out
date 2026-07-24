@@ -250,7 +250,8 @@
     "someone": "Someone",
     "friendRequest": "{{name}} sent you a friend request",
     "reply": "{{name}} replied to your post: {{post}}",
-    "clubJoinRequest": "{{name}} requested to join {{club}}"
+    "clubJoinRequest": "{{name}} requested to join {{club}}",
+    "adminMessage": "{{name}} (Platform Admin) sent you a message"
   },
   "venueHub": {
     "search": "Search Venues",

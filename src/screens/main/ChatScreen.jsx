@@ -16,7 +16,7 @@ import { useUser } from '../../contexts/UserContext';
 const ChatScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature } = useUser();
-  const { conversationId, friendName } = route.params;
+  const { conversationId, friendName, friendIsAdmin } = route.params;
   const [myId, setMyId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
@@ -108,7 +108,12 @@ const ChatScreen = ({ navigation, route }) => {
           <View style={styles.headerAvatar}>
             <Text style={styles.headerAvatarText}>{friendName?.[0]?.toUpperCase() ?? '?'}</Text>
           </View>
-          <Text style={styles.headerTitle} numberOfLines={1}>{friendName}</Text>
+          <View style={{ flexShrink: 1 }}>
+            <Text style={styles.headerTitle} numberOfLines={1}>{friendName}</Text>
+            {friendIsAdmin && (
+              <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>🛡 Platform Admin</Text></View>
+            )}
+          </View>
         </View>
         <View style={{ width: 40 }} />
       </View>
@@ -190,6 +195,13 @@ const styles = StyleSheet.create({
   },
   headerAvatarText: { color: COLORS.white, fontWeight: '700', fontSize: 14 },
   headerTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, flexShrink: 1 },
+  adminBadge: {
+    alignSelf: 'flex-start', marginTop: 2,
+    backgroundColor: 'rgba(200,128,10,0.15)', borderRadius: 8,
+    paddingHorizontal: 6, paddingVertical: 1,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+  },
+  adminBadgeText: { fontSize: 10, fontWeight: '700', color: COLORS.primary },
   list: { padding: 12, paddingBottom: 8 },
   empty: { color: COLORS.textMuted, textAlign: 'center', marginTop: 60, fontSize: 14 },
   bubbleWrap: { marginBottom: 10, maxWidth: '78%' },

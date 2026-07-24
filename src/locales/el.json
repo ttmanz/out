@@ -252,7 +252,8 @@
     "someone": "Κάποιος",
     "friendRequest": "Ο/Η {{name}} σας έστειλε αίτημα φιλίας",
     "reply": "Ο/Η {{name}} απάντησε στην ανάρτησή σας: {{post}}",
-    "clubJoinRequest": "Ο/Η {{name}} ζήτησε να συμμετάσχει στο {{club}}"
+    "clubJoinRequest": "Ο/Η {{name}} ζήτησε να συμμετάσχει στο {{club}}",
+    "adminMessage": "Ο/Η {{name}} (Διαχειριστής) σας έστειλε μήνυμα"
   },
   "venueHub": {
     "search": "Αναζήτηση Χώρων",
