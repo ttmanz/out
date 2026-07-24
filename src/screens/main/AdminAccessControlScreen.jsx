@@ -12,8 +12,8 @@ import BackHeader from '../../components/common/BackHeader';
 
 const MODES = [
   { key: 'free', label: 'Free', desc: 'Everyone has full access to every feature' },
-  { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date, then falls back to the paid list below' },
-  { key: 'free_except', label: 'Free Except…', desc: 'The paid list below applies right now' },
+  { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, a subscription becomes required for every feature (the paid list below does not apply in this mode)' },
+  { key: 'free_except', label: 'Free Except…', desc: 'Everyone keeps full access, except the paid list below, which costs its one-off price unless subscribed' },
 ];
 
 const AdminAccessControlScreen = ({ navigation }) => {
@@ -140,7 +140,12 @@ const AdminAccessControlScreen = ({ navigation }) => {
 
         <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Paid Features</Text>
         <Text style={styles.sectionHint}>
-          A member with an active subscription always posts free, regardless of these settings. This list only applies to members without one, once the mode above puts it into effect.
+          A member with an active subscription always posts free, regardless of these settings.{' '}
+          {mode === 'free_except'
+            ? 'These prices are in effect right now for members without a subscription.'
+            : mode === 'free_until'
+              ? 'Not in effect in "Free Until" mode — once the date passes, a subscription is required for everything instead of these per-feature prices.'
+              : 'Not in effect while mode is "Free."'}
         </Text>
 
         {features.map((f) => (
