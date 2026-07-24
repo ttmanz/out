@@ -56,6 +56,12 @@ const CompleteProfileScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [instagram, setInstagram] = useState('');
   const [accountType, setAccountType] = useState('member');
+  // profiles.account_type defaults to 'member' in the database, so the
+  // loaded value is never actually empty — this tracks whether the person
+  // has deliberately picked one, so first-time setup can require a real
+  // choice without retroactively blocking anyone who completed their
+  // profile before this field existed.
+  const [accountTypeTouched, setAccountTypeTouched] = useState(false);
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
@@ -81,6 +87,7 @@ const CompleteProfileScreen = ({ navigation }) => {
         setPhone(data.phone ?? '');
         setInstagram(data.instagram ?? '');
         setAccountType(data.account_type ?? 'member');
+        setAccountTypeTouched(data.profile_completed === true);
       }
       setLoading(false);
     });
@@ -114,8 +121,8 @@ const CompleteProfileScreen = ({ navigation }) => {
   };
 
   const handleSave = async () => {
-    if (!dob.trim() || !gender || !city.trim()) {
-      Alert.alert('Required fields', 'Please fill in date of birth, gender and city.');
+    if (!dob.trim() || !gender || !city.trim() || !accountTypeTouched) {
+      Alert.alert('Required fields', 'Please fill in account type, date of birth, gender and city.');
       return;
     }
     setSaving(true);
@@ -180,15 +187,15 @@ const CompleteProfileScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.form}>
-        <Field label="Account Type">
+        <Field label="Account Type" required>
           <View style={styles.chipRow}>
             {ACCOUNT_TYPES.map(({ key, label }) => (
               <TouchableOpacity
                 key={key}
-                style={[styles.chip, accountType === key && styles.chipActive]}
-                onPress={() => setAccountType(key)}
+                style={[styles.chip, accountType === key && accountTypeTouched && styles.chipActive]}
+                onPress={() => { setAccountType(key); setAccountTypeTouched(true); }}
               >
-                <Text style={[styles.chipText, accountType === key && styles.chipTextActive]}>{label}</Text>
+                <Text style={[styles.chipText, accountType === key && accountTypeTouched && styles.chipTextActive]}>{label}</Text>
               </TouchableOpacity>
             ))}
           </View>
