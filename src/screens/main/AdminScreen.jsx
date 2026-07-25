@@ -74,8 +74,9 @@ const AdminScreen = ({ navigation }) => {
           text: 'Confirm',
           onPress: async () => {
             setStaffUpdating(member.id);
-            await setStaffStatus(member.id, next);
+            const { data, error } = await setStaffStatus(member.id, next);
             setStaffUpdating(null);
+            if (error || !data?.length) { Alert.alert('Error', 'Could not update staff status.'); return; }
             load();
           },
         },
@@ -94,8 +95,9 @@ const AdminScreen = ({ navigation }) => {
           text: 'Confirm',
           onPress: async () => {
             setTypeUpdating(member.id);
-            await setAccountType(member.id, next);
+            const { data, error } = await setAccountType(member.id, next);
             setTypeUpdating(null);
+            if (error || !data?.length) { Alert.alert('Error', 'Could not update account type.'); return; }
             load();
           },
         },
@@ -121,8 +123,9 @@ const AdminScreen = ({ navigation }) => {
           style: blocking ? 'destructive' : 'default',
           onPress: async () => {
             setBlockUpdating(member.id);
-            await (blocking ? banMember(member.id) : unbanMember(member.id));
+            const { data, error } = await (blocking ? banMember(member.id) : unbanMember(member.id));
             setBlockUpdating(null);
+            if (error || !data?.length) { Alert.alert('Error', 'Could not update block status.'); return; }
             load();
           },
         },
@@ -149,8 +152,9 @@ const AdminScreen = ({ navigation }) => {
           text: 'Confirm',
           onPress: async () => {
             setUpdating(member.id);
-            await setMemberStatus(member.id, next);
+            const { data, error } = await setMemberStatus(member.id, next);
             setUpdating(null);
+            if (error || !data?.length) { Alert.alert('Error', 'Could not update member status.'); return; }
             load();
           },
         },

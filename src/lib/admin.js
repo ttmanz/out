@@ -6,15 +6,19 @@ export const getAllMembers = () =>
     .select('id, full_name, status, is_admin, is_staff, account_type, created_at')
     .order('created_at', { ascending: false });
 
+// .select() makes the affected rows come back, so a caller can tell a
+// real 0-rows-updated (e.g. an RLS policy silently excluding the row)
+// apart from a normal successful update — plain .update() alone reports
+// neither rows-affected nor an error for that case.
 export const setMemberStatus = (userId, status) =>
-  supabase.from('profiles').update({ status }).eq('id', userId);
+  supabase.from('profiles').update({ status }).eq('id', userId).select('id');
 
 export const banMember = (userId) => setMemberStatus(userId, 'banned');
 export const unbanMember = (userId) => setMemberStatus(userId, 'active');
 
 export const setStaffStatus = (userId, is_staff) =>
-  supabase.from('profiles').update({ is_staff }).eq('id', userId);
+  supabase.from('profiles').update({ is_staff }).eq('id', userId).select('id');
 
 // Self-declared at profile setup; admin can override afterward
 export const setAccountType = (userId, account_type) =>
-  supabase.from('profiles').update({ account_type }).eq('id', userId);
+  supabase.from('profiles').update({ account_type }).eq('id', userId).select('id');
