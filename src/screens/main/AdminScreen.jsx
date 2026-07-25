@@ -6,6 +6,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import { getAllMembers, setMemberStatus, setStaffStatus, setAccountType, banMember, unbanMember } from '../../lib/admin';
+import { getOrCreateConversation } from '../../lib/messages';
 import { useUser } from '../../contexts/UserContext';
 import { ROUTES } from '../../constants/routes';
 
@@ -31,6 +32,7 @@ const AdminScreen = ({ navigation }) => {
   const [staffUpdating, setStaffUpdating] = useState(null);
   const [blockUpdating, setBlockUpdating] = useState(null);
   const [typeUpdating, setTypeUpdating] = useState(null);
+  const [messagingId, setMessagingId] = useState(null);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async () => {
@@ -41,6 +43,25 @@ const AdminScreen = ({ navigation }) => {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const handleMessage = async (member) => {
+    if (member.id === profile?.id) return;
+    setMessagingId(member.id);
+    const { data, error } = await getOrCreateConversation(profile.id, member.id);
+    setMessagingId(null);
+    if (error || !data) {
+      Alert.alert('Error', 'Could not start a conversation.');
+      return;
+    }
+    navigation.navigate('MessagesTab', {
+      screen: ROUTES.CHAT,
+      params: {
+        conversationId: data.id,
+        friendName: member.full_name ?? 'Member',
+        friendIsAdmin: member.is_admin === true,
+      },
+    });
+  };
 
   const handleStaffToggle = async (member) => {
     const next = !member.is_staff;
@@ -210,6 +231,18 @@ const AdminScreen = ({ navigation }) => {
                 </View>
               </View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipScrollContent}>
+                {item.id !== profile?.id && (
+                  <TouchableOpacity
+                    style={styles.messageChip}
+                    onPress={() => handleMessage(item)}
+                    disabled={messagingId === item.id}
+                  >
+                    {messagingId === item.id
+                      ? <ActivityIndicator size="small" color={COLORS.black} />
+                      : <Text style={styles.messageChipText}>💬 Message</Text>
+                    }
+                  </TouchableOpacity>
+                )}
                 <TouchableOpacity
                   style={[styles.staffChip, item.is_staff && styles.staffChipActive]}
                   onPress={() => handleStaffToggle(item)}
@@ -296,6 +329,12 @@ const styles = StyleSheet.create({
   },
   rowTop: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   chipScrollContent: { gap: 8 },
+  messageChip: {
+    backgroundColor: COLORS.primary, borderRadius: 20,
+    paddingHorizontal: 12, paddingVertical: 6,
+    minWidth: 58, alignItems: 'center',
+  },
+  messageChipText: { fontSize: 11, fontWeight: '700', color: COLORS.black },
   avatar: {
     width: 42, height: 42, borderRadius: 21,
     backgroundColor: COLORS.primaryDark,
