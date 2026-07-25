@@ -175,38 +175,48 @@ const AdminScreen = ({ navigation }) => {
       <View style={[styles.header, { paddingTop: statusBarHeight + 16 }]}>
         <Text style={styles.title}>Members</Text>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.navRow} contentContainerStyle={styles.navRowContent}>
+      <View style={styles.navGrid}>
         <TouchableOpacity
-          style={styles.plansBtn}
+          style={styles.navCard}
           onPress={() => navigation.navigate(ROUTES.ADMIN_TOP_VENUES)}
+          activeOpacity={0.75}
         >
-          <Text style={styles.plansBtnText}>📍 Venues</Text>
+          <Text style={styles.navCardEmoji}>📍</Text>
+          <Text style={styles.navCardText}>Venues</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.plansBtn}
+          style={styles.navCard}
           onPress={() => navigation.navigate(ROUTES.ADMIN_OPEN_GROUPS)}
+          activeOpacity={0.75}
         >
-          <Text style={styles.plansBtnText}>🧩 Groups</Text>
+          <Text style={styles.navCardEmoji}>🧩</Text>
+          <Text style={styles.navCardText}>Groups</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.plansBtn}
+          style={styles.navCard}
           onPress={() => navigation.navigate(ROUTES.ADMIN_SUBSCRIPTION_PLANS)}
+          activeOpacity={0.75}
         >
-          <Text style={styles.plansBtnText}>⭐ Plans</Text>
+          <Text style={styles.navCardEmoji}>⭐</Text>
+          <Text style={styles.navCardText}>Plans</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.plansBtn}
+          style={styles.navCard}
           onPress={() => navigation.navigate(ROUTES.ADMIN_ADS)}
+          activeOpacity={0.75}
         >
-          <Text style={styles.plansBtnText}>📢 Ads</Text>
+          <Text style={styles.navCardEmoji}>📢</Text>
+          <Text style={styles.navCardText}>Ads</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={styles.plansBtn}
+          style={styles.navCard}
           onPress={() => navigation.navigate(ROUTES.ADMIN_ACCESS_CONTROL)}
+          activeOpacity={0.75}
         >
-          <Text style={styles.plansBtnText}>💳 Access</Text>
+          <Text style={styles.navCardEmoji}>💳</Text>
+          <Text style={styles.navCardText}>Access</Text>
         </TouchableOpacity>
-      </ScrollView>
+      </View>
       <Text style={styles.count}>{members.length} members</Text>
 
       <FlatList
@@ -314,15 +324,21 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
   },
   title: { fontSize: 26, fontWeight: '800', color: COLORS.primary },
-  navRow: { flexGrow: 0, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  navRowContent: { paddingHorizontal: 20, paddingVertical: 10, gap: 8 },
-  count: { fontSize: 13, color: COLORS.textMuted, paddingHorizontal: 20, paddingVertical: 8 },
-  plansBtn: {
-    backgroundColor: 'rgba(200,128,10,0.12)',
-    borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7,
-    borderWidth: 1, borderColor: COLORS.borderAccent,
+  navGrid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 10,
+    paddingHorizontal: 16, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: COLORS.border,
   },
-  plansBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
+  count: { fontSize: 13, color: COLORS.textMuted, paddingHorizontal: 20, paddingVertical: 8 },
+  navCard: {
+    flexBasis: '30%', flexGrow: 1,
+    backgroundColor: 'rgba(200,128,10,0.12)',
+    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 8,
+    borderWidth: 1, borderColor: COLORS.borderAccent,
+    alignItems: 'center', justifyContent: 'center', gap: 6,
+  },
+  navCardEmoji: { fontSize: 26 },
+  navCardText: { color: COLORS.primary, fontWeight: '700', fontSize: 14, textAlign: 'center' },
   list: { paddingBottom: 40 },
   row: {
     paddingVertical: 12,
