@@ -50,6 +50,8 @@ const NotificationsScreen = ({ navigation }) => {
         screen: ROUTES.CHAT,
         params: { conversationId: item.reference_id, friendName: item.actor?.full_name ?? t('notifications.someone'), friendIsAdmin: true },
       });
+    } else if (item.type === 'content_report') {
+      navigation.navigate('AdminTab', { screen: ROUTES.ADMIN_REPORTS, initial: false });
     }
   };
 
@@ -59,6 +61,7 @@ const NotificationsScreen = ({ navigation }) => {
     if (item.type === 'reply') return t('notifications.reply', { name: actor, post: item.reference_text ?? '' });
     if (item.type === 'club_join_request') return t('notifications.clubJoinRequest', { name: actor, club: item.reference_text ?? '' });
     if (item.type === 'admin_message') return t('notifications.adminMessage', { name: actor });
+    if (item.type === 'content_report') return t('notifications.contentReport', { reason: t(`report.reasons.${item.reference_text}`) });
     return '';
   };
 

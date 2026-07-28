@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { getSession } from '../../lib/auth';
+import { getSession, deleteAccount } from '../../lib/auth';
 import { ROUTES } from '../../constants/routes';
 import { getProfile, updateProfileSettings } from '../../lib/profile';
 import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend, getMyBlockedProfiles, unblockMember } from '../../lib/friends';
@@ -41,6 +41,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
   const [togglingId, setTogglingId] = useState(null);
   const [blocked, setBlocked] = useState([]);
   const [unblockingId, setUnblockingId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     getSession().then(async ({ data: { session } }) => {
@@ -96,6 +97,41 @@ const ProfileSettingsScreen = ({ navigation }) => {
       if (!error) setCloseFriendIds((prev) => new Set([...prev, fid]));
     }
     setTogglingId(null);
+  };
+
+  // Two-step confirmation before an irreversible, store-mandated action.
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      t('profileSettings.deleteAccountTitle'),
+      t('profileSettings.deleteAccountWarning'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('profileSettings.deleteAccountConfirm'),
+          style: 'destructive',
+          onPress: () => Alert.alert(
+            t('profileSettings.deleteAccountTitle'),
+            t('profileSettings.deleteAccountFinalWarning'),
+            [
+              { text: t('common.cancel'), style: 'cancel' },
+              {
+                text: t('profileSettings.deleteAccountFinalConfirm'),
+                style: 'destructive',
+                onPress: async () => {
+                  setDeleting(true);
+                  const { error } = await deleteAccount();
+                  // On success the auth listener unmounts this screen.
+                  if (error) {
+                    setDeleting(false);
+                    Alert.alert(t('common.error'), t('profileSettings.deleteAccountFailed'));
+                  }
+                },
+              },
+            ],
+          ),
+        },
+      ],
+    );
   };
 
   const friendProfile = (item) => item.requester_id === userId ? item.addressee : item.requester;
@@ -298,6 +334,15 @@ const ProfileSettingsScreen = ({ navigation }) => {
             : <Text style={styles.saveBtnText}>{t('profileSettings.save')}</Text>
           }
         </TouchableOpacity>
+
+        <Text style={[styles.sectionLabel, styles.dangerLabel]}>{t('profileSettings.dangerZone')}</Text>
+        <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount} disabled={deleting}>
+          {deleting
+            ? <ActivityIndicator color={COLORS.error} />
+            : <Text style={styles.deleteBtnText}>{t('profileSettings.deleteAccount')}</Text>
+          }
+        </TouchableOpacity>
+        <Text style={styles.deleteHint}>{t('profileSettings.deleteAccountHint')}</Text>
       </ScrollView>
     </View>
   );
@@ -392,6 +437,15 @@ const styles = StyleSheet.create({
     paddingVertical: 15, alignItems: 'center', marginTop: 24,
   },
   saveBtnText: { color: COLORS.black, fontWeight: '800', fontSize: 16 },
+
+  dangerLabel: { color: COLORS.error, marginTop: 40 },
+  deleteBtn: {
+    borderWidth: 1, borderColor: COLORS.error, borderRadius: 12,
+    paddingVertical: 15, alignItems: 'center',
+    backgroundColor: 'rgba(239,68,68,0.08)',
+  },
+  deleteBtnText: { color: COLORS.error, fontWeight: '800', fontSize: 15 },
+  deleteHint: { fontSize: 12, color: COLORS.textMuted, marginTop: 10, lineHeight: 17 },
 });
 
 export default ProfileSettingsScreen;

@@ -64,6 +64,18 @@ export const signInWithApple = async () => {
 
 export const signOut = () => supabase.auth.signOut();
 
+// Permanently erase the caller's account: media, content (via FK cascades)
+// and the auth user itself — done server-side because deleting an auth user
+// needs the service role key. Signs out locally afterwards, which flips the
+// app back to the auth stack via onAuthStateChange.
+export const deleteAccount = async () => {
+  const { data, error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
+  if (error) return { error };
+  if (!data?.deleted) return { error: new Error(data?.error ?? 'Account deletion failed') };
+  await supabase.auth.signOut();
+  return { error: null };
+};
+
 export const getSession = () => supabase.auth.getSession();
 
 export const onAuthStateChange = (callback) =>

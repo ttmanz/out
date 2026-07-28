@@ -15,6 +15,7 @@ import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import ReportModal from '../../components/common/ReportModal';
 
 const formatEventDate = (iso) => {
   if (!iso) return null;
@@ -24,7 +25,7 @@ const formatEventDate = (iso) => {
   });
 };
 
-const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete }) => {
+const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
@@ -35,6 +36,11 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
       <View style={styles.cardBody}>
         <View style={styles.cardTitleRow}>
           <Text style={[styles.eventName, { flex: 1 }]}>{event.name}</Text>
+          {event.created_by !== myId && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onReport(event)}>
+              <Text style={styles.adminDeleteBtnText}>🚩</Text>
+            </TouchableOpacity>
+          )}
           {isAdmin && (
             <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(event.id)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
@@ -114,6 +120,7 @@ const ActivityEventsScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
+  const [reportTarget, setReportTarget] = useState(null);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -219,6 +226,8 @@ const ActivityEventsScreen = ({ navigation, route }) => {
             onSendReply={handleReply}
             isAdmin={isAdmin}
             onAdminDelete={handleAdminDelete}
+            myId={profile?.id}
+            onReport={(ev) => setReportTarget({ targetType: 'activity_event', targetId: ev.id, reportedUserId: ev.created_by ?? null, contentExcerpt: ev.name })}
           />
         )}
       />
@@ -229,6 +238,7 @@ const ActivityEventsScreen = ({ navigation, route }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
     </KeyboardAvoidingView>
   );
 };

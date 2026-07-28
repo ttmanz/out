@@ -222,7 +222,16 @@
     "saveFailed": "Could not save settings",
     "blockedMembers": "Blocked members",
     "unblock": "Unblock",
-    "unblockFailed": "Could not unblock member"
+    "unblockFailed": "Could not unblock member",
+    "dangerZone": "Danger zone",
+    "deleteAccount": "Delete my account",
+    "deleteAccountHint": "Permanently deletes your account, profile, posts, messages and photos. This cannot be undone.",
+    "deleteAccountTitle": "Delete account?",
+    "deleteAccountWarning": "This will permanently erase your account, profile, posts, messages and photos. This cannot be undone.",
+    "deleteAccountConfirm": "Delete",
+    "deleteAccountFinalWarning": "Are you absolutely sure? Your account and all your data will be gone forever.",
+    "deleteAccountFinalConfirm": "Yes, delete everything",
+    "deleteAccountFailed": "Could not delete your account. Please try again or contact support@find-mee.com."
   },
   "venues": {
     "title": "Where to Go",
@@ -251,7 +260,8 @@
     "friendRequest": "{{name}} sent you a friend request",
     "reply": "{{name}} replied to your post: {{post}}",
     "clubJoinRequest": "{{name}} requested to join {{club}}",
-    "adminMessage": "{{name}} (Platform Admin) sent you a message"
+    "adminMessage": "{{name}} (Platform Admin) sent you a message",
+    "contentReport": "🚩 New report: {{reason}} — tap to review"
   },
   "venueHub": {
     "search": "Search Venues",
@@ -468,5 +478,21 @@
     "labelPhoto": "Photo",
     "submit": "Post Event",
     "postFailed": "Could not post the event"
+  },
+  "report": {
+    "title": "Report",
+    "subtitle": "Tell us what's wrong. Reports are anonymous and reviewed by our team within 24 hours.",
+    "reasons": {
+      "spam": "Spam or scam",
+      "harassment": "Harassment or bullying",
+      "inappropriate": "Inappropriate content",
+      "other": "Something else"
+    },
+    "detailsPlaceholder": "Add details (optional)",
+    "submit": "Submit report",
+    "thanksTitle": "Report received",
+    "thanksBody": "Thank you for helping keep Find-Mee safe. Our team will review this report within 24 hours.",
+    "reportPost": "Report post",
+    "reportMember": "Report member"
   }
 }

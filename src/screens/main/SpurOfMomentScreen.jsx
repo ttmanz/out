@@ -16,6 +16,7 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
+import ReportModal from '../../components/common/ReportModal';
 
 const SpurOfMomentScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -25,6 +26,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
+  const [reportTarget, setReportTarget] = useState(null);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -98,6 +100,11 @@ const SpurOfMomentScreen = ({ navigation }) => {
             </TouchableOpacity>
             <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
           </View>
+          {item.user_id !== profile?.id && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => setReportTarget({ targetType: 'spur', targetId: item.id, reportedUserId: item.user_id, contentExcerpt: item.title })}>
+              <Text style={styles.adminDeleteBtnText}>🚩</Text>
+            </TouchableOpacity>
+          )}
           {isAdmin && (
             <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
@@ -195,6 +202,7 @@ const SpurOfMomentScreen = ({ navigation }) => {
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
     </KeyboardAvoidingView>
   );
 };

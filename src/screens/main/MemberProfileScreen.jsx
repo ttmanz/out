@@ -18,6 +18,7 @@ import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import ReportModal from '../../components/common/ReportModal';
 
 const POST_TYPE_LABEL = {
   spur: '⚡ Spur',
@@ -41,6 +42,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [messaging, setMessaging] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
 
   const load = useCallback(async () => {
     const { data: { session } } = await getSession();
@@ -178,6 +180,19 @@ const MemberProfileScreen = ({ navigation, route }) => {
                 }
               </TouchableOpacity>
             )}
+            {targetId !== myId && (
+              <TouchableOpacity
+                style={styles.reportLink}
+                onPress={() => setReportTarget({
+                  targetType: 'member',
+                  targetId,
+                  reportedUserId: targetId,
+                  contentExcerpt: profile?.full_name ?? fullName,
+                })}
+              >
+                <Text style={styles.reportLinkText}>🚩 {t('report.reportMember')}</Text>
+              </TouchableOpacity>
+            )}
             <Text style={styles.postsLabel}>{t('profile.activity')}</Text>
           </View>
         )}
@@ -191,6 +206,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
           </View>
         )}
       />
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
     </SafeAreaView>
   );
 };
@@ -198,6 +214,8 @@ const MemberProfileScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
+  reportLink: { marginTop: 12, paddingVertical: 4 },
+  reportLinkText: { color: COLORS.textMuted, fontSize: 13, fontWeight: '600' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

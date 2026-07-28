@@ -16,8 +16,9 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
+import ReportModal from '../../components/common/ReportModal';
 
-const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete }) => {
+const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
@@ -34,6 +35,11 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
           </TouchableOpacity>
           <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
         </View>
+        {item.user_id !== myId && (
+          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onReport(item)}>
+            <Text style={styles.adminDeleteBtnText}>🚩</Text>
+          </TouchableOpacity>
+        )}
         {isAdmin && (
           <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
             <Text style={styles.adminDeleteBtnText}>🗑</Text>
@@ -107,6 +113,14 @@ const HappeningFeedScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
+  const [reportTarget, setReportTarget] = useState(null);
+
+  const handleReport = (item) => setReportTarget({
+    targetType: 'happening',
+    targetId: item.id,
+    reportedUserId: item.user_id,
+    contentExcerpt: item.title,
+  });
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -207,9 +221,13 @@ const HappeningFeedScreen = ({ navigation, route }) => {
             onSendReply={handleReply}
             isAdmin={isAdmin}
             onAdminDelete={handleAdminDelete}
+            myId={profile?.id}
+            onReport={handleReport}
           />
         )}
       />
+
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
 
       <TouchableOpacity
         style={styles.fab}

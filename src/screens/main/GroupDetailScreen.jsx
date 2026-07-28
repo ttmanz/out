@@ -23,6 +23,7 @@ import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import LinkInput from '../../components/common/LinkInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
+import ReportModal from '../../components/common/ReportModal';
 
 const GroupDetailScreen = ({ navigation, route }) => {
   const { groupId, groupName } = route.params;
@@ -36,6 +37,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
+  const [reportTarget, setReportTarget] = useState(null);
   const firstRender = useRef(true);
 
   const [postText, setPostText] = useState('');
@@ -179,6 +181,11 @@ const GroupDetailScreen = ({ navigation, route }) => {
             </TouchableOpacity>
             <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
           </View>
+          {item.user_id !== userId && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => setReportTarget({ targetType: 'group_post', targetId: item.id, reportedUserId: item.user_id, contentExcerpt: item.text })}>
+              <Text style={styles.adminDeleteBtnText}>🚩</Text>
+            </TouchableOpacity>
+          )}
           {isAdmin && (
             <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
@@ -311,6 +318,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
           posts.map(renderPost)
         )}
       </ScrollView>
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
     </KeyboardAvoidingView>
   );
 };

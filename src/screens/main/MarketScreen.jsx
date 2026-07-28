@@ -17,6 +17,7 @@ import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import ReportModal from '../../components/common/ReportModal';
 
 const MarketScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -27,6 +28,7 @@ const MarketScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [myId, setMyId] = useState(null);
   const [replyState, setReplyState] = useState({});
+  const [reportTarget, setReportTarget] = useState(null);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const load = useCallback(async (isRefresh = false) => {
@@ -153,6 +155,14 @@ const MarketScreen = ({ navigation }) => {
                     <Text style={styles.sellerName}>{sellerName}</Text>
                   </View>
                   <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
+                  {!isOwn && (
+                    <TouchableOpacity
+                      onPress={() => setReportTarget({ targetType: 'market_listing', targetId: item.id, reportedUserId: item.user_id, contentExcerpt: item.description })}
+                      style={styles.deleteBtn}
+                    >
+                      <Text style={styles.deleteText}>🚩</Text>
+                    </TouchableOpacity>
+                  )}
                   {(isOwn || isAdmin) && (
                     <TouchableOpacity onPress={() => handleDelete(item)} style={styles.deleteBtn}>
                       <Text style={styles.deleteText}>✕</Text>
@@ -212,6 +222,7 @@ const MarketScreen = ({ navigation }) => {
           );
         }}
       />
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
     </KeyboardAvoidingView>
   );
 };

@@ -17,6 +17,7 @@ import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import BackHeader from '../../components/common/BackHeader';
+import ReportModal from '../../components/common/ReportModal';
 
 const daysLeft = (createdAt) => {
   const ms = new Date(createdAt).getTime() + STORY_EXPIRY_DAYS * 24 * 60 * 60 * 1000 - Date.now();
@@ -38,6 +39,7 @@ const ExpiryBadge = ({ createdAt }) => {
 const StoryCard = ({
   item, navigation, isAdmin, onAdminDelete, t,
   replyState, onToggleReplies, onReplyTextChange, onSendReply,
+  myId, onReport,
 }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
@@ -67,6 +69,11 @@ const StoryCard = ({
           <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
         </View>
         <ExpiryBadge createdAt={item.created_at} />
+        {item.user_id !== myId && (
+          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onReport(item)}>
+            <Text style={styles.adminDeleteBtnText}>🚩</Text>
+          </TouchableOpacity>
+        )}
         {isAdmin && (
           <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
             <Text style={styles.adminDeleteBtnText}>🗑</Text>
@@ -144,6 +151,7 @@ const StoryFeedScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
+  const [reportTarget, setReportTarget] = useState(null);
   const firstRender = useRef(true);
 
   const load = useCallback(async (isRefresh = false) => {
@@ -268,9 +276,18 @@ const StoryFeedScreen = ({ navigation }) => {
             onToggleReplies={toggleReplies}
             onReplyTextChange={(id, v) => patchReply(id, { text: v })}
             onSendReply={handleReply}
+            myId={profile?.id}
+            onReport={(it) => setReportTarget({
+              targetType: 'story',
+              targetId: it.id,
+              reportedUserId: it.user_id,
+              contentExcerpt: it.text ?? null,
+            })}
           />
         )}
       />
+
+      <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
 
       <TouchableOpacity
         style={styles.fab}
