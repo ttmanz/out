@@ -70,7 +70,8 @@
           "cameraPermission": "Find-Mee uses your camera to take profile and post photos."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-video"
     ],
     "extra": {
       "eas": {

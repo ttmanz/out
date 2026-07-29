@@ -1,12 +1,20 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, Linking } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { COLORS } from '../../constants/colors';
 import { getAdsForPage } from '../../lib/ads';
 
+const AdVideo = ({ uri, style }) => {
+  const player = useVideoPlayer(uri, (p) => {
+    p.loop = true;
+    p.muted = true;
+    p.play();
+  });
+  return <VideoView player={player} style={style} contentFit="cover" nativeControls={false} />;
+};
+
 const AdBanner = ({ page }) => {
   const [ads, setAds] = useState([]);
-  const videoRefs = useRef({});
 
   useEffect(() => {
     getAdsForPage(page).then(({ data, error }) => {
@@ -29,16 +37,7 @@ const AdBanner = ({ page }) => {
             disabled={!ad.link_url}
           >
             {isVideo ? (
-              <Video
-                ref={(ref) => { videoRefs.current[ad.id] = ref; }}
-                source={{ uri: ad.image_url }}
-                style={styles.media}
-                resizeMode={ResizeMode.COVER}
-                shouldPlay
-                isLooping
-                isMuted
-                useNativeControls={false}
-              />
+              <AdVideo uri={ad.image_url} style={styles.media} />
             ) : (
               <Image source={{ uri: ad.image_url }} style={styles.media} resizeMode="cover" />
             )}

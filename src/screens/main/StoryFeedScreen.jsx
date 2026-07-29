@@ -4,7 +4,7 @@ import {
   ActivityIndicator, RefreshControl, Alert, TextInput,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -36,6 +36,11 @@ const ExpiryBadge = ({ createdAt }) => {
       </Text>
     </View>
   );
+};
+
+const StoryVideo = ({ uri }) => {
+  const player = useVideoPlayer(uri, (p) => { p.loop = true; });
+  return <VideoView player={player} style={styles.media} contentFit="cover" nativeControls />;
 };
 
 const StoryCard = ({
@@ -86,15 +91,7 @@ const StoryCard = ({
       {!!item.photo_url && (
         <Image source={{ uri: item.photo_url }} style={styles.media} resizeMode="cover" />
       )}
-      {!!item.video_url && (
-        <Video
-          source={{ uri: item.video_url }}
-          style={styles.media}
-          resizeMode={ResizeMode.COVER}
-          useNativeControls
-          isLooping
-        />
-      )}
+      {!!item.video_url && <StoryVideo uri={item.video_url} />}
       {!!item.link_url && (
         <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />
       )}
