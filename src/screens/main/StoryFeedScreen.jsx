@@ -261,6 +261,7 @@ const StoryFeedScreen = ({ navigation }) => {
         data={stories}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        removeClippedSubviews={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
