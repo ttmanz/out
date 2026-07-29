@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../constants/colors';
 
@@ -10,6 +10,9 @@ const PhotoPicker = ({ uri, onChange, aspect = [16, 9], allowVideo = false }) =>
       Alert.alert('Permission needed', 'Allow photo library access to add media.');
       return;
     }
+    // iOS won't present the picker if it's still mid-animation dismissing the
+    // permission alert — launching immediately after can silently no-op.
+    if (Platform.OS === 'ios') await new Promise((resolve) => setTimeout(resolve, 400));
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: allowVideo
         ? ImagePicker.MediaTypeOptions.All

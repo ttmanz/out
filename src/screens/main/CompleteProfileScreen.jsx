@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
-  TextInput, Image, ActivityIndicator, Alert, StatusBar,
+  TextInput, Image, ActivityIndicator, Alert, StatusBar, Platform,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { COLORS } from '../../constants/colors';
@@ -99,6 +99,9 @@ const CompleteProfileScreen = ({ navigation }) => {
       Alert.alert('Permission needed', 'Please allow access to your photo library.');
       return;
     }
+    // iOS won't present the picker if it's still mid-animation dismissing the
+    // permission alert — launching immediately after can silently no-op.
+    if (Platform.OS === 'ios') await new Promise((resolve) => setTimeout(resolve, 400));
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
