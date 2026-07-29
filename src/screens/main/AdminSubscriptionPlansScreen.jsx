@@ -21,7 +21,7 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
     if (!error && data) {
       setPlans(data);
       const initial = {};
-      data.forEach((p) => { initial[p.id] = { label: p.label, price_display: p.price_display, badge: p.badge ?? '', description: p.description ?? '', stripe_price_id: p.stripe_price_id ?? '', venue_price_display: p.venue_price_display ?? '', venue_stripe_price_id: p.venue_stripe_price_id ?? '' }; });
+      data.forEach((p) => { initial[p.id] = { label: p.label, price_display: p.price_display, badge: p.badge ?? '', description: p.description ?? '', revenuecat_product_id: p.revenuecat_product_id ?? '', venue_price_display: p.venue_price_display ?? '', venue_revenuecat_product_id: p.venue_revenuecat_product_id ?? '' }; });
       setDrafts(initial);
     }
     setLoading(false);
@@ -44,9 +44,9 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
       price_display: d.price_display.trim(),
       badge: d.badge.trim() || null,
       description: d.description.trim() || null,
-      stripe_price_id: d.stripe_price_id.trim() || null,
+      revenuecat_product_id: d.revenuecat_product_id.trim() || null,
       venue_price_display: d.venue_price_display.trim() || null,
-      venue_stripe_price_id: d.venue_stripe_price_id.trim() || null,
+      venue_revenuecat_product_id: d.venue_revenuecat_product_id.trim() || null,
     });
     setSaving(null);
     if (error) Alert.alert('Error', error.message);
@@ -107,13 +107,13 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
                   multiline
                 />
 
-                <Text style={styles.fieldLabel}>Stripe Price ID (for when Stripe is set up)</Text>
+                <Text style={styles.fieldLabel}>RevenueCat Product ID (member price)</Text>
                 <TextInput
                   style={styles.input}
-                  value={d.stripe_price_id ?? ''}
-                  onChangeText={(v) => setField(plan.id, 'stripe_price_id', v)}
+                  value={d.revenuecat_product_id ?? ''}
+                  onChangeText={(v) => setField(plan.id, 'revenuecat_product_id', v)}
                   placeholderTextColor={COLORS.textMuted}
-                  placeholder="price_..."
+                  placeholder="monthly_member"
                   autoCapitalize="none"
                 />
 
@@ -130,13 +130,13 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
                     placeholder="e.g. €9.99 / month"
                   />
 
-                  <Text style={styles.fieldLabel}>Venue Owner Stripe Price ID</Text>
+                  <Text style={styles.fieldLabel}>RevenueCat Product ID (venue-owner price)</Text>
                   <TextInput
                     style={styles.input}
-                    value={d.venue_stripe_price_id ?? ''}
-                    onChangeText={(v) => setField(plan.id, 'venue_stripe_price_id', v)}
+                    value={d.venue_revenuecat_product_id ?? ''}
+                    onChangeText={(v) => setField(plan.id, 'venue_revenuecat_product_id', v)}
                     placeholderTextColor={COLORS.textMuted}
-                    placeholder="price_..."
+                    placeholder="monthly_venue"
                     autoCapitalize="none"
                   />
                 </View>

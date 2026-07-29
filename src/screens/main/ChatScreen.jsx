@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { supabase } from '../../lib/supabase';
 import { getMessages, sendMessage, markMessagesRead } from '../../lib/messages';
@@ -78,7 +79,8 @@ const ChatScreen = ({ navigation, route }) => {
   const handleSend = async () => {
     const access = canAccessFeature('messages');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     const content = text.trim();

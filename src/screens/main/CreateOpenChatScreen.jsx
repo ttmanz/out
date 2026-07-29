@@ -6,6 +6,7 @@ import {
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
@@ -29,7 +30,8 @@ const CreateOpenChatScreen = ({ navigation }) => {
   const handlePost = async () => {
     const access = canAccessFeature('open_chat');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     if (!message.trim()) {

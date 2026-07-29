@@ -103,7 +103,8 @@ const GroupDetailScreen = ({ navigation, route }) => {
   const handlePost = async () => {
     const access = canAccessFeature('open_groups');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     const text = postText.trim();

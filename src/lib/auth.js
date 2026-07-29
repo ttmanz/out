@@ -3,6 +3,7 @@ import * as Linking from 'expo-linking';
 import { makeRedirectUri } from 'expo-auth-session';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from './supabase';
+import { logOutPurchases } from './purchases';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -62,7 +63,12 @@ export const signInWithApple = async () => {
   }
 };
 
-export const signOut = () => supabase.auth.signOut();
+// Logged out of RevenueCat first so a shared/reused device never keeps the
+// previous account's purchases attached to the next login.
+export const signOut = async () => {
+  await logOutPurchases();
+  return supabase.auth.signOut();
+};
 
 // Permanently erase the caller's account: media, content (via FK cascades)
 // and the auth user itself — done server-side because deleting an auth user

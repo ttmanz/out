@@ -93,7 +93,8 @@ const MemberProfileScreen = ({ navigation, route }) => {
   const handleAddFriend = async () => {
     const access = canAccessFeature('friends');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     setRequesting(true);

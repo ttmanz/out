@@ -42,6 +42,7 @@ import AdminScreen from '../screens/main/AdminScreen';
 import AdminSubscriptionPlansScreen from '../screens/main/AdminSubscriptionPlansScreen';
 import AdminTopVenuesScreen from '../screens/main/AdminTopVenuesScreen';
 import SubscriptionScreen from '../screens/main/SubscriptionScreen';
+import PaywallScreen from '../screens/main/PaywallScreen';
 import CompleteProfileScreen from '../screens/main/CompleteProfileScreen';
 import ActivitiesScreen from '../screens/main/ActivitiesScreen';
 import ActivityEventsScreen from '../screens/main/ActivityEventsScreen';
@@ -103,6 +104,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.STORY_FEED}        component={StoryFeedScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_STORY}      component={CreateStoryScreen} />
     <HomeStack.Screen name={ROUTES.SUBSCRIPTION}            component={SubscriptionScreen} />
+    <HomeStack.Screen name={ROUTES.PAYWALL}                 component={PaywallScreen} />
     <HomeStack.Screen name={ROUTES.MARKET}                  component={MarketScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_MARKET_LISTING}   component={CreateMarketListingScreen} />
     <HomeStack.Screen name={ROUTES.OPEN_GROUPS}             component={OpenGroupsScreen} />
@@ -115,6 +117,7 @@ const MessagesStackNavigator = () => (
     <MessagesStack.Screen name={ROUTES.MESSAGES} component={MessagesScreen} />
     <MessagesStack.Screen name={ROUTES.CHAT} component={ChatScreen} />
     <MessagesStack.Screen name={ROUTES.MEMBER_PROFILE} component={MemberProfileScreen} />
+    <MessagesStack.Screen name={ROUTES.PAYWALL} component={PaywallScreen} />
   </MessagesStack.Navigator>
 );
 

@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Alert } from 'react-native';
 import { getSession, onAuthStateChange, signOut } from '../lib/auth';
 import { getProfile } from '../lib/profile';
-import { subscriptionStatus, getSubscriptionSettings, getFeatureAccess, canAccessFeature } from '../lib/subscription';
+import { subscriptionStatus, getSubscriptionSettings, getFeatureAccess, getMyFeatureUnlocks, canAccessFeature } from '../lib/subscription';
+import { configurePurchases } from '../lib/purchases';
 
 const UserContext = createContext({
   profile: null,
@@ -15,18 +16,21 @@ export const UserProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [settings, setSettings] = useState(null);
   const [featureMap, setFeatureMap] = useState({});
+  const [unlockedFeatureKeys, setUnlockedFeatureKeys] = useState(new Set());
 
   // Global subscription mode + per-feature paid list — small, admin-edited
   // tables, loaded once and re-checked alongside the profile.
-  const refreshAccessConfig = useCallback(async () => {
-    const [{ data: settingsData }, { data: featuresData }] = await Promise.all([
+  const refreshAccessConfig = useCallback(async (userId) => {
+    const [{ data: settingsData }, { data: featuresData }, { data: unlocksData }] = await Promise.all([
       getSubscriptionSettings(),
       getFeatureAccess(),
+      userId ? getMyFeatureUnlocks(userId) : Promise.resolve({ data: [] }),
     ]);
     setSettings(settingsData ?? null);
     const map = {};
     (featuresData ?? []).forEach((f) => { map[f.feature_key] = f; });
     setFeatureMap(map);
+    setUnlockedFeatureKeys(new Set((unlocksData ?? []).map((u) => u.feature_key)));
   }, []);
 
   // Checked on every auth state change (fresh login, token refresh, app
@@ -44,7 +48,9 @@ export const UserProvider = ({ children }) => {
       return;
     }
     setProfile(data ?? null);
-  }, []);
+    configurePurchases(session.user.id);
+    refreshAccessConfig(session.user.id);
+  }, [refreshAccessConfig]);
 
   // Load on mount and again on every auth change (fresh login, token refresh),
   // so profile-derived state never stays stale for the whole session
@@ -58,8 +64,8 @@ export const UserProvider = ({ children }) => {
   const { hasAccess } = subscriptionStatus(profile);
 
   const checkFeature = useCallback(
-    (featureKey) => canAccessFeature(featureKey, { profile, settings, featureMap }),
-    [profile, settings, featureMap]
+    (featureKey) => canAccessFeature(featureKey, { profile, settings, featureMap, unlockedFeatureKeys }),
+    [profile, settings, featureMap, unlockedFeatureKeys]
   );
 
   return (

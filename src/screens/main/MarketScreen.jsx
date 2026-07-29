@@ -48,7 +48,8 @@ const MarketScreen = ({ navigation }) => {
   const handlePostPress = () => {
     const access = canAccessFeature('market');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     navigation.navigate(ROUTES.CREATE_MARKET_LISTING);

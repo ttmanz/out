@@ -7,6 +7,7 @@ import {
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { createClub } from '../../lib/clubs';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -25,7 +26,8 @@ const CreateClubScreen = ({ navigation }) => {
   const handleCreate = async () => {
     const access = canAccessFeature('club_groups');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('club.subscriptionRequired'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     if (!name.trim()) {

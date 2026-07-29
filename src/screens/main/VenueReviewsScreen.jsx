@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { getVenueReviews, createVenueReview, deleteVenueReview } from '../../lib/venueReviews';
 import { useUser } from '../../contexts/UserContext';
@@ -55,7 +56,8 @@ const VenueReviewsScreen = ({ navigation }) => {
   const handleSubmit = async () => {
     const access = canAccessFeature('venue_hub');
     if (!access.allowed) {
-      Alert.alert(t('subscription.requiredTitle'), access.price ? t('subscription.requiredBodyPriced', { price: access.price }) : t('subscription.requiredBody'));
+      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }
     if (!venueName.trim()) return Alert.alert(t('venueReviews.errorTitle'), t('venueReviews.errorVenue'));

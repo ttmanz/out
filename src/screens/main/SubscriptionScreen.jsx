@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ActivityIndicator, Alert, ScrollView,
+  ActivityIndicator, Alert, ScrollView, Linking,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
-import { getSubscriptionPlans, activateSubscription, subscriptionStatus, planPriceFor } from '../../lib/subscription';
+import { getSubscriptionPlans, subscriptionStatus, planPriceFor } from '../../lib/subscription';
+import { getOfferings, purchasePackage, restorePurchases } from '../../lib/purchases';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
+
+// Our 3 fixed plan durations map onto RevenueCat's predefined package slots.
+const packageForPlan = (offering, durationMonths) => {
+  if (!offering) return null;
+  if (durationMonths === 1) return offering.monthly;
+  if (durationMonths === 6) return offering.sixMonth;
+  if (durationMonths === 12) return offering.annual;
+  return null;
+};
 
 const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const { t } = useTranslation();
   const { profile, refreshProfile } = useUser();
   const [plans, setPlans] = useState([]);
+  const [offering, setOffering] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
   const [subscribing, setSubscribing] = useState(null);
+  const [restoring, setRestoring] = useState(false);
 
   const status = subscriptionStatus(profile);
 
@@ -28,31 +40,45 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
       if (!error) setPlans(data ?? []);
       setLoading(false);
     });
-  }, []);
+    getOfferings(profile?.account_type).then(setOffering).catch(() => setOffering(null));
+  }, [profile?.account_type]);
 
   const handleSubscribe = async (plan) => {
     if (!userId) return;
-    Alert.alert(
-      t('subscription.confirmTitle'),
-      t('subscription.confirmBody', { plan: plan.label, price: planPriceFor(plan, profile) }),
-      [
-        { text: t('common.cancel') ?? 'Cancel', style: 'cancel' },
-        {
-          text: t('subscription.confirm'),
-          onPress: async () => {
-            setSubscribing(plan.id);
-            const { error } = await activateSubscription(userId, plan.id, plan.duration_months);
-            setSubscribing(null);
-            if (error) {
-              Alert.alert(t('common.error'), error.message);
-            } else {
-              await refreshProfile();
-              if (!standalone && navigation) navigation.goBack();
-            }
-          },
-        },
-      ]
-    );
+    const pkg = packageForPlan(offering, plan.duration_months);
+    if (!pkg) {
+      Alert.alert(t('common.error'), t('subscription.notAvailable'));
+      return;
+    }
+    setSubscribing(plan.id);
+    try {
+      await purchasePackage(pkg);
+      // RevenueCat's webhook confirms the purchase server-side within a few
+      // seconds — poll briefly so this screen reflects it without the user
+      // needing to reopen it.
+      for (let i = 0; i < 5; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await refreshProfile();
+      }
+      if (!standalone && navigation) navigation.goBack();
+    } catch (e) {
+      if (!e.userCancelled) Alert.alert(t('common.error'), e.message);
+    } finally {
+      setSubscribing(null);
+    }
+  };
+
+  const handleRestore = async () => {
+    setRestoring(true);
+    try {
+      await restorePurchases();
+      await refreshProfile();
+      Alert.alert(t('subscription.restoreDoneTitle'), t('subscription.restoreDoneBody'));
+    } catch (e) {
+      Alert.alert(t('common.error'), e.message);
+    } finally {
+      setRestoring(false);
+    }
   };
 
   const statusBanner = () => {
@@ -137,7 +163,24 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
           })
         )}
 
+        <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} disabled={restoring}>
+          {restoring
+            ? <ActivityIndicator color={COLORS.primary} size="small" />
+            : <Text style={styles.restoreBtnText}>{t('subscription.restorePurchases')}</Text>
+          }
+        </TouchableOpacity>
+
         <Text style={styles.footerNote}>{t('subscription.footerNote')}</Text>
+        <Text style={styles.legalNote}>
+          {t('subscription.legalNote')}{' '}
+          <Text style={styles.legalLink} onPress={() => Linking.openURL('https://find-mee.com/terms-of-service.html')}>
+            {t('subscription.termsOfService')}
+          </Text>
+          {' '}{t('common.and')}{' '}
+          <Text style={styles.legalLink} onPress={() => Linking.openURL('https://find-mee.com/privacy-policy.html')}>
+            {t('subscription.privacyPolicy')}
+          </Text>
+        </Text>
       </ScrollView>
     </View>
   );
@@ -185,10 +228,17 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#2ecc71',
   },
   currentBadgeText: { color: '#2ecc71', fontWeight: '700', fontSize: 14 },
+  restoreBtn: { alignItems: 'center', marginTop: 20, paddingVertical: 8 },
+  restoreBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 14 },
   footerNote: {
     fontSize: 11, color: COLORS.textMuted, textAlign: 'center',
-    marginTop: 24, lineHeight: 17, paddingHorizontal: 16,
+    marginTop: 10, lineHeight: 17, paddingHorizontal: 16,
   },
+  legalNote: {
+    fontSize: 11, color: COLORS.textMuted, textAlign: 'center',
+    marginTop: 10, lineHeight: 17, paddingHorizontal: 16,
+  },
+  legalLink: { color: COLORS.primary, fontWeight: '700' },
 });
 
 export default SubscriptionScreen;

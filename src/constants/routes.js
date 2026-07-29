@@ -39,6 +39,7 @@ export const ROUTES = {
   STORY_FEED: 'StoryFeed',
   CREATE_STORY: 'CreateStory',
   SUBSCRIPTION: 'Subscription',
+  PAYWALL: 'Paywall',
   ADMIN_SUBSCRIPTION_PLANS: 'AdminSubscriptionPlans',
   ADMIN_TOP_VENUES: 'AdminTopVenues',
   MARKET: 'Market',
