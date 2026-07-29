@@ -18,6 +18,7 @@ import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
+import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 
 const daysLeft = (createdAt) => {
   const ms = new Date(createdAt).getTime() + STORY_EXPIRY_DAYS * 24 * 60 * 60 * 1000 - Date.now();
@@ -89,6 +90,9 @@ const StoryCard = ({
           <Text style={styles.videoBadgeIcon}>🎬</Text>
           <Text style={styles.videoBadgeText}>Video</Text>
         </View>
+      )}
+      {!!item.link_url && (
+        <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />
       )}
 
       <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(item.id)}>

@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
 import { createStory } from '../../lib/stories';
 import { uploadStoryMedia } from '../../lib/storage';
@@ -19,6 +20,7 @@ const CreateStoryScreen = ({ navigation }) => {
   const { canAccessFeature } = useUser();
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState(null);
+  const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handlePost = async () => {
@@ -52,6 +54,10 @@ const CreateStoryScreen = ({ navigation }) => {
       text: text.trim() || null,
       photo_url,
       video_url,
+      link_url: linkPreview?.url ?? null,
+      link_title: linkPreview?.title ?? null,
+      link_image: linkPreview?.image ?? null,
+      link_domain: linkPreview?.domain ?? null,
     });
     setLoading(false);
     if (error) Alert.alert(t('common.error'), t('stories.errors.postFailed'));
@@ -73,6 +79,7 @@ const CreateStoryScreen = ({ navigation }) => {
             autoCapitalize="sentences"
           />
           <PhotoPicker uri={mediaUri} onChange={setMediaUri} allowVideo />
+          <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
             {loading
               ? <ActivityIndicator color={COLORS.black} />

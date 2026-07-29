@@ -60,8 +60,8 @@ export const getClubPosts = (clubId) =>
     .eq('club_id', clubId)
     .order('created_at', { ascending: false });
 
-export const createClubPost = (clubId, userId, { text, photo_url = null }) =>
-  supabase.from('club_posts').insert({ club_id: clubId, user_id: userId, text, photo_url });
+export const createClubPost = (clubId, userId, { text, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
+  supabase.from('club_posts').insert({ club_id: clubId, user_id: userId, text, photo_url, link_url, link_title, link_image, link_domain });
 
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteClubPost = (id) =>

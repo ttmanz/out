@@ -17,6 +17,8 @@ import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import LinkInput from '../../components/common/LinkInput';
+import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
@@ -33,6 +35,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
   const [actionId, setActionId] = useState(null);
   const [postText, setPostText] = useState('');
   const [postPhotoUri, setPostPhotoUri] = useState(null);
+  const [linkPreview, setLinkPreview] = useState(null);
   const [posting, setPosting] = useState(false);
   const [blocked, setBlocked] = useState([]);
   const [blockActionId, setBlockActionId] = useState(null);
@@ -122,7 +125,14 @@ const ClubDetailScreen = ({ navigation, route }) => {
       }
       photo_url = url;
     }
-    const { error } = await createClubPost(clubId, userId, { text: text || null, photo_url });
+    const { error } = await createClubPost(clubId, userId, {
+      text: text || null,
+      photo_url,
+      link_url: linkPreview?.url ?? null,
+      link_title: linkPreview?.title ?? null,
+      link_image: linkPreview?.image ?? null,
+      link_domain: linkPreview?.domain ?? null,
+    });
     setPosting(false);
     if (error) {
       Alert.alert('Error', 'Could not post.');
@@ -130,6 +140,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
     }
     setPostText('');
     setPostPhotoUri(null);
+    setLinkPreview(null);
     await load();
   };
 
@@ -400,6 +411,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
                 multiline
               />
               <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
+              <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
               <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
                 {posting
                   ? <ActivityIndicator size="small" color={COLORS.black} />
@@ -428,6 +440,9 @@ const ClubDetailScreen = ({ navigation, route }) => {
                   </View>
                   {!!p.text && <Text style={styles.postText}>{p.text}</Text>}
                   {!!p.photo_url && <Image source={{ uri: p.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+                  {!!p.link_url && (
+                    <LinkPreviewCard url={p.link_url} title={p.link_title} image={p.link_image} domain={p.link_domain} />
+                  )}
                 </View>
               ))
             }

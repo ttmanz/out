@@ -38,8 +38,8 @@ export const getFriendStories = async (userId) => {
     .limit(50);
 };
 
-export const createStory = (userId, { text, photo_url, video_url }) =>
-  supabase.from('stories').insert({ user_id: userId, text, photo_url, video_url });
+export const createStory = (userId, { text, photo_url, video_url, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
+  supabase.from('stories').insert({ user_id: userId, text, photo_url, video_url, link_url, link_title, link_image, link_domain });
 
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteStory = (id) =>
