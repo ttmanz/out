@@ -4,6 +4,7 @@ import {
   ActivityIndicator, RefreshControl, Alert, TextInput,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { Video, ResizeMode } from 'expo-av';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
@@ -86,10 +87,13 @@ const StoryCard = ({
         <Image source={{ uri: item.photo_url }} style={styles.media} resizeMode="cover" />
       )}
       {!!item.video_url && (
-        <View style={styles.videoBadge}>
-          <Text style={styles.videoBadgeIcon}>🎬</Text>
-          <Text style={styles.videoBadgeText}>Video</Text>
-        </View>
+        <Video
+          source={{ uri: item.video_url }}
+          style={styles.media}
+          resizeMode={ResizeMode.COVER}
+          useNativeControls
+          isLooping
+        />
       )}
       {!!item.link_url && (
         <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />
@@ -347,14 +351,6 @@ const styles = StyleSheet.create({
   expiryTextWarn: { color: '#E05520' },
   storyText: { fontSize: 15, color: COLORS.text, lineHeight: 22, marginBottom: 10 },
   media: { width: '100%', height: 200, borderRadius: 10, marginTop: 4 },
-  videoBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    marginTop: 8, alignSelf: 'flex-start',
-    backgroundColor: 'rgba(200,128,10,0.12)',
-    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
-  },
-  videoBadgeIcon: { fontSize: 16 },
-  videoBadgeText: { fontSize: 13, fontWeight: '700', color: COLORS.primary },
   replyToggle: { alignSelf: 'flex-start', marginTop: 10 },
   replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },

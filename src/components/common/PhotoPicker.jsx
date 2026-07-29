@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Video, ResizeMode } from 'expo-av';
 import { COLORS } from '../../constants/colors';
+
+const isVideoUri = (u) => /\.(mp4|mov|m4v|avi|mkv)(\?.*)?$/i.test(u ?? '');
 
 const PhotoPicker = ({ uri, onChange, aspect = [16, 9], allowVideo = false }) => {
   const pick = async () => {
@@ -31,7 +34,18 @@ const PhotoPicker = ({ uri, onChange, aspect = [16, 9], allowVideo = false }) =>
   if (uri) {
     return (
       <View style={styles.previewWrap}>
-        <Image source={{ uri }} style={styles.preview} resizeMode="cover" />
+        {isVideoUri(uri)
+          ? (
+            <Video
+              source={{ uri }}
+              style={styles.preview}
+              resizeMode={ResizeMode.COVER}
+              useNativeControls
+              isLooping
+            />
+          )
+          : <Image source={{ uri }} style={styles.preview} resizeMode="cover" />
+        }
         <TouchableOpacity style={styles.removeBtn} onPress={() => onChange(null)}>
           <Text style={styles.removeBtnText}>✕ Remove</Text>
         </TouchableOpacity>
