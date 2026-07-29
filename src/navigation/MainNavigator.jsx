@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ROUTES } from '../constants/routes';
@@ -137,20 +136,6 @@ const AdminStackNavigator = () => (
   </AdminStack.Navigator>
 );
 
-// Red counter bubble shown on a tab icon
-const TabBadge = ({ count }) => count > 0 ? (
-  <View style={{
-    position: 'absolute', top: -3, right: -7,
-    backgroundColor: COLORS.error,
-    borderRadius: 9, minWidth: 17, height: 17,
-    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 3,
-  }}>
-    <Text style={{ color: COLORS.white, fontSize: 9, fontWeight: '800' }}>
-      {count > 99 ? '99+' : count}
-    </Text>
-  </View>
-) : null;
-
 const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
   const [msgCount, setMsgCount] = useState(0);
@@ -238,11 +223,10 @@ const MainNavigator = () => {
           component={MessagesStackNavigator}
           options={{
             tabBarLabel: 'Messages',
+            tabBarBadge: msgCount > 0 ? (msgCount > 99 ? '99+' : msgCount) : undefined,
+            tabBarBadgeStyle: { backgroundColor: COLORS.error, color: COLORS.white, fontSize: 10, fontWeight: '800' },
             tabBarIcon: ({ color, focused }) => (
-              <View>
-                <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
-                <TabBadge count={msgCount} />
-              </View>
+              <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
             ),
           }}
         />
@@ -257,11 +241,10 @@ const MainNavigator = () => {
           })}
           options={{
             tabBarLabel: 'Alerts',
+            tabBarBadge: notifCount > 0 ? (notifCount > 99 ? '99+' : notifCount) : undefined,
+            tabBarBadgeStyle: { backgroundColor: COLORS.error, color: COLORS.white, fontSize: 10, fontWeight: '800' },
             tabBarIcon: ({ color, focused }) => (
-              <View>
-                <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
-                <TabBadge count={notifCount} />
-              </View>
+              <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
             ),
           }}
         />
