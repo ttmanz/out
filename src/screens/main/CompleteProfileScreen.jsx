@@ -94,14 +94,16 @@ const CompleteProfileScreen = ({ navigation }) => {
   }, []);
 
   const pickPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Please allow access to your photo library.');
-      return;
+    // iOS's picker (PHPicker) runs out-of-process and needs no photo-library
+    // permission — requesting it manually shows a redundant native dialog
+    // that blocks the picker from presenting afterward. Android still needs it.
+    if (Platform.OS === 'android') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Please allow access to your photo library.');
+        return;
+      }
     }
-    // iOS won't present the picker if it's still mid-animation dismissing the
-    // permission alert — launching immediately after can silently no-op.
-    if (Platform.OS === 'ios') await new Promise((resolve) => setTimeout(resolve, 400));
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,

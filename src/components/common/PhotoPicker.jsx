@@ -5,14 +5,16 @@ import { COLORS } from '../../constants/colors';
 
 const PhotoPicker = ({ uri, onChange, aspect = [16, 9], allowVideo = false }) => {
   const pick = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow photo library access to add media.');
-      return;
+    // iOS's picker (PHPicker) runs out-of-process and needs no photo-library
+    // permission — requesting it manually shows a redundant native dialog
+    // that blocks the picker from presenting afterward. Android still needs it.
+    if (Platform.OS === 'android') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Allow photo library access to add media.');
+        return;
+      }
     }
-    // iOS won't present the picker if it's still mid-animation dismissing the
-    // permission alert — launching immediately after can silently no-op.
-    if (Platform.OS === 'ios') await new Promise((resolve) => setTimeout(resolve, 400));
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: allowVideo
         ? ImagePicker.MediaTypeOptions.All
