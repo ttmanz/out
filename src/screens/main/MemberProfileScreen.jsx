@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, SafeAreaView, Alert,
+  ActivityIndicator, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import ReportModal from '../../components/common/ReportModal';
+import BackHeader from '../../components/common/BackHeader';
 
 const POST_TYPE_LABEL = {
   spur: '⚡ Spur',
@@ -126,14 +127,8 @@ const MemberProfileScreen = ({ navigation, route }) => {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
-          <Text style={styles.backText}>‹</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{profile?.full_name ?? fullName}</Text>
-        <View style={{ width: 40 }} />
-      </View>
+    <View style={styles.safe}>
+      <BackHeader title={profile?.full_name ?? fullName} onBack={() => navigation.goBack()} />
 
       <FlatList
         data={posts}
@@ -207,7 +202,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
         )}
       />
       <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -216,19 +211,6 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   reportLink: { marginTop: 12, paddingVertical: 4 },
   reportLinkText: { color: COLORS.textMuted, fontSize: 13, fontWeight: '600' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: COLORS.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  back: { width: 40, alignItems: 'flex-start' },
-  backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: COLORS.text, textAlign: 'center' },
   list: { padding: 16, paddingBottom: 40 },
   profileCard: { alignItems: 'center', paddingVertical: 20, marginBottom: 8 },
   avatar: {
