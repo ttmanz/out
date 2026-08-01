@@ -50,7 +50,9 @@
     "privacyPolicy": "Privacy Policy",
     "unlockFeature": "Unlock {{feature}}",
     "unlockFor": "Unlock for {{price}}",
-    "unlockDesc": "Your current plan doesn't include this feature. Unlock it with a one-time purchase."
+    "unlockDesc": "Your current plan doesn't include this feature. Unlock it with a one-time purchase.",
+    "upcomingCharge": "From {{date}}, a {{price}} subscription will be required to keep posting.",
+    "upcomingChargeNoPrice": "From {{date}}, a subscription will be required to keep posting."
   },
   "auth": {
     "login": "Log In",

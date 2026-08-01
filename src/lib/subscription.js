@@ -59,11 +59,9 @@ const hasActivePlan = (profile) => {
 //   paid list, which cost their one-off price unless subscribed. Any
 //   active subscription (any account type) fully bypasses this.
 // - 'free_until': full access for everyone until the date. Once it passes,
-//   a subscription becomes the minimum requirement for EVERYTHING — no
-//   subscription, no posting anywhere, full stop. On top of that, the
-//   same paid list becomes a premium tier: a regular member's subscription
-//   does not cover those features (they must also pay the one-off price),
-//   while a venue owner's subscription does cover them.
+//   any active subscription (any plan, any tier) is the sole requirement
+//   for everything — no subscription, no posting anywhere, full stop.
+//   The per-feature paid list does not apply in this mode.
 export const canAccessFeature = (featureKey, { profile, settings, featureMap, unlockedFeatureKeys }) => {
   if (profile?.is_staff) return { allowed: true };
 
@@ -74,17 +72,7 @@ export const canAccessFeature = (featureKey, { profile, settings, featureMap, un
   if (mode === 'free_until') {
     const stillFree = settings?.free_until && new Date(settings.free_until) > new Date();
     if (stillFree) return { allowed: true };
-
-    if (!hasActivePlan(profile)) return { allowed: false };
-
-    // Subscribed — but the premium list still requires the venue-owner
-    // tier specifically; a regular member's subscription alone isn't enough,
-    // unless they've separately bought a one-off unlock for this feature.
-    const feature = featureMap?.[featureKey];
-    if (!feature?.is_paid) return { allowed: true };
-    if (profile?.account_type === 'venue_owner') return { allowed: true };
-    if (unlockedFeatureKeys?.has(featureKey)) return { allowed: true };
-    return { allowed: false, featureKey, price: feature.one_off_price };
+    return hasActivePlan(profile) ? { allowed: true } : { allowed: false };
   }
 
   // mode === 'free_except' — any active subscription bypasses the paid list entirely

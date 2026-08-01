@@ -12,7 +12,7 @@ import BackHeader from '../../components/common/BackHeader';
 
 const MODES = [
   { key: 'free', label: 'Free', desc: 'Everyone has full access to every feature' },
-  { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, a subscription is required just to post anywhere, and the premium list below needs the Venue Owner tier specifically (a regular subscription alone won’t cover those)' },
+  { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, any active subscription (any plan, any tier) is required just to post anywhere. The paid list below does not apply in this mode.' },
   { key: 'free_except', label: 'Free Except…', desc: 'Everyone keeps full access, except the paid list below, which costs its one-off price unless subscribed (any plan, any tier)' },
 ];
 
@@ -143,7 +143,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
           {mode === 'free_except'
             ? 'Right now: any subscribed member (any tier) posts these for free. Without a subscription, the one-off price applies.'
             : mode === 'free_until'
-              ? 'Right now: this list only matters once "Free Until" passes its date. From then on, these become premium — a regular member’s subscription won’t cover them (they also pay the one-off price below), but a Venue Owner subscription does.'
+              ? 'Not in effect while mode is "Free Until" — after the date passes, any subscription alone unlocks everything, including these.'
               : 'Not in effect while mode is "Free" — nobody is charged for anything.'}
         </Text>
 

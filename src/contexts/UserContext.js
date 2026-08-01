@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Alert } from 'react-native';
 import { getSession, onAuthStateChange, signOut } from '../lib/auth';
 import { getProfile } from '../lib/profile';
-import { subscriptionStatus, getSubscriptionSettings, getFeatureAccess, getMyFeatureUnlocks, canAccessFeature } from '../lib/subscription';
+import { subscriptionStatus, getSubscriptionSettings, getSubscriptionPlans, getFeatureAccess, getMyFeatureUnlocks, canAccessFeature } from '../lib/subscription';
 import { configurePurchases } from '../lib/purchases';
 
 const UserContext = createContext({
@@ -15,18 +15,21 @@ const UserContext = createContext({
 export const UserProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [settings, setSettings] = useState(null);
+  const [monthlyPlan, setMonthlyPlan] = useState(null);
   const [featureMap, setFeatureMap] = useState({});
   const [unlockedFeatureKeys, setUnlockedFeatureKeys] = useState(new Set());
 
   // Global subscription mode + per-feature paid list — small, admin-edited
   // tables, loaded once and re-checked alongside the profile.
   const refreshAccessConfig = useCallback(async (userId) => {
-    const [{ data: settingsData }, { data: featuresData }, { data: unlocksData }] = await Promise.all([
+    const [{ data: settingsData }, { data: plansData }, { data: featuresData }, { data: unlocksData }] = await Promise.all([
       getSubscriptionSettings(),
+      getSubscriptionPlans(),
       getFeatureAccess(),
       userId ? getMyFeatureUnlocks(userId) : Promise.resolve({ data: [] }),
     ]);
     setSettings(settingsData ?? null);
+    setMonthlyPlan((plansData ?? []).find((p) => p.id === 'monthly') ?? null);
     const map = {};
     (featuresData ?? []).forEach((f) => { map[f.feature_key] = f; });
     setFeatureMap(map);
@@ -69,7 +72,7 @@ export const UserProvider = ({ children }) => {
   );
 
   return (
-    <UserContext.Provider value={{ profile, refreshProfile, hasAccess, canAccessFeature: checkFeature }}>
+    <UserContext.Provider value={{ profile, refreshProfile, hasAccess, canAccessFeature: checkFeature, settings, monthlyPlan }}>
       {children}
     </UserContext.Provider>
   );
