@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { signUpWithEmail, signInWithGoogle, signInWithFacebook, signInWithApple } from '../../lib/auth';
+import { signUpWithEmail, signInWithGoogle, signInWithApple } from '../../lib/auth';
 import AuthInput from '../../components/auth/AuthInput';
 import SocialButton from '../../components/auth/SocialButton';
 import PrimaryButton from '../../components/common/PrimaryButton';
@@ -97,12 +97,6 @@ const RegisterScreen = ({ navigation }) => {
         color={COLORS.google}
         onPress={() => handleSocialLogin('google', signInWithGoogle)}
         loading={socialLoading === 'google'}
-      />
-      <SocialButton
-        label={t('auth.continueWithFacebook')}
-        color={COLORS.facebook}
-        onPress={() => handleSocialLogin('facebook', signInWithFacebook)}
-        loading={socialLoading === 'facebook'}
       />
       {Platform.OS === 'ios' && (
         <AppleAuthentication.AppleAuthenticationButton
