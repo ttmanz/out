@@ -6,9 +6,9 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { getNotifications, markAllNotificationsRead } from '../../lib/notifications';
+import { resolveNotificationRoute } from '../../lib/pushNotifications';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
@@ -18,6 +18,8 @@ const TYPE_ICON = {
   reply: '💬',
   club_join_request: '🏛️',
   admin_message: '🛡️',
+  message: '✉️',
+  new_post: '📣',
 };
 
 const NotificationsScreen = ({ navigation }) => {
@@ -38,20 +40,9 @@ const NotificationsScreen = ({ navigation }) => {
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const handlePress = (item) => {
-    if (item.type === 'friend_request') {
-      navigation.navigate('HomeTab', { screen: ROUTES.PENDING_REQUESTS });
-    } else if (item.type === 'reply') {
-      if (item.reference_type === 'spur') navigation.navigate('HomeTab', { screen: ROUTES.SPUR_OF_MOMENT });
-      else if (item.reference_type === 'open_chat') navigation.navigate('HomeTab', { screen: ROUTES.OPEN_CHAT });
-    } else if (item.type === 'club_join_request') {
-      navigation.navigate('HomeTab', { screen: ROUTES.CLUB_DETAIL, params: { clubId: item.reference_id } });
-    } else if (item.type === 'admin_message') {
-      navigation.navigate('MessagesTab', {
-        screen: ROUTES.CHAT,
-        params: { conversationId: item.reference_id, friendName: item.actor?.full_name ?? t('notifications.someone'), friendIsAdmin: true },
-      });
-    } else if (item.type === 'content_report') {
-      navigation.navigate('AdminTab', { screen: ROUTES.ADMIN_REPORTS, initial: false });
+    const route = resolveNotificationRoute(item, t('notifications.someone'));
+    if (route) {
+      navigation.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }
   };
 
@@ -61,6 +52,8 @@ const NotificationsScreen = ({ navigation }) => {
     if (item.type === 'reply') return t('notifications.reply', { name: actor, post: item.reference_text ?? '' });
     if (item.type === 'club_join_request') return t('notifications.clubJoinRequest', { name: actor, club: item.reference_text ?? '' });
     if (item.type === 'admin_message') return t('notifications.adminMessage', { name: actor });
+    if (item.type === 'message') return t('notifications.message', { name: actor });
+    if (item.type === 'new_post') return t('notifications.newPost', { name: actor });
     if (item.type === 'content_report') return t('notifications.contentReport', { reason: t(`report.reasons.${item.reference_text}`) });
     return '';
   };

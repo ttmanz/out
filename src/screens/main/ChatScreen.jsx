@@ -13,11 +13,13 @@ import { supabase } from '../../lib/supabase';
 import { getMessages, sendMessage, markMessagesRead } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
+import Avatar from '../../components/common/Avatar';
+import { setOpenConversationId } from '../../lib/pushNotifications';
 
 const ChatScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature } = useUser();
-  const { conversationId, friendName, friendIsAdmin } = route.params;
+  const { conversationId, friendName, friendIsAdmin, friendPhotoUrl } = route.params;
   const [myId, setMyId] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
@@ -42,6 +44,7 @@ const ChatScreen = ({ navigation, route }) => {
   useFocusEffect(useCallback(() => {
     let uid;
     let channel;
+    setOpenConversationId(conversationId);
     getSession().then(({ data: { session } }) => {
       if (!session) return;
       uid = session.user.id;
@@ -65,6 +68,7 @@ const ChatScreen = ({ navigation, route }) => {
       intervalRef.current = setInterval(() => loadMessages(uid), 20000);
     });
     return () => {
+      setOpenConversationId(null);
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (channel) supabase.removeChannel(channel);
     };
@@ -107,9 +111,7 @@ const ChatScreen = ({ navigation, route }) => {
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <View style={styles.headerAvatar}>
-            <Text style={styles.headerAvatarText}>{friendName?.[0]?.toUpperCase() ?? '?'}</Text>
-          </View>
+          <Avatar uri={friendPhotoUrl} name={friendName} size={34} style={styles.headerAvatar} />
           <View style={{ flexShrink: 1 }}>
             <Text style={styles.headerTitle} numberOfLines={1}>{friendName}</Text>
             {friendIsAdmin && (
@@ -189,13 +191,7 @@ const styles = StyleSheet.create({
   back: { width: 40, alignItems: 'flex-start' },
   backText: { fontSize: 30, color: COLORS.primary, lineHeight: 34 },
   headerCenter: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  headerAvatar: {
-    width: 34, height: 34, borderRadius: 17,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 8,
-  },
-  headerAvatarText: { color: COLORS.white, fontWeight: '700', fontSize: 14 },
+  headerAvatar: { marginRight: 8 },
   headerTitle: { fontSize: 16, fontWeight: '700', color: COLORS.text, flexShrink: 1 },
   adminBadge: {
     alignSelf: 'flex-start', marginTop: 2,

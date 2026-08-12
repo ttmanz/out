@@ -271,6 +271,8 @@
     "reply": "{{name}} replied to your post: {{post}}",
     "clubJoinRequest": "{{name}} requested to join {{club}}",
     "adminMessage": "{{name}} (Platform Admin) sent you a message",
+    "message": "{{name}} sent you a message",
+    "newPost": "{{name}} posted something new",
     "contentReport": "🚩 New report: {{reason}} — tap to review"
   },
   "venueHub": {

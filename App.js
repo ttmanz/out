@@ -1,6 +1,6 @@
 import './src/lib/i18n';
 import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, createNavigationContainerRef } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
@@ -9,6 +9,9 @@ import AuthNavigator from './src/navigation/AuthNavigator';
 import MainNavigator from './src/navigation/MainNavigator';
 import { COLORS } from './src/constants/colors';
 import { UserProvider } from './src/contexts/UserContext';
+import { addNotificationResponseListener } from './src/lib/pushNotifications';
+
+const navigationRef = createNavigationContainerRef();
 
 export default function App() {
   const [session, setSession] = useState(undefined);
@@ -24,6 +27,11 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const sub = addNotificationResponseListener(navigationRef);
+    return () => sub.remove();
+  }, []);
+
   if (session === undefined) {
     return (
       <View style={styles.loader}>
@@ -35,7 +43,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <KeyboardProvider>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           {session
             ? <UserProvider><MainNavigator /></UserProvider>
             : <AuthNavigator />

@@ -4,6 +4,7 @@ import { getSession, onAuthStateChange, signOut } from '../lib/auth';
 import { getProfile } from '../lib/profile';
 import { subscriptionStatus, getSubscriptionSettings, getSubscriptionPlans, getFeatureAccess, getMyFeatureUnlocks, canAccessFeature } from '../lib/subscription';
 import { configurePurchases } from '../lib/purchases';
+import { registerForPushNotificationsAsync } from '../lib/pushNotifications';
 
 const UserContext = createContext({
   profile: null,
@@ -52,6 +53,7 @@ export const UserProvider = ({ children }) => {
     }
     setProfile(data ?? null);
     configurePurchases(session.user.id);
+    registerForPushNotificationsAsync(session.user.id);
     refreshAccessConfig(session.user.id);
   }, [refreshAccessConfig]);
 

@@ -4,6 +4,7 @@ import { makeRedirectUri } from 'expo-auth-session';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { supabase } from './supabase';
 import { logOutPurchases } from './purchases';
+import { unregisterPushToken } from './pushNotifications';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -66,6 +67,7 @@ export const signInWithApple = async () => {
 // Logged out of RevenueCat first so a shared/reused device never keeps the
 // previous account's purchases attached to the next login.
 export const signOut = async () => {
+  await unregisterPushToken();
   await logOutPurchases();
   return supabase.auth.signOut();
 };
