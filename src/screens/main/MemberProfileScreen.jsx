@@ -20,6 +20,7 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import ReportModal from '../../components/common/ReportModal';
 import BackHeader from '../../components/common/BackHeader';
+import Avatar from '../../components/common/Avatar';
 
 const POST_TYPE_LABEL = {
   spur: '⚡ Spur',
@@ -52,7 +53,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
     setMyId(uid);
 
     const [profileRes, happeningsRes, spurRes, openChatRes, friendRes, pendingRes] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, visibility, is_admin').eq('id', targetId).single(),
+      supabase.from('profiles').select('id, full_name, visibility, is_admin, photo_url').eq('id', targetId).single(),
       getMemberHappenings(targetId),
       getMemberSpurPosts(targetId),
       getMemberOpenChatPosts(targetId),
@@ -116,6 +117,7 @@ const MemberProfileScreen = ({ navigation, route }) => {
       conversationId: data.id,
       friendName: profile?.full_name ?? fullName,
       friendIsAdmin: profile?.is_admin === true,
+      friendPhotoUrl: profile?.photo_url ?? null,
     });
   };
 
@@ -139,11 +141,12 @@ const MemberProfileScreen = ({ navigation, route }) => {
           <View style={styles.profileCard}>
             <AdBanner page="MemberProfile" />
             <ProfileBanner navigation={navigation} />
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {(profile?.full_name ?? fullName)?.[0]?.toUpperCase() ?? '?'}
-              </Text>
-            </View>
+            <Avatar
+              uri={profile?.photo_url}
+              name={profile?.full_name ?? fullName}
+              size={72}
+              style={styles.avatar}
+            />
             <Text style={styles.profileName}>{profile?.full_name ?? fullName}</Text>
             {profile?.visibility === 'private' && (
               <View style={styles.badge}>
@@ -214,13 +217,7 @@ const styles = StyleSheet.create({
   reportLinkText: { color: COLORS.textMuted, fontSize: 13, fontWeight: '600' },
   list: { padding: 16, paddingBottom: 40 },
   profileCard: { alignItems: 'center', paddingVertical: 20, marginBottom: 8 },
-  avatar: {
-    width: 72, height: 72, borderRadius: 36,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center',
-    marginBottom: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 30 },
+  avatar: { marginBottom: 12 },
   profileName: { fontSize: 22, fontWeight: '800', color: COLORS.text, marginBottom: 6 },
   badge: { backgroundColor: '#f0f0f0', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 },
   badgeText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },

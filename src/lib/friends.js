@@ -120,7 +120,7 @@ export const getMyBlockedIds = (userId) =>
 export const getMyBlockedProfiles = async (userId) => {
   const { data: blocks, error } = await getMyBlockedIds(userId);
   if (error || !(blocks ?? []).length) return { data: [], error };
-  return supabase.from('profiles').select('id, full_name').in('id', blocks.map((b) => b.blocked_id));
+  return supabase.from('profiles').select('id, full_name, photo_url').in('id', blocks.map((b) => b.blocked_id));
 };
 
 export const unblockMember = (blockerId, blockedId) =>

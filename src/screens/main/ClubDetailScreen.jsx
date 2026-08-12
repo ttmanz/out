@@ -19,6 +19,7 @@ import BackHeader from '../../components/common/BackHeader';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
+import Avatar from '../../components/common/Avatar';
 
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
@@ -310,9 +311,13 @@ const ClubDetailScreen = ({ navigation, route }) => {
               const busy = actionId === m.id;
               return (
                 <View key={m.id} style={styles.memberRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{m.member?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-                  </View>
+                  <Avatar
+                    uri={m.member?.photo_url}
+                    name={m.member?.full_name}
+                    size={38}
+                    textColor={COLORS.black}
+                    style={styles.avatar}
+                  />
                   <Text style={styles.memberName}>{m.member?.full_name ?? 'Unknown'}</Text>
                   <TouchableOpacity
                     style={styles.approveBtn}
@@ -343,9 +348,13 @@ const ClubDetailScreen = ({ navigation, route }) => {
               const busy = blockActionId === m.user_id;
               return (
                 <View key={m.id} style={styles.memberRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{m.member?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-                  </View>
+                  <Avatar
+                    uri={m.member?.photo_url}
+                    name={m.member?.full_name}
+                    size={38}
+                    textColor={COLORS.black}
+                    style={styles.avatar}
+                  />
                   <Text style={styles.memberName}>{m.member?.full_name ?? 'Unknown'}</Text>
                   {m.user_id === club.admin_id && (
                     <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>Admin</Text></View>
@@ -376,9 +385,13 @@ const ClubDetailScreen = ({ navigation, route }) => {
               const busy = blockActionId === b.blocked_user_id;
               return (
                 <View key={b.id} style={styles.memberRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{b.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-                  </View>
+                  <Avatar
+                    uri={b.profiles?.photo_url}
+                    name={b.profiles?.full_name}
+                    size={38}
+                    textColor={COLORS.black}
+                    style={styles.avatar}
+                  />
                   <Text style={styles.memberName}>{b.profiles?.full_name ?? 'Unknown'}</Text>
                   <TouchableOpacity
                     style={styles.unblockBtn}
@@ -425,9 +438,13 @@ const ClubDetailScreen = ({ navigation, route }) => {
               : posts.map((p) => (
                 <View key={p.id} style={styles.postCard}>
                   <View style={styles.postHeader}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{p.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-                    </View>
+                    <Avatar
+                      uri={p.profiles?.photo_url}
+                      name={p.profiles?.full_name}
+                      size={38}
+                      textColor={COLORS.black}
+                      style={styles.avatar}
+                    />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.memberName}>{p.profiles?.full_name ?? 'Unknown'}</Text>
                       <Text style={styles.postTime}>{formatAgo(p.created_at)}</Text>
@@ -523,11 +540,7 @@ const styles = StyleSheet.create({
   },
   empty: { fontSize: 13, color: COLORS.textMuted, textAlign: 'center', paddingVertical: 8 },
   memberRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  avatar: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12,
-  },
-  avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 14 },
+  avatar: { marginRight: 12 },
   memberName: { flex: 1, fontSize: 14, fontWeight: '500', color: COLORS.text },
   adminBadge: {
     backgroundColor: 'rgba(200,128,10,0.12)', borderRadius: 8,

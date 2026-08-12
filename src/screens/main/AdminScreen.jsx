@@ -9,6 +9,7 @@ import { getAllMembers, setMemberStatus, setStaffStatus, setAccountType, banMemb
 import { getOrCreateConversation } from '../../lib/messages';
 import { useUser } from '../../contexts/UserContext';
 import { ROUTES } from '../../constants/routes';
+import Avatar from '../../components/common/Avatar';
 
 const STATUS_CYCLE = { active: 'restricted', restricted: 'disabled', disabled: 'active' };
 const STATUS_COLOR = {
@@ -242,11 +243,13 @@ const AdminScreen = ({ navigation }) => {
           return (
             <View style={styles.row}>
               <View style={styles.rowTop}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {item.full_name?.[0]?.toUpperCase() ?? '?'}
-                  </Text>
-                </View>
+                <Avatar
+                  uri={item.photo_url}
+                  name={item.full_name}
+                  size={42}
+                  backgroundColor={COLORS.primaryDark}
+                  style={styles.avatar}
+                />
                 <View style={styles.info}>
                   <Text style={styles.name}>{item.full_name ?? '—'}</Text>
                   {item.is_admin && <Text style={styles.adminBadge}>Admin</Text>}
@@ -363,13 +366,7 @@ const styles = StyleSheet.create({
     minWidth: 58, alignItems: 'center',
   },
   messageChipText: { fontSize: 11, fontWeight: '700', color: COLORS.black },
-  avatar: {
-    width: 42, height: 42, borderRadius: 21,
-    backgroundColor: COLORS.primaryDark,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+  avatar: { marginRight: 12 },
   info: { flex: 1 },
   name: { fontSize: 15, fontWeight: '600', color: COLORS.text },
   adminBadge: { fontSize: 10, color: COLORS.primary, fontWeight: '700', marginTop: 2 },

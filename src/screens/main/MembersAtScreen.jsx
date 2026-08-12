@@ -12,6 +12,7 @@ import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import Avatar from '../../components/common/Avatar';
 
 const MembersAtScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -121,11 +122,13 @@ const MembersAtScreen = ({ navigation }) => {
           return (
             <View style={styles.card}>
               <View style={styles.cardRow}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>
-                    {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
-                  </Text>
-                </View>
+                <Avatar
+                  uri={item.profiles?.photo_url}
+                  name={item.profiles?.full_name}
+                  size={40}
+                  backgroundColor={COLORS.primaryDark}
+                  style={styles.avatar}
+                />
                 <View style={styles.cardContent}>
                   <Text style={styles.memberName}>{item.profiles?.full_name ?? '—'}</Text>
                   <Text style={styles.cardTitle} numberOfLines={1}>{item.title}</Text>
@@ -220,12 +223,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, borderWidth: 1, borderColor: COLORS.borderAccent,
   },
   cardRow: { flexDirection: 'row', alignItems: 'center' },
-  avatar: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.primaryDark,
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
+  avatar: { marginRight: 12 },
   cardContent: { flex: 1 },
   memberName: { fontSize: 14, fontWeight: '700', color: COLORS.primary, marginBottom: 2 },
   cardTitle: { fontSize: 13, color: COLORS.text },

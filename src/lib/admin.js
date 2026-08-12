@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export const getAllMembers = () =>
   supabase
     .from('profiles')
-    .select('id, full_name, status, is_admin, is_staff, account_type, created_at')
+    .select('id, full_name, photo_url, status, is_admin, is_staff, account_type, created_at')
     .order('created_at', { ascending: false });
 
 // .select() makes the affected rows come back, so a caller can tell a

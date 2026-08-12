@@ -12,12 +12,7 @@ import { getConversations } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
-
-const Avatar = ({ name }) => (
-  <View style={styles.avatar}>
-    <Text style={styles.avatarText}>{name?.[0]?.toUpperCase() ?? '?'}</Text>
-  </View>
-);
+import Avatar from '../../components/common/Avatar';
 
 const MessagesScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -48,6 +43,7 @@ const MessagesScreen = ({ navigation }) => {
       conversationId: conv.id,
       friendName: partner?.full_name ?? t('messages.unknownMember'),
       friendIsAdmin: partner?.is_admin === true,
+      friendPhotoUrl: partner?.photo_url ?? null,
     });
   };
 
@@ -90,7 +86,7 @@ const MessagesScreen = ({ navigation }) => {
           const partner = getPartner(item);
           return (
             <TouchableOpacity style={styles.row} onPress={() => openChat(item)} activeOpacity={0.7}>
-              <Avatar name={partner?.full_name} />
+              <Avatar uri={partner?.photo_url} name={partner?.full_name} size={48} style={styles.avatar} />
               <View style={styles.rowContent}>
                 <View style={styles.nameRow}>
                   <Text style={styles.partnerName}>{partner?.full_name ?? t('messages.unknownMember')}</Text>
@@ -141,13 +137,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  avatar: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 18 },
+  avatar: { marginRight: 12 },
   rowContent: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   partnerName: { fontSize: 16, fontWeight: '600', color: COLORS.text },

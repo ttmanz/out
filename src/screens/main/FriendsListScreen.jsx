@@ -10,12 +10,7 @@ import { getOrCreateConversation } from '../../lib/messages';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
-
-const Avatar = ({ name }) => (
-  <View style={styles.avatar}>
-    <Text style={styles.avatarText}>{name?.[0]?.toUpperCase() ?? '?'}</Text>
-  </View>
-);
+import Avatar from '../../components/common/Avatar';
 
 const FriendsListScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -45,12 +40,12 @@ const FriendsListScreen = ({ navigation }) => {
   const friendId = (item) =>
     item.requester_id === userId ? item.addressee_id : item.requester_id;
 
-  const handleMessage = async (fid, fname) => {
+  const handleMessage = async (fid, fname, fphoto) => {
     setMessagingId(fid);
     const { data, error } = await getOrCreateConversation(userId, fid);
     setMessagingId(null);
     if (error || !data) return;
-    navigation.navigate(ROUTES.CHAT, { conversationId: data.id, friendName: fname });
+    navigation.navigate(ROUTES.CHAT, { conversationId: data.id, friendName: fname, friendPhotoUrl: fphoto ?? null });
   };
 
   const handleBlock = (item) => {
@@ -113,7 +108,7 @@ const FriendsListScreen = ({ navigation }) => {
           const isMessaging = messagingId === fid;
           return (
             <View style={styles.row}>
-              <Avatar name={profile?.full_name} />
+              <Avatar uri={profile?.photo_url} name={profile?.full_name} style={styles.avatar} />
               <TouchableOpacity
                 style={styles.nameWrap}
                 onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, { userId: fid, fullName: profile?.full_name })}
@@ -122,7 +117,7 @@ const FriendsListScreen = ({ navigation }) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.actionBtn}
-                onPress={() => handleMessage(fid, profile?.full_name)}
+                onPress={() => handleMessage(fid, profile?.full_name, profile?.photo_url)}
                 disabled={isMessaging}
               >
                 {isMessaging
@@ -162,13 +157,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  avatar: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+  avatar: { marginRight: 12 },
   nameWrap: { flex: 1 },
   name: { fontSize: 15, color: COLORS.text, fontWeight: '600' },
   actionBtn: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },

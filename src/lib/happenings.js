@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 export const getHappenings = () =>
   supabase
     .from('happenings')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .order('created_at', { ascending: false })
     .limit(50);
 
@@ -18,7 +18,7 @@ export const createHappening = (userId, { title, venue, happening_at, descriptio
 export const getMemberHappenings = (userId) =>
   supabase
     .from('happenings')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(50);

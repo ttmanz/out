@@ -8,12 +8,7 @@ import { getPendingRequests, acceptFriendRequest, declineFriendRequest } from '.
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
-
-const Avatar = ({ name, size = 44 }) => (
-  <View style={[styles.avatar, { width: size, height: size, borderRadius: size / 2 }]}>
-    <Text style={[styles.avatarText, { fontSize: size * 0.36 }]}>{name?.[0]?.toUpperCase() ?? '?'}</Text>
-  </View>
-);
+import Avatar from '../../components/common/Avatar';
 
 const PendingRequestsScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -69,7 +64,7 @@ const PendingRequestsScreen = ({ navigation }) => {
           if (isPrivate) {
             return (
               <View style={styles.privateCard}>
-                <Avatar name={requester?.full_name} size={56} />
+                <Avatar uri={requester?.photo_url} name={requester?.full_name} size={56} />
                 <Text style={styles.privateName}>{requester?.full_name}</Text>
                 <View style={styles.privateBadge}>
                   <Text style={styles.privateBadgeText}>🔒 {t('friends.privateProfile')}</Text>
@@ -89,7 +84,7 @@ const PendingRequestsScreen = ({ navigation }) => {
 
           return (
             <View style={styles.row}>
-              <Avatar name={requester?.full_name} />
+              <Avatar uri={requester?.photo_url} name={requester?.full_name} style={styles.avatar} />
               <Text style={styles.name}>{requester?.full_name}</Text>
               {busy ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
@@ -125,12 +120,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  avatar: {
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700' },
+  avatar: { marginRight: 12 },
   name: { flex: 1, fontSize: 15, color: COLORS.text, fontWeight: '600' },
   actions: { flexDirection: 'row', gap: 8 },
   acceptBtn: {

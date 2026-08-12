@@ -4,7 +4,7 @@ export const getOpenChatPosts = () => {
   const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
   return supabase
     .from('open_chat_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -26,7 +26,7 @@ export const createOpenChatPost = (userId, { message, venue, photo_url = null, l
 export const getMemberOpenChatPosts = (userId) =>
   supabase
     .from('open_chat_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(50);

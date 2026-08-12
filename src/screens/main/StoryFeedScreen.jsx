@@ -20,6 +20,7 @@ import AdBanner from '../../components/common/AdBanner';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
+import Avatar from '../../components/common/Avatar';
 
 const daysLeft = (createdAt) => {
   const ms = new Date(createdAt).getTime() + STORY_EXPIRY_DAYS * 24 * 60 * 60 * 1000 - Date.now();
@@ -54,15 +55,18 @@ const StoryCard = ({
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <TouchableOpacity
-          style={styles.avatar}
           onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {
             userId: item.user_id,
             fullName: item.profiles?.full_name,
           })}
         >
-          <Text style={styles.avatarText}>
-            {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
-          </Text>
+          <Avatar
+            uri={item.profiles?.photo_url}
+            name={item.profiles?.full_name}
+            size={40}
+            textColor={COLORS.black}
+            style={styles.avatar}
+          />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <TouchableOpacity
@@ -330,12 +334,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  avatar: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center', marginRight: 10,
-  },
-  avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 15 },
+  avatar: { marginRight: 10 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
   adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4, marginLeft: 6 },

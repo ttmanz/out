@@ -12,6 +12,7 @@ import { getFriends, getCloseFriendIds, addCloseFriend, removeCloseFriend, getMy
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import Avatar from '../../components/common/Avatar';
 
 const VISIBILITY_OPTIONS = [
   { key: 'everyone',      emoji: '🌍', labelKey: 'profileSettings.everyone',     descKey: 'profileSettings.everyoneDesc' },
@@ -280,9 +281,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
                 const toggling = togglingId === fid;
                 return (
                   <View key={item.id} style={styles.friendRow}>
-                    <View style={styles.avatar}>
-                      <Text style={styles.avatarText}>{profile?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-                    </View>
+                    <Avatar uri={profile?.photo_url} name={profile?.full_name} size={40} backgroundColor={COLORS.primaryDark} style={styles.avatar} />
                     <Text style={styles.friendName}>{profile?.full_name}</Text>
                     <TouchableOpacity
                       style={[styles.starBtn, isClose && styles.starBtnActive]}
@@ -308,9 +307,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
               const unblocking = unblockingId === b.id;
               return (
                 <View key={b.id} style={styles.friendRow}>
-                  <View style={styles.avatar}>
-                    <Text style={styles.avatarText}>{b.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-                  </View>
+                  <Avatar uri={b.photo_url} name={b.full_name} size={40} backgroundColor={COLORS.primaryDark} style={styles.avatar} />
                   <Text style={styles.friendName}>{b.full_name}</Text>
                   <TouchableOpacity
                     style={styles.unblockBtn}
@@ -396,12 +393,7 @@ const styles = StyleSheet.create({
     padding: 12, marginBottom: 8,
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
-  avatar: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.primaryDark,
-    justifyContent: 'center', alignItems: 'center', marginRight: 12,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
+  avatar: { marginRight: 12 },
   friendName: { flex: 1, fontSize: 15, fontWeight: '500', color: COLORS.text },
   starBtn: {
     width: 38, height: 38, borderRadius: 19,

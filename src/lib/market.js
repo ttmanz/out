@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export const getMarketListings = () =>
   supabase
     .from('market_listings')
-    .select('id, description, photo_url, created_at, user_id, profiles(full_name)')
+    .select('id, description, photo_url, created_at, user_id, profiles(full_name, photo_url)')
     .order('created_at', { ascending: false });
 
 export const createMarketListing = (userId, description, photoUrl) =>

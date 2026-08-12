@@ -19,7 +19,7 @@ export const deleteOpenGroup = (id) =>
 export const getGroupPosts = (groupId) =>
   supabase
     .from('group_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .eq('group_id', groupId)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -42,7 +42,7 @@ export const getFriendGroupPosts = async (groupId, userId) => {
 
   return supabase
     .from('group_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .eq('group_id', groupId)
     .in('user_id', ids)
     .order('created_at', { ascending: false })

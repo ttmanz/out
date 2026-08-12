@@ -40,7 +40,7 @@ export const getMemberStatus = (clubId, userId) =>
 export const getClubBlocks = (clubId) =>
   supabase
     .from('club_blocks')
-    .select('id, blocked_user_id, profiles:blocked_user_id(full_name)')
+    .select('id, blocked_user_id, profiles:blocked_user_id(full_name, photo_url)')
     .eq('club_id', clubId);
 
 // Kicks the member (if currently in club_members) and blocks them from
@@ -56,7 +56,7 @@ export const unblockClubMember = (clubId, userId) =>
 export const getClubPosts = (clubId) =>
   supabase
     .from('club_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .eq('club_id', clubId)
     .order('created_at', { ascending: false });
 

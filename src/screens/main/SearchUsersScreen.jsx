@@ -10,12 +10,7 @@ import AuthInput from '../../components/auth/AuthInput';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
-
-const Avatar = ({ name }) => (
-  <View style={styles.avatar}>
-    <Text style={styles.avatarText}>{name?.[0]?.toUpperCase() ?? '?'}</Text>
-  </View>
-);
+import Avatar from '../../components/common/Avatar';
 
 const sharedCount = (a, b) => (a ?? []).filter((i) => (b ?? []).includes(i)).length;
 
@@ -159,7 +154,7 @@ const SearchUsersScreen = ({ navigation }) => {
 
               return (
                 <View style={styles.row}>
-                  <Avatar name={item.full_name} />
+                  <Avatar uri={item.photo_url} name={item.full_name} size={42} style={styles.avatar} />
                   <View style={styles.nameWrap}>
                     <Text style={styles.name}>{item.full_name}</Text>
                     {shared > 0 && (
@@ -212,8 +207,7 @@ const styles = StyleSheet.create({
   },
   retryText: { color: COLORS.black, fontWeight: '700', fontSize: 14 },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  avatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: COLORS.primary, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 16 },
+  avatar: { marginRight: 12 },
   nameWrap: { flex: 1 },
   name: { fontSize: 15, color: COLORS.text, fontWeight: '500' },
   sharedBadge: { fontSize: 11, color: COLORS.primary, fontWeight: '700', marginTop: 2 },

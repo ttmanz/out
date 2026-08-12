@@ -14,14 +14,13 @@ import { upsertCheckin, getRecentCheckins } from '../../lib/checkins';
 import { getFriendIds, getFriendOfFriendIds } from '../../lib/friends';
 import { distanceKm } from '../../utils/geo';
 import BackHeader from '../../components/common/BackHeader';
+import Avatar from '../../components/common/Avatar';
 
 const VENUE_RADIUS_KM = 0.3;
 
-const memberInitial = (name) => name?.[0]?.toUpperCase() ?? '?';
-
-const MemberPin = ({ initial }) => (
+const MemberPin = ({ photoUrl, name }) => (
   <View style={styles.pin}>
-    <Text style={styles.pinText}>{initial}</Text>
+    <Avatar uri={photoUrl} name={name} size={36} backgroundColor="transparent" textColor={COLORS.black} />
   </View>
 );
 
@@ -134,7 +133,7 @@ const AtVenueScreen = ({ navigation }) => {
                 onPress={() => setSelected(member)}
                 anchor={{ x: 0.5, y: 0.5 }}
               >
-                <MemberPin initial={memberInitial(member.profiles?.full_name)} />
+                <MemberPin photoUrl={member.profiles?.photo_url} name={member.profiles?.full_name} />
               </Marker>
             ))}
           </MapView>
@@ -151,9 +150,13 @@ const AtVenueScreen = ({ navigation }) => {
                 <Text style={styles.closeText}>×</Text>
               </TouchableOpacity>
               <View style={styles.cardRow}>
-                <View style={styles.cardAvatar}>
-                  <Text style={styles.cardAvatarText}>{memberInitial(selected.profiles?.full_name)}</Text>
-                </View>
+                <Avatar
+                  uri={selected.profiles?.photo_url}
+                  name={selected.profiles?.full_name}
+                  size={52}
+                  textColor={COLORS.black}
+                  style={styles.cardAvatar}
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.cardName}>{selected.profiles?.full_name ?? '—'}</Text>
                 </View>
@@ -202,8 +205,6 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4, shadowRadius: 4, elevation: 5,
   },
-  pinText: { color: COLORS.black, fontWeight: '800', fontSize: 16 },
-
   // Empty state overlay
   emptyOverlay: {
     position: 'absolute', bottom: 24, left: 24, right: 24,
@@ -228,12 +229,7 @@ const styles = StyleSheet.create({
   closeBtn: { position: 'absolute', top: 16, right: 20 },
   closeText: { fontSize: 26, color: COLORS.textMuted, lineHeight: 30 },
   cardRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  cardAvatar: {
-    width: 52, height: 52, borderRadius: 26,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center', marginRight: 14,
-  },
-  cardAvatarText: { color: COLORS.black, fontWeight: '800', fontSize: 22 },
+  cardAvatar: { marginRight: 14 },
   cardName: { fontSize: 20, fontWeight: '800', color: COLORS.text, marginBottom: 4 },
   profileBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,

@@ -17,6 +17,7 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
+import Avatar from '../../components/common/Avatar';
 
 const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
   const ps = replyState ?? {};
@@ -24,11 +25,7 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}
-          </Text>
-        </View>
+        <Avatar uri={item.profiles?.photo_url} name={item.profiles?.full_name} size={40} style={styles.avatar} />
         <View style={{ flex: 1 }}>
           <TouchableOpacity onPress={() => navigation?.navigate(ROUTES.MEMBER_PROFILE, { userId: item.user_id, fullName: item.profiles?.full_name })}>
             <Text style={styles.posterName}>{item.profiles?.full_name ?? 'Someone'}</Text>
@@ -260,13 +257,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  avatar: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 10,
-  },
-  avatarText: { color: COLORS.white, fontWeight: '700', fontSize: 15 },
+  avatar: { marginRight: 10 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
   adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },

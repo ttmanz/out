@@ -18,6 +18,7 @@ import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import ReportModal from '../../components/common/ReportModal';
+import Avatar from '../../components/common/Avatar';
 
 const MarketScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -150,9 +151,12 @@ const MarketScreen = ({ navigation }) => {
                 <Text style={styles.description}>{item.description}</Text>
                 <View style={styles.cardFooter}>
                   <View style={styles.sellerRow}>
-                    <View style={styles.sellerAvatar}>
-                      <Text style={styles.sellerAvatarText}>{sellerName[0]?.toUpperCase() ?? '?'}</Text>
-                    </View>
+                    <Avatar
+                      uri={item.profiles?.photo_url}
+                      name={sellerName}
+                      size={28}
+                      backgroundColor={COLORS.primaryDark}
+                    />
                     <Text style={styles.sellerName}>{sellerName}</Text>
                   </View>
                   <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
@@ -264,12 +268,6 @@ const styles = StyleSheet.create({
   description: { fontSize: 15, color: COLORS.text, lineHeight: 22, marginBottom: 12 },
   cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   sellerRow: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sellerAvatar: {
-    width: 28, height: 28, borderRadius: 14,
-    backgroundColor: COLORS.primaryDark,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  sellerAvatarText: { color: COLORS.white, fontWeight: '700', fontSize: 11 },
   sellerName: { fontSize: 13, fontWeight: '600', color: COLORS.textMuted },
   time: { fontSize: 11, color: COLORS.textMuted },
   deleteBtn: { paddingHorizontal: 6, paddingVertical: 2 },

@@ -24,6 +24,7 @@ import LinkInput from '../../components/common/LinkInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
+import Avatar from '../../components/common/Avatar';
 
 const GroupDetailScreen = ({ navigation, route }) => {
   const { groupId, groupName } = route.params;
@@ -173,9 +174,13 @@ const GroupDetailScreen = ({ navigation, route }) => {
     return (
       <View key={item.id} style={styles.card}>
         <View style={styles.cardHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{item.profiles?.full_name?.[0]?.toUpperCase() ?? '?'}</Text>
-          </View>
+          <Avatar
+            uri={item.profiles?.photo_url}
+            name={item.profiles?.full_name}
+            size={40}
+            textColor={COLORS.black}
+            style={styles.avatar}
+          />
           <View style={{ flex: 1 }}>
             <TouchableOpacity onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, { userId: item.user_id, fullName: item.profiles?.full_name })}>
               <Text style={styles.posterName}>{item.profiles?.full_name ?? 'Someone'}</Text>
@@ -355,11 +360,7 @@ const styles = StyleSheet.create({
     marginBottom: 14, borderWidth: 1, borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
-  avatar: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.primary,
-    justifyContent: 'center', alignItems: 'center', marginRight: 10,
-  },
-  avatarText: { color: COLORS.black, fontWeight: '700', fontSize: 15 },
+  avatar: { marginRight: 10 },
   posterName: { fontWeight: '700', fontSize: 14, color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 1 },
   adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },

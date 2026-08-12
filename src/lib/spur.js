@@ -4,7 +4,7 @@ export const getSpurPosts = () => {
   const cutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
   return supabase
     .from('spur_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .gte('created_at', cutoff)
     .order('created_at', { ascending: false })
     .limit(30);
@@ -26,7 +26,7 @@ export const createSpurPost = (userId, { venue, activity, photo_url = null, link
 export const getMemberSpurPosts = (userId) =>
   supabase
     .from('spur_posts')
-    .select('*, profiles:user_id(full_name)')
+    .select('*, profiles:user_id(full_name, photo_url)')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(50);
