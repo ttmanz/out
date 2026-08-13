@@ -75,7 +75,6 @@ const REPLY_TARGETS = {
   spur: ROUTES.SPUR_OF_MOMENT,
   open_chat: ROUTES.OPEN_CHAT,
   happening: ROUTES.HAPPENING_FEED,
-  group_post: ROUTES.OPEN_GROUPS,
   story: ROUTES.STORY_FEED,
   market_listing: ROUTES.MARKET,
 };
@@ -86,15 +85,33 @@ const NEW_POST_TARGETS = {
   open_chat: ROUTES.OPEN_CHAT,
 };
 
-export const resolveNotificationRoute = (item, fallbackName = 'Someone') => {
+// group_posts don't carry their group's id on the notification row itself,
+// so a reply notification on one needs a lookup before we know where to send
+// the user — GroupDetailScreen requires both groupId and groupName to render.
+const resolveGroupPostRoute = async (postId) => {
+  const { data } = await supabase
+    .from('group_posts')
+    .select('group_id, open_groups(name)')
+    .eq('id', postId)
+    .single();
+  if (!data) return { stack: 'HomeTab', screen: ROUTES.OPEN_GROUPS };
+  return {
+    stack: 'HomeTab',
+    screen: ROUTES.GROUP_DETAIL,
+    params: { groupId: data.group_id, groupName: data.open_groups?.name, focusItemId: postId },
+  };
+};
+
+export const resolveNotificationRoute = async (item, fallbackName = 'Someone') => {
   const actorName = item.actor?.full_name ?? fallbackName;
 
   if (item.type === 'friend_request') {
     return { stack: 'HomeTab', screen: ROUTES.PENDING_REQUESTS };
   }
   if (item.type === 'reply') {
+    if (item.reference_type === 'group_post') return resolveGroupPostRoute(item.reference_id);
     const screen = REPLY_TARGETS[item.reference_type];
-    return screen ? { stack: 'HomeTab', screen } : null;
+    return screen ? { stack: 'HomeTab', screen, params: { focusItemId: item.reference_id } } : null;
   }
   if (item.type === 'club_join_request') {
     return { stack: 'HomeTab', screen: ROUTES.CLUB_DETAIL, params: { clubId: item.reference_id } };
@@ -125,9 +142,9 @@ export const resolveNotificationRoute = (item, fallbackName = 'Someone') => {
 
 // --- Tap handler: wired once near the root navigator ---
 export const addNotificationResponseListener = (navigationRef) =>
-  Notifications.addNotificationResponseReceivedListener((response) => {
+  Notifications.addNotificationResponseReceivedListener(async (response) => {
     const data = response.notification.request.content.data ?? {};
-    const route = resolveNotificationRoute(data);
+    const route = await resolveNotificationRoute(data);
     if (route && navigationRef.isReady()) {
       navigationRef.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }

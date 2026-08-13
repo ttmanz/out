@@ -21,6 +21,7 @@ import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const daysLeft = (createdAt) => {
   const ms = new Date(createdAt).getTime() + STORY_EXPIRY_DAYS * 24 * 60 * 60 * 1000 - Date.now();
@@ -46,7 +47,7 @@ const StoryVideo = ({ uri }) => {
 
 const StoryCard = ({
   item, navigation, isAdmin, onAdminDelete, t,
-  replyState, onToggleReplies, onReplyTextChange, onSendReply,
+  replyState, onToggleReplies, onReplyTextChange, onEmojiInsert, onSendReply,
   myId, onReport,
 }) => {
   const ps = replyState ?? {};
@@ -132,6 +133,7 @@ const StoryCard = ({
                   returnKeyType="send"
                   onSubmitEditing={() => onSendReply(item.id)}
                 />
+                <EmojiPickerButton onEmojiSelected={(e) => onEmojiInsert(item.id, e)} />
                 <TouchableOpacity
                   style={styles.sendBtn}
                   onPress={() => onSendReply(item.id)}
@@ -151,7 +153,7 @@ const StoryCard = ({
   );
 };
 
-const StoryFeedScreen = ({ navigation }) => {
+const StoryFeedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;
@@ -162,6 +164,9 @@ const StoryFeedScreen = ({ navigation }) => {
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
   const firstRender = useRef(true);
+  const flatListRef = useRef(null);
+  const focusedRef = useRef(false);
+  const focusItemId = route?.params?.focusItemId;
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -184,6 +189,15 @@ const StoryFeedScreen = ({ navigation }) => {
     setLoading(true);
     load();
   }, [mode]);
+
+  useEffect(() => {
+    if (!focusItemId || focusedRef.current) return;
+    const index = stories.findIndex((s) => s.id === focusItemId);
+    if (index === -1) return;
+    focusedRef.current = true;
+    toggleReplies(focusItemId);
+    setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.1 }), 300);
+  }, [focusItemId, stories]);
 
   const patchReply = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -262,10 +276,15 @@ const StoryFeedScreen = ({ navigation }) => {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={stories}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         removeClippedSubviews={false}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+          setTimeout(() => flatListRef.current?.scrollToIndex({ index: info.index, animated: true }), 100);
+        }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
@@ -285,6 +304,7 @@ const StoryFeedScreen = ({ navigation }) => {
             replyState={replyState[item.id]}
             onToggleReplies={toggleReplies}
             onReplyTextChange={(id, v) => patchReply(id, { text: v })}
+            onEmojiInsert={(id, e) => patchReply(id, { text: (replyState[id]?.text ?? '') + e })}
             onSendReply={handleReply}
             myId={profile?.id}
             onReport={(it) => setReportTarget({

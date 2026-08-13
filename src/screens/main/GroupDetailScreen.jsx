@@ -25,9 +25,10 @@ import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const GroupDetailScreen = ({ navigation, route }) => {
-  const { groupId, groupName } = route.params;
+  const { groupId, groupName, focusItemId } = route.params;
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
   const isAdmin = profile?.is_admin === true;
@@ -40,6 +41,9 @@ const GroupDetailScreen = ({ navigation, route }) => {
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
   const firstRender = useRef(true);
+  const scrollViewRef = useRef(null);
+  const cardYPositions = useRef({});
+  const focusedRef = useRef(false);
 
   const [postText, setPostText] = useState('');
   const [postPhotoUri, setPostPhotoUri] = useState(null);
@@ -66,6 +70,27 @@ const GroupDetailScreen = ({ navigation, route }) => {
     setLoading(true);
     load();
   }, [mode]);
+
+  // Arriving from a "replied to your post" notification. Cards report their
+  // own y-position via onLayout as they render; retry the scroll a couple
+  // times since that layout pass can land just after this effect fires.
+  useEffect(() => {
+    if (!focusItemId || focusedRef.current) return;
+    if (!posts.some((p) => p.id === focusItemId)) return;
+    focusedRef.current = true;
+    toggleReplies(focusItemId);
+    let attempts = 0;
+    const tryScroll = () => {
+      const y = cardYPositions.current[focusItemId];
+      if (y != null) {
+        scrollViewRef.current?.scrollTo({ y: Math.max(y - 12, 0), animated: true });
+      } else if (attempts < 5) {
+        attempts += 1;
+        setTimeout(tryScroll, 200);
+      }
+    };
+    setTimeout(tryScroll, 200);
+  }, [focusItemId, posts]);
 
   const patchPost = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -172,7 +197,11 @@ const GroupDetailScreen = ({ navigation, route }) => {
     const replyCount = ps.replies?.length ?? 0;
 
     return (
-      <View key={item.id} style={styles.card}>
+      <View
+        key={item.id}
+        style={styles.card}
+        onLayout={(e) => { cardYPositions.current[item.id] = e.nativeEvent.layout.y; }}
+      >
         <View style={styles.cardHeader}>
           <Avatar
             uri={item.profiles?.photo_url}
@@ -237,6 +266,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
                     returnKeyType="send"
                     onSubmitEditing={() => handleReply(item.id)}
                   />
+                  <EmojiPickerButton onEmojiSelected={(e) => patchPost(item.id, { text: (ps.text ?? '') + e })} />
                   <TouchableOpacity
                     style={styles.sendBtn}
                     onPress={() => handleReply(item.id)}
@@ -288,6 +318,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={styles.list}
         keyboardShouldPersistTaps="handled"
         refreshControl={
@@ -295,14 +326,17 @@ const GroupDetailScreen = ({ navigation, route }) => {
         }
       >
         <View style={styles.composeBox}>
-          <TextInput
-            style={styles.composeInput}
-            placeholder={t('openGroups.composePlaceholder')}
-            placeholderTextColor={COLORS.textMuted}
-            value={postText}
-            onChangeText={setPostText}
-            multiline
-          />
+          <View style={styles.composeInputRow}>
+            <TextInput
+              style={styles.composeInput}
+              placeholder={t('openGroups.composePlaceholder')}
+              placeholderTextColor={COLORS.textMuted}
+              value={postText}
+              onChangeText={setPostText}
+              multiline
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setPostText((prev) => prev + e)} style={styles.composeEmojiBtn} />
+          </View>
           <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
@@ -347,12 +381,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface, borderRadius: 14, padding: 14,
     borderWidth: 1, borderColor: COLORS.borderAccent, marginBottom: 16,
   },
+  composeInputRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 12 },
   composeInput: {
+    flex: 1,
     borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 10, fontSize: 14,
     color: COLORS.text, backgroundColor: COLORS.background,
-    minHeight: 60, textAlignVertical: 'top', marginBottom: 12,
+    minHeight: 60, textAlignVertical: 'top',
   },
+  composeEmojiBtn: { marginLeft: 8 },
   postBtn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   postBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.black },
   card: {

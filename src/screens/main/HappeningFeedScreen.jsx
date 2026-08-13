@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert,
@@ -18,8 +18,9 @@ import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
-const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
+const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onEmojiInsert, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
@@ -81,6 +82,7 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
                   returnKeyType="send"
                   onSubmitEditing={() => onSendReply(item.id)}
                 />
+                <EmojiPickerButton onEmojiSelected={(e) => onEmojiInsert(item.id, e)} />
                 <TouchableOpacity
                   style={styles.sendBtn}
                   onPress={() => onSendReply(item.id)}
@@ -104,13 +106,20 @@ const HappeningFeedScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;
-  const filter = route.params?.filter ?? 'today';
+  const focusItemId = route.params?.focusItemId;
+  // Jumping in from a "replied to your post" notification: force the tab that
+  // actually contains the target happening, rather than defaulting to 'today'
+  // and never finding it.
+  const [filterOverride, setFilterOverride] = useState(null);
+  const filter = route.params?.filter ?? filterOverride ?? 'today';
 
   const [happenings, setHappenings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
+  const flatListRef = useRef(null);
+  const focusedRef = useRef(false);
 
   const handleReport = (item) => setReportTarget({
     targetType: 'happening',
@@ -133,6 +142,21 @@ const HappeningFeedScreen = ({ navigation, route }) => {
     () => happenings.filter((h) => h.happening_at === filter),
     [happenings, filter]
   );
+
+  useEffect(() => {
+    if (!focusItemId || focusedRef.current) return;
+    const target = happenings.find((h) => h.id === focusItemId);
+    if (!target) return;
+    if (!route.params?.filter && target.happening_at !== filter) {
+      setFilterOverride(target.happening_at);
+      return; // re-run once `filtered` reflects the new tab
+    }
+    const index = filtered.findIndex((h) => h.id === focusItemId);
+    if (index === -1) return;
+    focusedRef.current = true;
+    toggleReplies(focusItemId);
+    setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.1 }), 300);
+  }, [focusItemId, happenings, filtered, filter]);
 
   const patchReply = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -192,9 +216,14 @@ const HappeningFeedScreen = ({ navigation, route }) => {
       <BackHeader title={t(`happenings.${filter}`).toUpperCase()} onBack={() => navigation.goBack()} />
 
       <FlatList
+        ref={flatListRef}
         data={filtered}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+          setTimeout(() => flatListRef.current?.scrollToIndex({ index: info.index, animated: true }), 100);
+        }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }
@@ -215,6 +244,7 @@ const HappeningFeedScreen = ({ navigation, route }) => {
             replyState={replyState[item.id]}
             onToggleReplies={toggleReplies}
             onReplyTextChange={(id, v) => patchReply(id, { text: v })}
+            onEmojiInsert={(id, e) => patchReply(id, { text: (replyState[id]?.text ?? '') + e })}
             onSendReply={handleReply}
             isAdmin={isAdmin}
             onAdminDelete={handleAdminDelete}

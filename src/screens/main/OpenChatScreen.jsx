@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert,
@@ -22,8 +22,9 @@ import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
-const OpenChatScreen = ({ navigation }) => {
+const OpenChatScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;
@@ -33,6 +34,9 @@ const OpenChatScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
+  const flatListRef = useRef(null);
+  const focusedRef = useRef(false);
+  const focusItemId = route?.params?.focusItemId;
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -47,6 +51,15 @@ const OpenChatScreen = ({ navigation }) => {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  useEffect(() => {
+    if (!focusItemId || focusedRef.current) return;
+    const index = posts.findIndex((p) => p.id === focusItemId);
+    if (index === -1) return;
+    focusedRef.current = true;
+    toggleReplies(focusItemId);
+    setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.1 }), 300);
+  }, [focusItemId, posts]);
 
   const patchPost = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -238,6 +251,7 @@ const OpenChatScreen = ({ navigation }) => {
                       returnKeyType="send"
                       onSubmitEditing={() => handleReply(item.id)}
                     />
+                    <EmojiPickerButton onEmojiSelected={(e) => patchPost(item.id, { text: (ps.text ?? '') + e })} />
                     <TouchableOpacity
                       style={styles.sendBtn}
                       onPress={() => handleReply(item.id)}
@@ -271,9 +285,14 @@ const OpenChatScreen = ({ navigation }) => {
       <BackHeader title={t('openChat.title')} onBack={() => navigation.goBack()} />
 
       <FlatList
+        ref={flatListRef}
         data={posts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+          setTimeout(() => flatListRef.current?.scrollToIndex({ index: info.index, animated: true }), 100);
+        }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />
         }

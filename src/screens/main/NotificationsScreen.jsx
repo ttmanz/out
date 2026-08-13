@@ -39,8 +39,8 @@ const NotificationsScreen = ({ navigation }) => {
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
-  const handlePress = (item) => {
-    const route = resolveNotificationRoute(item, t('notifications.someone'));
+  const handlePress = async (item) => {
+    const route = await resolveNotificationRoute(item, t('notifications.someone'));
     if (route) {
       navigation.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }

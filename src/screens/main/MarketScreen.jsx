@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, Alert, Image, StatusBar, RefreshControl, TextInput,
@@ -19,8 +19,9 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
-const MarketScreen = ({ navigation }) => {
+const MarketScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
   const isAdmin = profile?.is_admin === true;
@@ -31,6 +32,9 @@ const MarketScreen = ({ navigation }) => {
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
   const statusBarHeight = StatusBar.currentHeight ?? 44;
+  const flatListRef = useRef(null);
+  const focusedRef = useRef(false);
+  const focusItemId = route?.params?.focusItemId;
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -45,6 +49,15 @@ const MarketScreen = ({ navigation }) => {
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  useEffect(() => {
+    if (!focusItemId || focusedRef.current) return;
+    const index = listings.findIndex((l) => l.id === focusItemId);
+    if (index === -1) return;
+    focusedRef.current = true;
+    toggleReplies(focusItemId);
+    setTimeout(() => flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.1 }), 300);
+  }, [focusItemId, listings]);
 
   const handlePostPress = () => {
     const access = canAccessFeature('market');
@@ -120,9 +133,14 @@ const MarketScreen = ({ navigation }) => {
       </View>
 
       <FlatList
+        ref={flatListRef}
         data={listings}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        onScrollToIndexFailed={(info) => {
+          flatListRef.current?.scrollToOffset({ offset: info.averageItemLength * info.index, animated: true });
+          setTimeout(() => flatListRef.current?.scrollToIndex({ index: info.index, animated: true }), 100);
+        }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={COLORS.primary} />}
         ListHeaderComponent={() => (
           <>
@@ -207,6 +225,7 @@ const MarketScreen = ({ navigation }) => {
                             returnKeyType="send"
                             onSubmitEditing={() => handleReply(item.id)}
                           />
+                          <EmojiPickerButton onEmojiSelected={(e) => patchReply(item.id, { text: (ps.text ?? '') + e })} />
                           <TouchableOpacity
                             style={styles.sendBtn}
                             onPress={() => handleReply(item.id)}
