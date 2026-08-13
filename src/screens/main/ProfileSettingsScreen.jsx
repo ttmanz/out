@@ -35,6 +35,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
   const [visibility, setVisibility] = useState('everyone');
   const [venueVisibility, setVenueVisibility] = useState('everyone');
   const [allowRequests, setAllowRequests] = useState(true);
+  const [pushEnabled, setPushEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [friends, setFriends] = useState([]);
@@ -60,6 +61,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
         setVisibility(profileRes.data?.visibility ?? 'everyone');
         setVenueVisibility(profileRes.data?.venue_visibility ?? 'everyone');
         setAllowRequests(profileRes.data?.allow_friend_requests ?? true);
+        setPushEnabled(profileRes.data?.push_notifications_enabled ?? true);
       }
       if (!friendsRes.error) setFriends(friendsRes.data ?? []);
       if (!closeRes.error) setCloseFriendIds(new Set((closeRes.data ?? []).map((r) => r.friend_id)));
@@ -81,7 +83,7 @@ const ProfileSettingsScreen = ({ navigation }) => {
     setSaving(true);
     const { error } = await updateProfileSettings(userId, {
       visibility, allow_friend_requests: allowRequests, full_name: fullName.trim(),
-      venue_visibility: venueVisibility,
+      venue_visibility: venueVisibility, push_notifications_enabled: pushEnabled,
     });
     setSaving(false);
     if (error) Alert.alert(t('common.error'), t('profileSettings.saveFailed'));
@@ -254,6 +256,32 @@ const ProfileSettingsScreen = ({ navigation }) => {
               key={key}
               style={[styles.option, selected && styles.optionSelected]}
               onPress={() => setVenueVisibility(key)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.optionEmoji}>{emoji}</Text>
+              <View style={styles.optionText}>
+                <Text style={[styles.optionLabel, selected && styles.optionLabelSelected]}>{t(labelKey)}</Text>
+                <Text style={styles.optionDesc}>{t(descKey)}</Text>
+              </View>
+              <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                {selected && <Text style={styles.checkmark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>{t('profileSettings.notificationsTitle')}</Text>
+
+        {[
+          { val: true,  emoji: '🔔', labelKey: 'profileSettings.notificationsOn',  descKey: 'profileSettings.notificationsOnDesc' },
+          { val: false, emoji: '🔕', labelKey: 'profileSettings.notificationsOff', descKey: 'profileSettings.notificationsOffDesc' },
+        ].map(({ val, emoji, labelKey, descKey }) => {
+          const selected = pushEnabled === val;
+          return (
+            <TouchableOpacity
+              key={String(val)}
+              style={[styles.option, selected && styles.optionSelected]}
+              onPress={() => setPushEnabled(val)}
               activeOpacity={0.7}
             >
               <Text style={styles.optionEmoji}>{emoji}</Text>

@@ -56,6 +56,18 @@ Deno.serve(async (req) => {
     });
   }
 
+  const { data: recipient } = await supabase
+    .from('profiles')
+    .select('push_notifications_enabled')
+    .eq('id', notification.user_id)
+    .single();
+
+  if (recipient?.push_notifications_enabled === false) {
+    return new Response(JSON.stringify({ ok: true, sent: 0, reason: 'push disabled by user' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   const { data: tokens } = await supabase
     .from('push_tokens')
     .select('id, token')
