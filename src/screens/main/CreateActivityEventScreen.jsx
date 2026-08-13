@@ -14,6 +14,7 @@ import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const CreateActivityEventScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -152,15 +153,18 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
           )}
 
           <Text style={styles.label}>{t('activityEvents.labelDescription')}</Text>
-          <TextInput
-            style={[styles.input, styles.inputMulti]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder={t('activityEvents.placeholderDescription')}
-            placeholderTextColor={COLORS.textMuted}
-            multiline
-            maxLength={300}
-          />
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={[styles.input, styles.inputMulti]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder={t('activityEvents.placeholderDescription')}
+              placeholderTextColor={COLORS.textMuted}
+              multiline
+              maxLength={300}
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setDescription((prev) => prev + e)} style={styles.emojiBtn} />
+          </View>
 
           <Text style={styles.label}>{t('activityEvents.labelPhoto')}</Text>
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
@@ -190,6 +194,8 @@ const styles = StyleSheet.create({
     color: COLORS.text, backgroundColor: COLORS.surface, marginBottom: 4,
   },
   inputMulti: { height: 80, textAlignVertical: 'top' },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 8 },
   dateBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dateText: { fontSize: 15, color: COLORS.text, flex: 1 },
   datePlaceholder: { fontSize: 15, color: COLORS.textMuted, flex: 1 },

@@ -11,6 +11,7 @@ import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -96,14 +97,17 @@ const CreateHappeningScreen = ({ navigation, route }) => {
             autoCapitalize="words"
           />
 
-          <AuthInput
-            label={t('happenings.labelDescription')}
-            placeholder={t('happenings.placeholderDescription')}
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            autoCapitalize="sentences"
-          />
+          <View style={styles.inputWrap}>
+            <AuthInput
+              label={t('happenings.labelDescription')}
+              placeholder={t('happenings.placeholderDescription')}
+              value={description}
+              onChangeText={setDescription}
+              multiline
+              autoCapitalize="sentences"
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setDescription((prev) => prev + e)} style={styles.emojiBtn} />
+          </View>
 
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
@@ -123,6 +127,8 @@ const CreateHappeningScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   form: { padding: 20, paddingBottom: 40 },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 24 },
   postBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 15, alignItems: 'center', marginTop: 8,

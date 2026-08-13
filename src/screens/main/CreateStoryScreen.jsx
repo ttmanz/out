@@ -11,6 +11,7 @@ import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createStory } from '../../lib/stories';
 import { uploadStoryMedia } from '../../lib/storage';
 import { getSession } from '../../lib/auth';
@@ -72,14 +73,17 @@ const CreateStoryScreen = ({ navigation }) => {
         <BackHeader title={t('stories.createPost')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <AuthInput
-            label={t('stories.labelText')}
-            placeholder={t('stories.placeholderText')}
-            value={text}
-            onChangeText={setText}
-            multiline
-            autoCapitalize="sentences"
-          />
+          <View style={styles.inputWrap}>
+            <AuthInput
+              label={t('stories.labelText')}
+              placeholder={t('stories.placeholderText')}
+              value={text}
+              onChangeText={setText}
+              multiline
+              autoCapitalize="sentences"
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setText((prev) => prev + e)} style={styles.emojiBtn} />
+          </View>
           <PhotoPicker uri={mediaUri} onChange={setMediaUri} allowVideo />
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>
@@ -97,6 +101,8 @@ const CreateStoryScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   form: { padding: 20, paddingBottom: 40 },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 24 },
   postBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 15, alignItems: 'center', marginTop: 8,

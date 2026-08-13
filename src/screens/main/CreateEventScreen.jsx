@@ -15,6 +15,7 @@ import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const CreateEventScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -157,15 +158,18 @@ const CreateEventScreen = ({ navigation, route }) => {
         )}
 
         <Text style={styles.label}>{t('events.labelDescription')}</Text>
-        <TextInput
-          style={[styles.input, styles.inputMulti]}
-          value={description}
-          onChangeText={setDescription}
-          placeholder={t('events.placeholderDescription')}
-          placeholderTextColor={COLORS.textMuted}
-          multiline
-          maxLength={300}
-        />
+        <View style={styles.inputWrap}>
+          <TextInput
+            style={[styles.input, styles.inputMulti]}
+            value={description}
+            onChangeText={setDescription}
+            placeholder={t('events.placeholderDescription')}
+            placeholderTextColor={COLORS.textMuted}
+            multiline
+            maxLength={300}
+          />
+          <EmojiPickerButton onEmojiSelected={(e) => setDescription((prev) => prev + e)} style={styles.emojiBtn} />
+        </View>
 
         <Text style={styles.label}>{t('events.labelLink')}</Text>
         <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
@@ -197,6 +201,8 @@ const styles = StyleSheet.create({
     color: COLORS.text, backgroundColor: COLORS.surface, marginBottom: 4,
   },
   inputMulti: { height: 80, textAlignVertical: 'top' },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 8 },
   dateBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   dateText: { fontSize: 15, color: COLORS.text, flex: 1 },
   datePlaceholder: { fontSize: 15, color: COLORS.textMuted, flex: 1 },

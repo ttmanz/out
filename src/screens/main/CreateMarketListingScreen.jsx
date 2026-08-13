@@ -14,6 +14,7 @@ import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const CreateMarketListingScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -72,16 +73,19 @@ const CreateMarketListingScreen = ({ navigation }) => {
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
 
           <Text style={styles.label}>{t('market.labelDescription')} *</Text>
-          <TextInput
-            style={[styles.input, styles.inputMulti]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder={t('market.placeholderDescription')}
-            placeholderTextColor={COLORS.textMuted}
-            multiline
-            maxLength={800}
-            autoCapitalize="sentences"
-          />
+          <View style={styles.inputWrap}>
+            <TextInput
+              style={[styles.input, styles.inputMulti]}
+              value={description}
+              onChangeText={setDescription}
+              placeholder={t('market.placeholderDescription')}
+              placeholderTextColor={COLORS.textMuted}
+              multiline
+              maxLength={800}
+              autoCapitalize="sentences"
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setDescription((prev) => prev + e)} style={styles.emojiBtn} />
+          </View>
           <Text style={styles.charCount}>{description.length}/800</Text>
 
           <View style={styles.infoBox}>
@@ -113,6 +117,8 @@ const styles = StyleSheet.create({
     color: COLORS.text, backgroundColor: COLORS.surface,
   },
   inputMulti: { height: 160, textAlignVertical: 'top' },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 8 },
   charCount: { fontSize: 11, color: COLORS.textMuted, textAlign: 'right', marginTop: 4 },
   infoBox: {
     marginTop: 20,

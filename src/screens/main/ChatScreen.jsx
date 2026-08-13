@@ -14,6 +14,7 @@ import { getMessages, sendMessage, markMessagesRead } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { setOpenConversationId } from '../../lib/pushNotifications';
 
 const ChatScreen = ({ navigation, route }) => {
@@ -158,6 +159,7 @@ const ChatScreen = ({ navigation, route }) => {
             onSubmitEditing={handleSend}
             blurOnSubmit={false}
           />
+          <EmojiPickerButton onEmojiSelected={(e) => setText((prev) => prev + e)} style={styles.emojiBtn} />
           <TouchableOpacity
             style={[styles.sendBtn, (!text.trim() || sending) && styles.sendBtnDisabled]}
             onPress={handleSend}
@@ -234,6 +236,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     marginRight: 8,
   },
+  emojiBtn: { marginRight: 8 },
   sendBtn: {
     width: 42, height: 42, borderRadius: 21,
     backgroundColor: COLORS.primary,

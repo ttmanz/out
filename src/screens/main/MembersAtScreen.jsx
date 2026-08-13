@@ -13,6 +13,7 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const MembersAtScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -168,6 +169,7 @@ const MembersAtScreen = ({ navigation }) => {
                           returnKeyType="send"
                           onSubmitEditing={() => handleReply(item.id)}
                         />
+                        <EmojiPickerButton onEmojiSelected={(e) => patchReply(item.id, { text: (ps.text ?? '') + e })} />
                         <TouchableOpacity
                           style={styles.sendBtn}
                           onPress={() => handleReply(item.id)}

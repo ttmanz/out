@@ -13,6 +13,7 @@ import LinkInput from '../../components/common/LinkInput';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -96,14 +97,17 @@ const CreateSpurScreen = ({ navigation }) => {
             error={venueError}
             autoCapitalize="words"
           />
-          <AuthInput
-            label={t('spur.labelActivity')}
-            placeholder={t('spur.placeholderActivity')}
-            value={activity}
-            onChangeText={setActivity}
-            error={activityError}
-            autoCapitalize="sentences"
-          />
+          <View style={styles.inputWrap}>
+            <AuthInput
+              label={t('spur.labelActivity')}
+              placeholder={t('spur.placeholderActivity')}
+              value={activity}
+              onChangeText={setActivity}
+              error={activityError}
+              autoCapitalize="sentences"
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setActivity((prev) => prev + e)} style={styles.emojiBtn} />
+          </View>
 
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
@@ -123,6 +127,8 @@ const CreateSpurScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   form: { padding: 20, paddingBottom: 40 },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 24 },
   preview: {
     fontSize: 16, fontWeight: '700', color: COLORS.text,
     backgroundColor: 'rgba(200,128,10,0.08)',

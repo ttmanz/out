@@ -20,6 +20,7 @@ import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import Avatar from '../../components/common/Avatar';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const ClubDetailScreen = ({ navigation, route }) => {
   const { clubId } = route.params;
@@ -415,14 +416,17 @@ const ClubDetailScreen = ({ navigation, route }) => {
             <Text style={styles.sectionTitle}>Club Posts</Text>
 
             <View style={styles.composeBox}>
-              <TextInput
-                style={styles.composeInput}
-                placeholder="Share something with the club..."
-                placeholderTextColor={COLORS.textMuted}
-                value={postText}
-                onChangeText={setPostText}
-                multiline
-              />
+              <View style={styles.composeInputRow}>
+                <TextInput
+                  style={styles.composeInput}
+                  placeholder="Share something with the club..."
+                  placeholderTextColor={COLORS.textMuted}
+                  value={postText}
+                  onChangeText={setPostText}
+                  multiline
+                />
+                <EmojiPickerButton onEmojiSelected={(e) => setPostText((prev) => prev + e)} style={styles.composeEmojiBtn} />
+              </View>
               <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
               <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
               <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
@@ -572,12 +576,15 @@ const styles = StyleSheet.create({
   },
   rejectBtnText: { fontSize: 14, color: COLORS.error, fontWeight: '700' },
   composeBox: { marginBottom: 16 },
+  composeInputRow: { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 10 },
   composeInput: {
+    flex: 1,
     borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
     paddingHorizontal: 12, paddingVertical: 10, fontSize: 14,
     color: COLORS.text, backgroundColor: COLORS.surfaceAlt,
-    minHeight: 60, textAlignVertical: 'top', marginBottom: 10,
+    minHeight: 60, textAlignVertical: 'top',
   },
+  composeEmojiBtn: { marginLeft: 8 },
   postBtn: {
     backgroundColor: COLORS.primary, borderRadius: 10,
     paddingVertical: 10, alignItems: 'center',

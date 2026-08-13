@@ -11,6 +11,7 @@ import AuthInput from '../../components/auth/AuthInput';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
+import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createOpenChatPost } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { moderateContent } from '../../lib/moderation';
@@ -86,15 +87,18 @@ const CreateOpenChatScreen = ({ navigation }) => {
         <BackHeader title={t('openChat.post')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-          <AuthInput
-            label={t('openChat.labelMessage')}
-            placeholder={t('openChat.placeholderMessage')}
-            value={message}
-            onChangeText={setMessage}
-            error={messageError}
-            multiline
-            autoCapitalize="sentences"
-          />
+          <View style={styles.inputWrap}>
+            <AuthInput
+              label={t('openChat.labelMessage')}
+              placeholder={t('openChat.placeholderMessage')}
+              value={message}
+              onChangeText={setMessage}
+              error={messageError}
+              multiline
+              autoCapitalize="sentences"
+            />
+            <EmojiPickerButton onEmojiSelected={(e) => setMessage((prev) => prev + e)} style={styles.emojiBtn} />
+          </View>
           <AuthInput
             label={t('openChat.labelVenue')}
             placeholder={t('openChat.placeholderVenue')}
@@ -120,6 +124,8 @@ const CreateOpenChatScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   form: { padding: 20, paddingBottom: 40 },
+  inputWrap: { position: 'relative' },
+  emojiBtn: { position: 'absolute', right: 8, bottom: 24 },
   postBtn: {
     backgroundColor: COLORS.primary, borderRadius: 12,
     paddingVertical: 15, alignItems: 'center', marginTop: 8,
