@@ -34,33 +34,40 @@ let currentToken = null;
 export const registerForPushNotificationsAsync = async (userId) => {
   if (!Device.isDevice || !userId) return;
 
-  const { status: existingStatus } = await Notifications.getPermissionsAsync();
-  let finalStatus = existingStatus;
-  if (existingStatus !== 'granted') {
-    const { status } = await Notifications.requestPermissionsAsync();
-    finalStatus = status;
+  try {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') return;
+
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        sound: 'default',
+      });
+    }
+
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
+    if (!token) return;
+
+    currentToken = token;
+    const { error } = await supabase
+      .from('push_tokens')
+      .upsert(
+        { user_id: userId, token, platform: Platform.OS, updated_at: new Date().toISOString() },
+        { onConflict: 'token' }
+      );
+    if (error) console.error('registerForPushNotificationsAsync: failed to save push token', error);
+  } catch (e) {
+    // Runs unawaited from UserContext — without this, a failure here (e.g. missing
+    // platform push credentials) fails completely silently with no trace.
+    console.error('registerForPushNotificationsAsync failed', e);
   }
-  if (finalStatus !== 'granted') return;
-
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'default',
-      importance: Notifications.AndroidImportance.MAX,
-      sound: 'default',
-    });
-  }
-
-  const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-  const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
-  if (!token) return;
-
-  currentToken = token;
-  await supabase
-    .from('push_tokens')
-    .upsert(
-      { user_id: userId, token, platform: Platform.OS, updated_at: new Date().toISOString() },
-      { onConflict: 'token' }
-    );
 };
 
 export const unregisterPushToken = async () => {
@@ -135,7 +142,7 @@ export const resolveNotificationRoute = async (item, fallbackName = 'Someone') =
   }
   if (item.type === 'new_post') {
     const screen = NEW_POST_TARGETS[item.reference_type];
-    return screen ? { stack: 'HomeTab', screen } : null;
+    return screen ? { stack: 'HomeTab', screen, params: { focusItemId: item.reference_id } } : null;
   }
   return null;
 };

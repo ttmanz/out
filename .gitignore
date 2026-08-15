@@ -37,6 +37,9 @@ yarn-error.*
 # Google Play service account key — never commit this
 google-service-account.json
 
+# Firebase Admin SDK key (FCM push credentials) — never commit this
+firebase-adminsdk.json
+
 # typescript
 *.tsbuildinfo
 

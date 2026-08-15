@@ -20,6 +20,7 @@ const TYPE_ICON = {
   admin_message: '🛡️',
   message: '✉️',
   new_post: '📣',
+  content_report: '🚩',
 };
 
 const NotificationsScreen = ({ navigation }) => {
