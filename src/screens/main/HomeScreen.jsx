@@ -25,14 +25,12 @@ const FEATURES = [
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
 const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
     <View style={styles.watermarkContainer}>
       <Text style={styles.watermark}>{watermark}</Text>
     </View>
     <View style={styles.iconRing}>
-      <View style={styles.iconInner}>
-        <Text style={styles.cardEmoji}>{emoji}</Text>
-      </View>
+      <Text style={styles.cardEmoji}>{emoji}</Text>
     </View>
     <View style={styles.textWrap}>
       <Text style={styles.cardTitle}>{title}</Text>
@@ -212,42 +210,42 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 14,
-    marginBottom: 10,
+    backgroundColor: COLORS.cardGold,
+    borderRadius: 26,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: COLORS.borderAccent,
+    borderColor: COLORS.cardGoldBorder,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   watermarkContainer: {
     position: 'absolute',
     right: 8,
     top: 0,
     bottom: 0,
-    width: 80,
+    width: 90,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  watermark: { fontSize: 55, opacity: 0.18 },
+  watermark: { fontSize: 60, opacity: 0.22 },
   iconRing: {
     width: 58, height: 58, borderRadius: 29,
     borderWidth: 1.5,
-    borderColor: COLORS.borderAccent,
+    borderColor: COLORS.cardGoldBorder,
     justifyContent: 'center', alignItems: 'center',
     marginRight: 14,
   },
-  iconInner: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: '#080500',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  cardEmoji: { fontSize: 24 },
+  cardEmoji: { fontSize: 26 },
   textWrap: { flex: 1 },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
-  cardDesc: { fontSize: 11, color: COLORS.textLight, lineHeight: 15 },
-  chevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
+  cardTitle: { fontSize: 18, fontWeight: '800', color: COLORS.white, marginBottom: 3 },
+  cardDesc: { fontSize: 12, color: 'rgba(255,255,255,0.75)', lineHeight: 16 },
+  chevron: { fontSize: 24, color: COLORS.white, marginLeft: 4 },
 });
 
 export default HomeScreen;

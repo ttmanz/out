@@ -26,6 +26,10 @@ export const COLORS = {
   purple: '#7C3AED',
   purpleBg: '#14082A',
 
+  // Home feature cards (solid gold, mirrors the app's bronze/gold identity)
+  cardGold: '#8A6A22',
+  cardGoldBorder: 'rgba(255,214,140,0.35)',
+
   // Social auth
   google: '#DB4437',
   facebook: '#1877F2',
