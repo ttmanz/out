@@ -7,7 +7,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession } from '../../lib/auth';
-import { getNotifications, markAllNotificationsRead } from '../../lib/notifications';
+import { getNotifications, markAllNotificationsRead, deleteNotification } from '../../lib/notifications';
 import { resolveNotificationRoute } from '../../lib/pushNotifications';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
@@ -42,6 +42,8 @@ const NotificationsScreen = ({ navigation }) => {
 
   const handlePress = async (item) => {
     const route = await resolveNotificationRoute(item, t('notifications.someone'));
+    setNotifications((prev) => prev.filter((n) => n.id !== item.id));
+    deleteNotification(item.id);
     if (route) {
       navigation.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }

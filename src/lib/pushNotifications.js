@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { ROUTES } from '../constants/routes';
 import { supabase } from './supabase';
+import { deleteNotification } from './notifications';
 
 // Foreground behavior — alert + sound for everything, except a 'message'
 // notification for the conversation the user already has open (that chat's
@@ -152,6 +153,7 @@ export const addNotificationResponseListener = (navigationRef) =>
   Notifications.addNotificationResponseReceivedListener(async (response) => {
     const data = response.notification.request.content.data ?? {};
     const route = await resolveNotificationRoute(data);
+    if (data.notification_id) deleteNotification(data.notification_id);
     if (route && navigationRef.isReady()) {
       navigationRef.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }

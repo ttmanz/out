@@ -17,3 +17,8 @@ export const getUnreadNotificationCount = (userId) =>
     .select('id', { count: 'exact', head: true })
     .eq('user_id', userId)
     .eq('read', false);
+
+// Called when the user actually taps into a specific alert (in-app or via
+// the OS push notification) — not just from opening the Alerts list.
+export const deleteNotification = (id) =>
+  supabase.from('notifications').delete().eq('id', id);
