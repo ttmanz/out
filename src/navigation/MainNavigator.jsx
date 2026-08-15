@@ -157,15 +157,20 @@ const MainNavigator = () => {
       // Authorise the realtime socket so RLS delivers this user's rows
       supabase.realtime.setAuth(session.access_token);
 
-      getUnreadNotificationCount(uid).then(({ count }) => setNotifCount(count ?? 0));
+      // Refetch on any change, not just INSERT — an UPDATE is what marks
+      // notifications read (opening the Alerts tab), and the badge needs to
+      // clear then too, not just grow on new ones.
+      const refreshNotifCount = () =>
+        getUnreadNotificationCount(uid).then(({ count }) => setNotifCount(count ?? 0));
+      refreshNotifCount();
       notifChannel = supabase
         .channel('notif_badge')
         .on('postgres_changes', {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${uid}`,
-        }, () => setNotifCount((c) => c + 1))
+        }, refreshNotifCount)
         .subscribe();
 
       // Messages badge: refetch on any message change I can see — INSERTs bump
