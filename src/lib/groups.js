@@ -74,3 +74,6 @@ export const createGroupPostReply = (userId, postId, message) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteGroupPost = (id) =>
   supabase.from('group_posts').delete().eq('id', id);
+
+export const deleteGroupPost = (id, userId) =>
+  supabase.from('group_posts').delete().eq('id', id).eq('user_id', userId);

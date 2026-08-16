@@ -45,6 +45,9 @@ export const createStory = (userId, { text, photo_url, video_url, link_url = nul
 export const adminDeleteStory = (id) =>
   supabase.from('stories').delete().eq('id', id);
 
+export const deleteStory = (id, userId) =>
+  supabase.from('stories').delete().eq('id', id).eq('user_id', userId);
+
 export const getStoryReplies = (storyId) =>
   supabase
     .from('story_replies')

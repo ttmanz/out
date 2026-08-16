@@ -7,7 +7,7 @@ export const getActivityEvents = (category) => {
   startOfToday.setHours(0, 0, 0, 0);
   return supabase
     .from('activity_events')
-    .select('id, category, name, venue, event_date, description, photo_url')
+    .select('id, category, name, venue, event_date, description, photo_url, created_by')
     .eq('category', category)
     .eq('active', true)
     .or(`event_date.is.null,event_date.gte.${startOfToday.toISOString()}`)
@@ -33,6 +33,9 @@ export const createActivityEventReply = (userId, eventId, message) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteActivityEvent = (id) =>
   supabase.from('activity_events').delete().eq('id', id);
+
+export const deleteActivityEvent = (id, userId) =>
+  supabase.from('activity_events').delete().eq('id', id).eq('created_by', userId);
 
 // Maps an event_date to the nearest WHEN_OPTIONS key for pre-filling the post form.
 // Always resolves to one of the 3 reachable Happening buckets — never falls through

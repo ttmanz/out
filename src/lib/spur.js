@@ -44,3 +44,6 @@ export const createSpurReply = (userId, spurId, message) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteSpurPost = (id) =>
   supabase.from('spur_posts').delete().eq('id', id);
+
+export const deleteSpurPost = (id, userId) =>
+  supabase.from('spur_posts').delete().eq('id', id).eq('user_id', userId);

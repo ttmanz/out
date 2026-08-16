@@ -36,3 +36,6 @@ export const createHappeningReply = (userId, happeningId, message) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteHappening = (id) =>
   supabase.from('happenings').delete().eq('id', id);
+
+export const deleteHappening = (id, userId) =>
+  supabase.from('happenings').delete().eq('id', id).eq('user_id', userId);

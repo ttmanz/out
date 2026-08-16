@@ -6,7 +6,7 @@ export const getEvents = (category) => {
   startOfToday.setHours(0, 0, 0, 0);
   return supabase
     .from('events')
-    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at')
+    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at, created_by')
     .eq('category', category)
     .eq('active', true)
     .or(`event_date.is.null,event_date.gte.${startOfToday.toISOString()}`)
@@ -32,3 +32,6 @@ export const createEventReply = (userId, eventId, message) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteEvent = (id) =>
   supabase.from('events').delete().eq('id', id);
+
+export const deleteEvent = (id, userId) =>
+  supabase.from('events').delete().eq('id', id).eq('created_by', userId);

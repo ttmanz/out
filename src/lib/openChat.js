@@ -50,3 +50,6 @@ export const blockUserFromPost = (postId, blockedUserId, blockedBy) =>
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteOpenChatPost = (id) =>
   supabase.from('open_chat_posts').delete().eq('id', id);
+
+export const deleteOpenChatPost = (id, userId) =>
+  supabase.from('open_chat_posts').delete().eq('id', id).eq('user_id', userId);

@@ -33,6 +33,9 @@ export const getMessages = (conversationId) =>
 export const sendMessage = (conversationId, senderId, content) =>
   supabase.from('messages').insert({ conversation_id: conversationId, sender_id: senderId, content });
 
+export const deleteMessage = (id, senderId) =>
+  supabase.from('messages').delete().eq('id', id).eq('sender_id', senderId);
+
 // Unread incoming messages across all my conversations — feeds the Messages tab badge
 export const getUnreadMessageCount = (userId) =>
   supabase
