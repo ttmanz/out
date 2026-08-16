@@ -153,7 +153,11 @@ export const addNotificationResponseListener = (navigationRef) =>
   Notifications.addNotificationResponseReceivedListener(async (response) => {
     const data = response.notification.request.content.data ?? {};
     const route = await resolveNotificationRoute(data);
-    if (data.notification_id) deleteNotification(data.notification_id);
+    if (data.notification_id) {
+      deleteNotification(data.notification_id).then(({ error }) => {
+        if (error) console.error('deleteNotification failed', error);
+      });
+    }
     if (route && navigationRef.isReady()) {
       navigationRef.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }

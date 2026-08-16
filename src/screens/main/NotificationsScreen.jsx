@@ -43,7 +43,10 @@ const NotificationsScreen = ({ navigation }) => {
   const handlePress = async (item) => {
     const route = await resolveNotificationRoute(item, t('notifications.someone'));
     setNotifications((prev) => prev.filter((n) => n.id !== item.id));
-    deleteNotification(item.id);
+    // supabase-js query builders are lazy — they don't fire until awaited/then'd
+    deleteNotification(item.id).then(({ error }) => {
+      if (error) console.error('deleteNotification failed', error);
+    });
     if (route) {
       navigation.navigate(route.stack, { screen: route.screen, params: route.params, initial: route.initial });
     }
