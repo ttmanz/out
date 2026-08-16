@@ -10,7 +10,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { supabase } from '../../lib/supabase';
-import { getMessages, sendMessage, markMessagesRead } from '../../lib/messages';
+import { getMessages, sendMessage, markMessagesRead, deleteMessage } from '../../lib/messages';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
 import Avatar from '../../components/common/Avatar';
@@ -97,6 +97,24 @@ const ChatScreen = ({ navigation, route }) => {
     setSending(false);
   };
 
+  const handleDeleteMessage = (messageId) => {
+    Alert.alert(
+      t('common.deletePostTitle'),
+      t('common.deletePostDesc'),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: async () => {
+            const { error } = await deleteMessage(messageId, myId);
+            if (!error) setMessages((prev) => prev.filter((m) => m.id !== messageId));
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -133,11 +151,15 @@ const ChatScreen = ({ navigation, route }) => {
           onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
           renderItem={({ item }) => {
             const isMe = item.sender_id === myId;
+            const Bubble = isMe ? TouchableOpacity : View;
             return (
               <View style={[styles.bubbleWrap, isMe ? styles.bubbleWrapMe : styles.bubbleWrapThem]}>
-                <View style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubbleThem]}>
+                <Bubble
+                  style={[styles.bubble, isMe ? styles.bubbleMe : styles.bubbleThem]}
+                  {...(isMe ? { onLongPress: () => handleDeleteMessage(item.id), activeOpacity: 0.7 } : {})}
+                >
                   <Text style={[styles.bubbleText, isMe && styles.bubbleTextMe]}>{item.content}</Text>
-                </View>
+                </Bubble>
                 <Text style={[styles.bubbleTime, isMe && styles.bubbleTimeMe]}>
                   {formatAgo(item.created_at)}
                 </Text>

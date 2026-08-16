@@ -10,7 +10,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import {
   getGroupPosts, getFriendGroupPosts, createGroupPost,
-  getGroupPostReplies, createGroupPostReply, adminDeleteGroupPost,
+  getGroupPostReplies, createGroupPostReply, adminDeleteGroupPost, deleteGroupPost,
 } from '../../lib/groups';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -174,7 +174,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
     await load();
   };
 
-  const handleAdminDelete = (postId) => {
+  const handleDelete = (postId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -184,7 +184,9 @@ const GroupDetailScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteGroupPost(postId);
+            const { error } = isOwn
+              ? await deleteGroupPost(postId, userId)
+              : await adminDeleteGroupPost(postId);
             if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
           },
         },
@@ -221,8 +223,8 @@ const GroupDetailScreen = ({ navigation, route }) => {
               <Text style={styles.adminDeleteBtnText}>🚩</Text>
             </TouchableOpacity>
           )}
-          {isAdmin && (
-            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
+          {(isAdmin || item.user_id === userId) && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleDelete(item.id, item.user_id === userId)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
             </TouchableOpacity>
           )}

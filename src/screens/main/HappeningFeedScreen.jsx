@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getHappenings, getHappeningReplies, createHappeningReply, adminDeleteHappening } from '../../lib/happenings';
+import { getHappenings, getHappeningReplies, createHappeningReply, adminDeleteHappening, deleteHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -38,8 +38,8 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
             <Text style={styles.adminDeleteBtnText}>🚩</Text>
           </TouchableOpacity>
         )}
-        {isAdmin && (
-          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
+        {(isAdmin || item.user_id === myId) && (
+          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id, item.user_id === myId)}>
             <Text style={styles.adminDeleteBtnText}>🗑</Text>
           </TouchableOpacity>
         )}
@@ -185,7 +185,7 @@ const HappeningFeedScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleAdminDelete = (happeningId) => {
+  const handleAdminDelete = (happeningId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -195,7 +195,9 @@ const HappeningFeedScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteHappening(happeningId);
+            const { error } = isOwn
+              ? await deleteHappening(happeningId, profile.id)
+              : await adminDeleteHappening(happeningId);
             if (!error) setHappenings((prev) => prev.filter((h) => h.id !== happeningId));
           },
         },

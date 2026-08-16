@@ -10,7 +10,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import {
   getOpenChatPosts, getOpenChatReplies, createOpenChatReply,
-  getPostBlocks, blockUserFromPost, adminDeleteOpenChatPost,
+  getPostBlocks, blockUserFromPost, adminDeleteOpenChatPost, deleteOpenChatPost,
 } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
@@ -137,7 +137,7 @@ const OpenChatScreen = ({ navigation, route }) => {
     });
   };
 
-  const handleAdminDelete = (postId) => {
+  const handleDelete = (postId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -147,7 +147,9 @@ const OpenChatScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteOpenChatPost(postId);
+            const { error } = isOwn
+              ? await deleteOpenChatPost(postId, userId)
+              : await adminDeleteOpenChatPost(postId);
             if (error) Alert.alert(t('common.error'), t('common.error'));
             else setPosts((prev) => prev.filter((p) => p.id !== postId));
           },
@@ -183,8 +185,8 @@ const OpenChatScreen = ({ navigation, route }) => {
               <Text style={styles.adminDeleteBtnText}>🚩</Text>
             </TouchableOpacity>
           )}
-          {isAdmin && (
-            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
+          {(isAdmin || isOwner) && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleDelete(item.id, isOwner)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
             </TouchableOpacity>
           )}

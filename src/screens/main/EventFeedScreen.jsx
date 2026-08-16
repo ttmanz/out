@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getEvents, getEventReplies, createEventReply, adminDeleteEvent } from '../../lib/events';
+import { getEvents, getEventReplies, createEventReply, adminDeleteEvent, deleteEvent } from '../../lib/events';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -42,8 +42,8 @@ const EventCard = ({ event, t, replyState, onToggleReplies, onReplyTextChange, o
               <Text style={styles.adminDeleteBtnText}>🚩</Text>
             </TouchableOpacity>
           )}
-          {isAdmin && (
-            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(event.id)}>
+          {(isAdmin || event.created_by === myId) && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(event.id, event.created_by === myId)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
             </TouchableOpacity>
           )}
@@ -160,7 +160,7 @@ const EventFeedScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleAdminDelete = (eventId) => {
+  const handleAdminDelete = (eventId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -170,7 +170,9 @@ const EventFeedScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteEvent(eventId);
+            const { error } = isOwn
+              ? await deleteEvent(eventId, profile.id)
+              : await adminDeleteEvent(eventId);
             if (!error) setEvents((prev) => prev.filter((e) => e.id !== eventId));
           },
         },

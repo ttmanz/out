@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getActivityEvents, deriveWhen, getActivityEventReplies, createActivityEventReply, adminDeleteActivityEvent } from '../../lib/activityEvents';
+import { getActivityEvents, deriveWhen, getActivityEventReplies, createActivityEventReply, adminDeleteActivityEvent, deleteActivityEvent } from '../../lib/activityEvents';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -41,8 +41,8 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
               <Text style={styles.adminDeleteBtnText}>🚩</Text>
             </TouchableOpacity>
           )}
-          {isAdmin && (
-            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(event.id)}>
+          {(isAdmin || event.created_by === myId) && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(event.id, event.created_by === myId)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
             </TouchableOpacity>
           )}
@@ -169,7 +169,7 @@ const ActivityEventsScreen = ({ navigation, route }) => {
     });
   };
 
-  const handleAdminDelete = (eventId) => {
+  const handleAdminDelete = (eventId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -179,7 +179,9 @@ const ActivityEventsScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteActivityEvent(eventId);
+            const { error } = isOwn
+              ? await deleteActivityEvent(eventId, profile.id)
+              : await adminDeleteActivityEvent(eventId);
             if (!error) setEvents((prev) => prev.filter((e) => e.id !== eventId));
           },
         },

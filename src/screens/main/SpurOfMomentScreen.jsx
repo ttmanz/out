@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getSpurPosts, getSpurReplies, createSpurReply, adminDeleteSpurPost } from '../../lib/spur';
+import { getSpurPosts, getSpurReplies, createSpurReply, adminDeleteSpurPost, deleteSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -82,7 +82,7 @@ const SpurOfMomentScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleAdminDelete = (postId) => {
+  const handleDelete = (postId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -92,7 +92,9 @@ const SpurOfMomentScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteSpurPost(postId);
+            const { error } = isOwn
+              ? await deleteSpurPost(postId, profile.id)
+              : await adminDeleteSpurPost(postId);
             if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
           },
         },
@@ -124,8 +126,8 @@ const SpurOfMomentScreen = ({ navigation, route }) => {
               <Text style={styles.adminDeleteBtnText}>🚩</Text>
             </TouchableOpacity>
           )}
-          {isAdmin && (
-            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(item.id)}>
+          {(isAdmin || item.user_id === profile?.id) && (
+            <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleDelete(item.id, item.user_id === profile?.id)}>
               <Text style={styles.adminDeleteBtnText}>🗑</Text>
             </TouchableOpacity>
           )}

@@ -10,7 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import {
-  getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory,
+  getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory, deleteStory,
   getStoryReplies, createStoryReply,
 } from '../../lib/stories';
 import { getSession } from '../../lib/auth';
@@ -86,8 +86,8 @@ const StoryCard = ({
             <Text style={styles.adminDeleteBtnText}>🚩</Text>
           </TouchableOpacity>
         )}
-        {isAdmin && (
-          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id)}>
+        {(isAdmin || item.user_id === myId) && (
+          <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => onAdminDelete(item.id, item.user_id === myId)}>
             <Text style={styles.adminDeleteBtnText}>🗑</Text>
           </TouchableOpacity>
         )}
@@ -226,7 +226,7 @@ const StoryFeedScreen = ({ navigation, route }) => {
     }
   };
 
-  const handleAdminDelete = (storyId) => {
+  const handleAdminDelete = (storyId, isOwn) => {
     Alert.alert(
       t('common.deletePostTitle'),
       t('common.deletePostDesc'),
@@ -236,7 +236,9 @@ const StoryFeedScreen = ({ navigation, route }) => {
           text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteStory(storyId);
+            const { error } = isOwn
+              ? await deleteStory(storyId, profile.id)
+              : await adminDeleteStory(storyId);
             if (!error) setStories((prev) => prev.filter((s) => s.id !== storyId));
           },
         },

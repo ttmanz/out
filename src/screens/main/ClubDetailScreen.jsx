@@ -8,7 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
-  getClubPosts, createClubPost, adminDeleteClubPost, adminDeleteClub,
+  getClubPosts, createClubPost, adminDeleteClubPost, deleteClubPost, adminDeleteClub,
   getClubBlocks, blockClubMember, unblockClubMember, suspendClub, unsuspendClub,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
@@ -146,7 +146,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
     await load();
   };
 
-  const handleAdminDelete = (postId) => {
+  const handleDeletePost = (postId, isOwn) => {
     Alert.alert(
       'Delete post?',
       'This will permanently remove this post.',
@@ -156,7 +156,9 @@ const ClubDetailScreen = ({ navigation, route }) => {
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            const { error } = await adminDeleteClubPost(postId);
+            const { error } = isOwn
+              ? await deleteClubPost(postId, userId)
+              : await adminDeleteClubPost(postId);
             if (!error) setPosts((prev) => prev.filter((p) => p.id !== postId));
           },
         },
@@ -453,8 +455,8 @@ const ClubDetailScreen = ({ navigation, route }) => {
                       <Text style={styles.memberName}>{p.profiles?.full_name ?? 'Unknown'}</Text>
                       <Text style={styles.postTime}>{formatAgo(p.created_at)}</Text>
                     </View>
-                    {isSiteAdmin && (
-                      <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleAdminDelete(p.id)}>
+                    {(isSiteAdmin || p.user_id === userId) && (
+                      <TouchableOpacity style={styles.adminDeleteBtn} onPress={() => handleDeletePost(p.id, p.user_id === userId)}>
                         <Text style={styles.adminDeleteBtnText}>🗑</Text>
                       </TouchableOpacity>
                     )}
