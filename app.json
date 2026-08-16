@@ -29,6 +29,7 @@
     },
     "android": {
       "package": "com.ttleisureland.findmee",
+      "googleServicesFile": "./google-services.json",
       "versionCode": 1,
       "softwareKeyboardLayoutMode": "resize",
       "config": {

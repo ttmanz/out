@@ -40,6 +40,9 @@ google-service-account.json
 # Firebase Admin SDK key (FCM push credentials) — never commit this
 firebase-adminsdk.json
 
+# Firebase client config for Android FCM registration — never commit this
+google-services.json
+
 # typescript
 *.tsbuildinfo
 
