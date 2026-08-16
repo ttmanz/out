@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
@@ -25,18 +26,26 @@ const FEATURES = [
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
 const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85}>
-    <View style={styles.watermarkContainer}>
-      <Text style={styles.watermark}>{watermark}</Text>
-    </View>
-    <View style={styles.iconRing}>
-      <Text style={styles.cardEmoji}>{emoji}</Text>
-    </View>
-    <View style={styles.textWrap}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardDesc}>{description}</Text>
-    </View>
-    <Text style={styles.chevron}>›</Text>
+  <TouchableOpacity style={styles.cardStroke} onPress={onPress} activeOpacity={0.85}>
+    <LinearGradient
+      colors={['#a0782b', '#634816', '#4c3916']}
+      locations={[0, 0.5, 1]}
+      start={{ x: 1, y: 0.5 }}
+      end={{ x: 0, y: 0.5 }}
+      style={styles.card}
+    >
+      <View style={styles.watermarkContainer}>
+        <Text style={styles.watermark}>{watermark}</Text>
+      </View>
+      <View style={styles.iconRing}>
+        <Text style={styles.cardEmoji}>{emoji}</Text>
+      </View>
+      <View style={styles.textWrap}>
+        <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={styles.cardDesc}>{description}</Text>
+      </View>
+      <Text style={styles.chevron}>›</Text>
+    </LinearGradient>
   </TouchableOpacity>
 );
 
@@ -207,22 +216,24 @@ const styles = StyleSheet.create({
   profileBannerCta: { fontSize: 12, color: COLORS.textMuted },
 
   cards: { paddingHorizontal: 28 },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.cardGold,
-    borderRadius: 26,
-    paddingHorizontal: 16,
-    paddingVertical: 18,
+  cardStroke: {
+    borderRadius: 31,
+    padding: 5,
+    backgroundColor: '#fad67c',
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.cardGoldBorder,
-    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 26,
+    paddingHorizontal: 16,
+    paddingVertical: 18,
+    overflow: 'hidden',
   },
   watermarkContainer: {
     position: 'absolute',
