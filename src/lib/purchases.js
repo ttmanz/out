@@ -19,6 +19,7 @@ export const configurePurchases = (userId) => {
 export const logOutPurchases = async () => {
   if (!configured) return;
   await Purchases.logOut();
+  configured = false;
 };
 
 // Members and venue owners are offered different prices for the same

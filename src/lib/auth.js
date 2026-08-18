@@ -41,8 +41,7 @@ export const signUpWithEmail = (email, password, fullName) =>
     options: { data: { full_name: fullName } },
   });
 
-export const signInWithGoogle   = () => oauthSignIn('google');
-export const signInWithFacebook = () => oauthSignIn('facebook');
+export const signInWithGoogle = () => oauthSignIn('google');
 
 // Native Sign in with Apple — verifies the identity token's signature
 // against Apple's public keys directly, no browser redirect or
@@ -80,6 +79,8 @@ export const deleteAccount = async () => {
   const { data, error } = await supabase.functions.invoke('delete-account', { method: 'POST' });
   if (error) return { error };
   if (!data?.deleted) return { error: new Error(data?.error ?? 'Account deletion failed') };
+  await unregisterPushToken();
+  await logOutPurchases();
   await supabase.auth.signOut();
   return { error: null };
 };
