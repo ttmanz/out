@@ -26,25 +26,33 @@ const FEATURES = [
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
 const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
-  <TouchableOpacity style={styles.cardStroke} onPress={onPress} activeOpacity={0.85}>
+  <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
     <LinearGradient
       colors={['#a0782b', '#634816', '#4c3916']}
       locations={[0, 0.5, 1]}
-      start={{ x: 1, y: 0.5 }}
-      end={{ x: 0, y: 0.5 }}
-      style={styles.card}
+      start={{ x: 0, y: 0.5 }}
+      end={{ x: 1, y: 0.5 }}
+      style={styles.cardStroke}
     >
-      <View style={styles.watermarkContainer}>
-        <Text style={styles.watermark}>{watermark}</Text>
-      </View>
-      <View style={styles.iconRing}>
-        <Text style={styles.cardEmoji}>{emoji}</Text>
-      </View>
-      <View style={styles.textWrap}>
-        <Text style={styles.cardTitle}>{title}</Text>
-        <Text style={styles.cardDesc}>{description}</Text>
-      </View>
-      <Text style={styles.chevron}>›</Text>
+      <LinearGradient
+        colors={['#a0782b', '#634816', '#4c3916']}
+        locations={[0, 0.5, 1]}
+        start={{ x: 1, y: 0.5 }}
+        end={{ x: 0, y: 0.5 }}
+        style={styles.card}
+      >
+        <View style={styles.watermarkContainer}>
+          <Text style={styles.watermark}>{watermark}</Text>
+        </View>
+        <View style={styles.iconRing}>
+          <Text style={styles.cardEmoji}>{emoji}</Text>
+        </View>
+        <View style={styles.textWrap}>
+          <Text style={styles.cardTitle}>{title}</Text>
+          <Text style={styles.cardDesc}>{description}</Text>
+        </View>
+        <Text style={styles.chevron}>›</Text>
+      </LinearGradient>
     </LinearGradient>
   </TouchableOpacity>
 );
@@ -217,9 +225,8 @@ const styles = StyleSheet.create({
 
   cards: { paddingHorizontal: 28 },
   cardStroke: {
-    borderRadius: 31,
-    padding: 5,
-    backgroundColor: '#fad67c',
+    borderRadius: 28,
+    padding: 2,
     marginBottom: 14,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
