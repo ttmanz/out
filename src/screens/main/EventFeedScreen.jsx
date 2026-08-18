@@ -1,14 +1,17 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
-  ActivityIndicator, RefreshControl, Image, TextInput, Alert,
+  ActivityIndicator, RefreshControl, Image, TextInput, Alert, Share,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
-import { getEvents, getEventReplies, createEventReply, adminDeleteEvent, deleteEvent } from '../../lib/events';
+import {
+  getEvents, getEventReplies, createEventReply, adminDeleteEvent, deleteEvent,
+  getMyEventLikes, getMyEventSaves, likeEvent, unlikeEvent, saveEvent, unsaveEvent,
+} from '../../lib/events';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
@@ -26,7 +29,10 @@ const formatEventDate = (iso) => {
   });
 };
 
-const EventCard = ({ event, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
+const EventCard = ({
+  event, t, replyState, onToggleReplies, onReplyTextChange, onSendReply, isAdmin, onAdminDelete, myId, onReport,
+  isLiked, isSaved, likeCount, onToggleLike, onToggleSave, onShare,
+}) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
@@ -59,11 +65,26 @@ const EventCard = ({ event, t, replyState, onToggleReplies, onReplyTextChange, o
           <LinkPreviewCard url={event.link_url} title={event.link_title} image={event.link_image} domain={event.link_domain} />
         )}
 
-        <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(event.id)}>
-          <Text style={styles.replyToggleText}>
-            💬 {ps.expanded ? t('happenings.hideReplies') : `${t('happenings.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onToggleLike(event)}>
+            <Text style={[styles.actionText, isLiked && styles.actionTextLiked]}>
+              {isLiked ? '❤️' : '🤍'} {likeCount > 0 ? likeCount : ''}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onShare(event)}>
+            <Text style={styles.actionText}>📤</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onToggleSave(event)}>
+            <Text style={[styles.actionText, isSaved && styles.actionTextSaved]}>
+              {isSaved ? '🔖' : '📑'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => onToggleReplies(event.id)}>
+            <Text style={styles.actionText}>
+              💬 {ps.expanded ? t('happenings.hideReplies') : `${t('happenings.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {ps.expanded && (
           <View style={styles.repliesSection}>
@@ -122,19 +143,90 @@ const EventFeedScreen = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
+  const [likedIds, setLikedIds] = useState(new Set());
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [likeCounts, setLikeCounts] = useState({});
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
     const { data, error } = await getEvents(category);
-    if (!error) setEvents(data ?? []);
+    const rows = data ?? [];
+    if (!error) setEvents(rows);
     setLoading(false);
     setRefreshing(false);
-  }, [category]);
+
+    const counts = {};
+    rows.forEach((e) => { counts[e.id] = e.event_likes?.[0]?.count ?? 0; });
+    setLikeCounts(counts);
+
+    const uid = profile?.id;
+    const ids = rows.map((e) => e.id);
+    if (uid && ids.length) {
+      const [{ data: likes }, { data: saves }] = await Promise.all([
+        getMyEventLikes(uid, ids),
+        getMyEventSaves(uid, ids),
+      ]);
+      setLikedIds(new Set((likes ?? []).map((l) => l.event_id)));
+      setSavedIds(new Set((saves ?? []).map((s) => s.event_id)));
+    } else {
+      setLikedIds(new Set());
+      setSavedIds(new Set());
+    }
+  }, [category, profile?.id]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
   const patchReply = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const handleToggleLike = async (event) => {
+    const uid = profile?.id;
+    if (!uid) return;
+    const wasLiked = likedIds.has(event.id);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(event.id); else next.add(event.id);
+      return next;
+    });
+    setLikeCounts((prev) => ({ ...prev, [event.id]: (prev[event.id] ?? 0) + (wasLiked ? -1 : 1) }));
+    const { error } = wasLiked ? await unlikeEvent(event.id, uid) : await likeEvent(event.id, uid);
+    if (error) {
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(event.id); else next.delete(event.id);
+        return next;
+      });
+      setLikeCounts((prev) => ({ ...prev, [event.id]: (prev[event.id] ?? 0) + (wasLiked ? 1 : -1) }));
+    }
+  };
+
+  const handleToggleSave = async (event) => {
+    const uid = profile?.id;
+    if (!uid) return;
+    const wasSaved = savedIds.has(event.id);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(event.id); else next.add(event.id);
+      return next;
+    });
+    const { error } = wasSaved ? await unsaveEvent(event.id, uid) : await saveEvent(event.id, uid);
+    if (error) {
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(event.id); else next.delete(event.id);
+        return next;
+      });
+    }
+  };
+
+  const handleShare = async (event) => {
+    const message = [event.name, event.link_url].filter(Boolean).join('\n\n') || t('common.shareFallback');
+    try {
+      await Share.share({ message });
+    } catch {
+      // user dismissed the share sheet
+    }
+  };
 
   const toggleReplies = async (eventId) => {
     const cur = replyState[eventId] ?? {};
@@ -219,6 +311,12 @@ const EventFeedScreen = ({ navigation, route }) => {
             isAdmin={isAdmin}
             onAdminDelete={handleAdminDelete}
             myId={profile?.id}
+            isLiked={likedIds.has(item.id)}
+            isSaved={savedIds.has(item.id)}
+            likeCount={likeCounts[item.id] ?? 0}
+            onToggleLike={handleToggleLike}
+            onToggleSave={handleToggleSave}
+            onShare={handleShare}
             onReport={(ev) => setReportTarget({ targetType: 'event', targetId: ev.id, reportedUserId: ev.created_by ?? null, contentExcerpt: ev.name })}
           />
         )}
@@ -256,8 +354,11 @@ const styles = StyleSheet.create({
   eventName: { fontSize: 17, fontWeight: '800', color: COLORS.text, marginBottom: 6 },
   eventMeta: { fontSize: 13, color: COLORS.textLight, marginBottom: 3 },
   eventDesc: { fontSize: 13, color: COLORS.text, lineHeight: 18, marginTop: 6, marginBottom: 4 },
-  replyToggle: { alignSelf: 'flex-start', marginTop: 12 },
-  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 4 },
+  actionBtn: { paddingVertical: 4, paddingRight: 14 },
+  actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionTextLiked: { color: '#E05520' },
+  actionTextSaved: { color: COLORS.primary },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   replyRow: { marginBottom: 10 },

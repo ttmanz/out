@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, Image, ScrollView, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl, TextInput, Alert,
+  ActivityIndicator, RefreshControl, TextInput, Alert, Share,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import { ROUTES } from '../../constants/routes';
 import {
   getGroupPosts, getFriendGroupPosts, createGroupPost,
   getGroupPostReplies, createGroupPostReply, adminDeleteGroupPost, deleteGroupPost,
+  getMyGroupPostLikes, getMyGroupPostSaves, likeGroupPost, unlikeGroupPost, saveGroupPost, unsaveGroupPost,
 } from '../../lib/groups';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -40,6 +41,9 @@ const GroupDetailScreen = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
+  const [likedIds, setLikedIds] = useState(new Set());
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [likeCounts, setLikeCounts] = useState({});
   const firstRender = useRef(true);
   const scrollViewRef = useRef(null);
   const cardYPositions = useRef({});
@@ -58,9 +62,27 @@ const GroupDetailScreen = ({ navigation, route }) => {
     const res = mode === 'friends' && uid
       ? await getFriendGroupPosts(groupId, uid)
       : await getGroupPosts(groupId);
-    if (!res.error) setPosts(res.data ?? []);
+    const rows = res.data ?? [];
+    if (!res.error) setPosts(rows);
     setLoading(false);
     setRefreshing(false);
+
+    const counts = {};
+    rows.forEach((p) => { counts[p.id] = p.group_post_likes?.[0]?.count ?? 0; });
+    setLikeCounts(counts);
+
+    const ids = rows.map((p) => p.id);
+    if (uid && ids.length) {
+      const [{ data: likes }, { data: saves }] = await Promise.all([
+        getMyGroupPostLikes(uid, ids),
+        getMyGroupPostSaves(uid, ids),
+      ]);
+      setLikedIds(new Set((likes ?? []).map((l) => l.post_id)));
+      setSavedIds(new Set((saves ?? []).map((s) => s.post_id)));
+    } else {
+      setLikedIds(new Set());
+      setSavedIds(new Set());
+    }
   }, [groupId, mode]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -94,6 +116,53 @@ const GroupDetailScreen = ({ navigation, route }) => {
 
   const patchPost = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const handleToggleLike = async (post) => {
+    if (!userId) return;
+    const wasLiked = likedIds.has(post.id);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(post.id); else next.add(post.id);
+      return next;
+    });
+    setLikeCounts((prev) => ({ ...prev, [post.id]: (prev[post.id] ?? 0) + (wasLiked ? -1 : 1) }));
+    const { error } = wasLiked ? await unlikeGroupPost(post.id, userId) : await likeGroupPost(post.id, userId);
+    if (error) {
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(post.id); else next.delete(post.id);
+        return next;
+      });
+      setLikeCounts((prev) => ({ ...prev, [post.id]: (prev[post.id] ?? 0) + (wasLiked ? 1 : -1) }));
+    }
+  };
+
+  const handleToggleSave = async (post) => {
+    if (!userId) return;
+    const wasSaved = savedIds.has(post.id);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(post.id); else next.add(post.id);
+      return next;
+    });
+    const { error } = wasSaved ? await unsaveGroupPost(post.id, userId) : await saveGroupPost(post.id, userId);
+    if (error) {
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(post.id); else next.delete(post.id);
+        return next;
+      });
+    }
+  };
+
+  const handleShare = async (post) => {
+    const message = [post.text, post.link_url].filter(Boolean).join('\n\n') || t('common.shareFallback');
+    try {
+      await Share.share({ message });
+    } catch {
+      // user dismissed the share sheet
+    }
+  };
 
   const toggleReplies = async (postId) => {
     const cur = replyState[postId] ?? {};
@@ -234,13 +303,28 @@ const GroupDetailScreen = ({ navigation, route }) => {
         {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
         {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
 
-        <TouchableOpacity style={styles.replyToggle} onPress={() => toggleReplies(item.id)}>
-          <Text style={styles.replyToggleText}>
-            💬 {ps.expanded
-              ? t('openGroups.hideReplies')
-              : `${t('openGroups.viewReplies')}${ps.replies != null ? ` (${replyCount})` : ''}`}
-          </Text>
-        </TouchableOpacity>
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => handleToggleLike(item)}>
+            <Text style={[styles.actionText, likedIds.has(item.id) && styles.actionTextLiked]}>
+              {likedIds.has(item.id) ? '❤️' : '🤍'} {(likeCounts[item.id] ?? 0) > 0 ? likeCounts[item.id] : ''}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => handleShare(item)}>
+            <Text style={styles.actionText}>📤</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => handleToggleSave(item)}>
+            <Text style={[styles.actionText, savedIds.has(item.id) && styles.actionTextSaved]}>
+              {savedIds.has(item.id) ? '🔖' : '📑'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionBtn} onPress={() => toggleReplies(item.id)}>
+            <Text style={styles.actionText}>
+              💬 {ps.expanded
+                ? t('openGroups.hideReplies')
+                : `${t('openGroups.viewReplies')}${ps.replies != null ? ` (${replyCount})` : ''}`}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {ps.expanded && (
           <View style={styles.repliesSection}>
@@ -406,8 +490,11 @@ const styles = StyleSheet.create({
   adminDeleteBtnText: { fontSize: 18 },
   postText: { fontSize: 14, color: COLORS.text, lineHeight: 20, marginBottom: 8 },
   postPhoto: { width: '100%', height: 180, borderRadius: 10, marginBottom: 8 },
-  replyToggle: { alignSelf: 'flex-start' },
-  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  actionBtn: { paddingVertical: 4, paddingRight: 14 },
+  actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionTextLiked: { color: '#E05520' },
+  actionTextSaved: { color: COLORS.primary },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   replyRow: { marginBottom: 12 },

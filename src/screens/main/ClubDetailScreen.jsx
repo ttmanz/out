@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
-  ActivityIndicator, Alert, RefreshControl, TextInput,
+  ActivityIndicator, Alert, RefreshControl, TextInput, Share,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,6 +10,7 @@ import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
   getClubPosts, createClubPost, adminDeleteClubPost, deleteClubPost, adminDeleteClub,
   getClubBlocks, blockClubMember, unblockClubMember, suspendClub, unsuspendClub,
+  getMyClubPostLikes, getMyClubPostSaves, likeClubPost, unlikeClubPost, saveClubPost, unsaveClubPost,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -41,6 +42,9 @@ const ClubDetailScreen = ({ navigation, route }) => {
   const [posting, setPosting] = useState(false);
   const [blocked, setBlocked] = useState([]);
   const [blockActionId, setBlockActionId] = useState(null);
+  const [likedIds, setLikedIds] = useState(new Set());
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [likeCounts, setLikeCounts] = useState({});
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -55,8 +59,26 @@ const ClubDetailScreen = ({ navigation, route }) => {
     setUserId(uid);
     setClub(clubRes.data ?? null);
     setMembers(membersRes.data ?? []);
-    setPosts(postsRes.data ?? []);
+    const posts_ = postsRes.data ?? [];
+    setPosts(posts_);
     setBlocked(blocksRes.data ?? []);
+
+    const counts = {};
+    posts_.forEach((p) => { counts[p.id] = p.club_post_likes?.[0]?.count ?? 0; });
+    setLikeCounts(counts);
+
+    const postIds = posts_.map((p) => p.id);
+    if (uid && postIds.length) {
+      const [{ data: likes }, { data: saves }] = await Promise.all([
+        getMyClubPostLikes(uid, postIds),
+        getMyClubPostSaves(uid, postIds),
+      ]);
+      setLikedIds(new Set((likes ?? []).map((l) => l.post_id)));
+      setSavedIds(new Set((saves ?? []).map((s) => s.post_id)));
+    } else {
+      setLikedIds(new Set());
+      setSavedIds(new Set());
+    }
 
     const statusRes = uid ? await getMemberStatus(clubId, uid) : { data: null };
     setMyStatus(statusRes.data?.status ?? null);
@@ -144,6 +166,53 @@ const ClubDetailScreen = ({ navigation, route }) => {
     setPostPhotoUri(null);
     setLinkPreview(null);
     await load();
+  };
+
+  const handleToggleLike = async (post) => {
+    if (!userId) return;
+    const wasLiked = likedIds.has(post.id);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(post.id); else next.add(post.id);
+      return next;
+    });
+    setLikeCounts((prev) => ({ ...prev, [post.id]: (prev[post.id] ?? 0) + (wasLiked ? -1 : 1) }));
+    const { error } = wasLiked ? await unlikeClubPost(post.id, userId) : await likeClubPost(post.id, userId);
+    if (error) {
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(post.id); else next.delete(post.id);
+        return next;
+      });
+      setLikeCounts((prev) => ({ ...prev, [post.id]: (prev[post.id] ?? 0) + (wasLiked ? 1 : -1) }));
+    }
+  };
+
+  const handleToggleSave = async (post) => {
+    if (!userId) return;
+    const wasSaved = savedIds.has(post.id);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(post.id); else next.add(post.id);
+      return next;
+    });
+    const { error } = wasSaved ? await unsaveClubPost(post.id, userId) : await saveClubPost(post.id, userId);
+    if (error) {
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(post.id); else next.delete(post.id);
+        return next;
+      });
+    }
+  };
+
+  const handleShare = async (post) => {
+    const message = [post.text, post.link_url].filter(Boolean).join('\n\n') || 'Check out this post on Find-Mee!';
+    try {
+      await Share.share({ message });
+    } catch {
+      // user dismissed the share sheet
+    }
   };
 
   const handleDeletePost = (postId, isOwn) => {
@@ -466,6 +535,21 @@ const ClubDetailScreen = ({ navigation, route }) => {
                   {!!p.link_url && (
                     <LinkPreviewCard url={p.link_url} title={p.link_title} image={p.link_image} domain={p.link_domain} />
                   )}
+                  <View style={styles.actionsRow}>
+                    <TouchableOpacity style={styles.actionBtn} onPress={() => handleToggleLike(p)}>
+                      <Text style={[styles.actionText, likedIds.has(p.id) && styles.actionTextLiked]}>
+                        {likedIds.has(p.id) ? '❤️' : '🤍'} {(likeCounts[p.id] ?? 0) > 0 ? likeCounts[p.id] : ''}
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionBtn} onPress={() => handleShare(p)}>
+                      <Text style={styles.actionText}>📤</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionBtn} onPress={() => handleToggleSave(p)}>
+                      <Text style={[styles.actionText, savedIds.has(p.id) && styles.actionTextSaved]}>
+                        {savedIds.has(p.id) ? '🔖' : '📑'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))
             }
@@ -602,6 +686,11 @@ const styles = StyleSheet.create({
   postPhoto: { width: '100%', height: 180, borderRadius: 10 },
   adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4 },
   adminDeleteBtnText: { fontSize: 18 },
+  actionsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 4 },
+  actionBtn: { paddingVertical: 4, paddingRight: 14 },
+  actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionTextLiked: { color: '#E05520' },
+  actionTextSaved: { color: COLORS.primary },
 });
 
 export default ClubDetailScreen;
