@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
-import { getSession } from '../../lib/auth';
+import { getSession, signOut } from '../../lib/auth';
 import { getSubscriptionPlans, subscriptionStatus, planPriceFor } from '../../lib/subscription';
 import { getOfferings, purchasePackage, restorePurchases } from '../../lib/purchases';
 import { useUser } from '../../contexts/UserContext';
@@ -170,6 +170,12 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
           }
         </TouchableOpacity>
 
+        {standalone && (
+          <TouchableOpacity style={styles.restoreBtn} onPress={signOut}>
+            <Text style={styles.signOutText}>{t('auth.logout')}</Text>
+          </TouchableOpacity>
+        )}
+
         <Text style={styles.footerNote}>{t('subscription.footerNote')}</Text>
         <Text style={styles.legalNote}>
           {t('subscription.legalNote')}{' '}
@@ -230,6 +236,7 @@ const styles = StyleSheet.create({
   currentBadgeText: { color: '#2ecc71', fontWeight: '700', fontSize: 14 },
   restoreBtn: { alignItems: 'center', marginTop: 20, paddingVertical: 8 },
   restoreBtnText: { color: COLORS.primary, fontWeight: '700', fontSize: 14 },
+  signOutText: { color: COLORS.textMuted, fontWeight: '600', fontSize: 13 },
   footerNote: {
     fontSize: 11, color: COLORS.textMuted, textAlign: 'center',
     marginTop: 10, lineHeight: 17, paddingHorizontal: 16,

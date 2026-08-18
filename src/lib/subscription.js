@@ -51,8 +51,24 @@ const hasActivePlan = (profile) => {
   return new Date(profile.subscription_expires_at) > new Date();
 };
 
+// Venue accounts always pay, regardless of the site-wide mode below — the
+// only thing they get is a trial window from signup, timed off
+// profiles.created_at since there's no separate trial-start column.
+const VENUE_TRIAL_DAYS = 30;
+const isBypassRole = (profile) => profile?.is_staff || profile?.is_admin;
+
+const venueDaysLeftInTrial = (profile) => {
+  if (!profile?.created_at) return 0;
+  const trialEnd = new Date(profile.created_at).getTime() + VENUE_TRIAL_DAYS * 24 * 60 * 60 * 1000;
+  return Math.max(0, Math.ceil((trialEnd - Date.now()) / (1000 * 60 * 60 * 24)));
+};
+
 // Resolves whether a member can currently post/write to a given feature,
 // given the global subscription mode + that feature's paid flag.
+//
+// Venue accounts (account_type = 'venue_owner') are handled first and are
+// entirely independent of the modes below: 30-day trial from signup, then
+// an active subscription is required for the whole app, full stop.
 //
 // - 'free': everyone has full access everywhere.
 // - 'free_except': everyone has full access, except the features on the
@@ -63,7 +79,13 @@ const hasActivePlan = (profile) => {
 //   for everything — no subscription, no posting anywhere, full stop.
 //   The per-feature paid list does not apply in this mode.
 export const canAccessFeature = (featureKey, { profile, settings, featureMap, unlockedFeatureKeys }) => {
-  if (profile?.is_staff) return { allowed: true };
+  if (isBypassRole(profile)) return { allowed: true };
+
+  if (profile?.account_type === 'venue_owner') {
+    if (hasActivePlan(profile)) return { allowed: true };
+    if (venueDaysLeftInTrial(profile) > 0) return { allowed: true };
+    return { allowed: false, venueLocked: true };
+  }
 
   const mode = settings?.mode ?? 'free';
 
@@ -84,15 +106,25 @@ export const canAccessFeature = (featureKey, { profile, settings, featureMap, un
 };
 
 export const subscriptionStatus = (profile) => {
-  // v1: all users get full access — billing integrated in v2
-  if (profile?.is_staff) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: 0, planId: 'staff' };
+  if (isBypassRole(profile)) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: 0, planId: 'staff' };
+
   const plan = profile?.subscription_plan;
   const expires = profile?.subscription_expires_at;
-  if (plan && expires) {
-    const msLeft = new Date(expires) - new Date();
-    const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-    const isOnTrial = plan === 'free_trial';
-    return { hasAccess: true, isOnTrial, isActive: !isOnTrial, daysLeft: Math.max(0, daysLeft), planId: plan };
+  const activePlan = hasActivePlan(profile);
+  const activeDaysLeft = activePlan
+    ? Math.max(0, Math.ceil((new Date(expires) - new Date()) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  if (profile?.account_type === 'venue_owner') {
+    if (activePlan) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: activeDaysLeft, planId: plan };
+    const trialDaysLeft = venueDaysLeftInTrial(profile);
+    if (trialDaysLeft > 0) return { hasAccess: true, isOnTrial: true, isActive: false, daysLeft: trialDaysLeft, planId: null };
+    return { hasAccess: false, isOnTrial: false, isActive: false, daysLeft: 0, planId: null };
   }
+
+  // Regular members: v1 free rollout — full access either way, this just
+  // reports plan status for display (e.g. "Current Plan" badge if they
+  // happen to have one).
+  if (activePlan) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: activeDaysLeft, planId: plan };
   return { hasAccess: true, isOnTrial: false, isActive: false, daysLeft: 0, planId: null };
 };

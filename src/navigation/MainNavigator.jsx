@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase';
 import { getSession } from '../lib/auth';
 import { getUnreadNotificationCount } from '../lib/notifications';
 import { getUnreadMessageCount } from '../lib/messages';
+import { subscriptionStatus } from '../lib/subscription';
 import { useUser } from '../contexts/UserContext';
 
 import HomeScreen from '../screens/main/HomeScreen';
@@ -147,9 +148,13 @@ const MainNavigator = () => {
 
   const isRestricted = profile?.status === 'restricted';
   const isAdmin = profile?.is_admin === true;
+  // Venue accounts get a 30-day trial from signup, then need an active
+  // subscription for the whole app — checked here, before any tab/stack is
+  // reachable, rather than per-feature like the member-facing modes.
+  const venueLocked = profile?.account_type === 'venue_owner' && !subscriptionStatus(profile).hasAccess;
 
   useEffect(() => {
-    if (isRestricted) return;
+    if (isRestricted || venueLocked) return;
     let notifChannel, msgChannel;
     getSession().then(({ data: { session } }) => {
       if (!session) return;
@@ -186,7 +191,11 @@ const MainNavigator = () => {
     return () => {
       [notifChannel, msgChannel].forEach((c) => c && supabase.removeChannel(c));
     };
-  }, [isRestricted]);
+  }, [isRestricted, venueLocked]);
+
+  if (venueLocked) {
+    return <SubscriptionScreen standalone />;
+  }
 
   return (
     <Tab.Navigator
