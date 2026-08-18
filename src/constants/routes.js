@@ -50,4 +50,5 @@ export const ROUTES = {
   ADMIN_ADS: 'AdminAds',
   ADMIN_ACCESS_CONTROL: 'AdminAccessControl',
   ADMIN_REPORTS: 'AdminReports',
+  ADMIN_FLAGGED_MEMBERS: 'AdminFlaggedMembers',
 };

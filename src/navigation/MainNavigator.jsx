@@ -61,6 +61,7 @@ import AdminOpenGroupsScreen from '../screens/main/AdminOpenGroupsScreen';
 import AdminAdsScreen from '../screens/main/AdminAdsScreen';
 import AdminAccessControlScreen from '../screens/main/AdminAccessControlScreen';
 import AdminReportsScreen from '../screens/main/AdminReportsScreen';
+import AdminFlaggedMembersScreen from '../screens/main/AdminFlaggedMembersScreen';
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
@@ -137,6 +138,7 @@ const AdminStackNavigator = () => (
     <AdminStack.Screen name={ROUTES.ADMIN_ADS} component={AdminAdsScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_ACCESS_CONTROL} component={AdminAccessControlScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_REPORTS} component={AdminReportsScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_FLAGGED_MEMBERS} component={AdminFlaggedMembersScreen} />
   </AdminStack.Navigator>
 );
 
