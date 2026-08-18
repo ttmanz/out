@@ -6,10 +6,44 @@ import { COLORS } from '../../constants/colors';
 import { fetchLinkPreview } from '../../lib/linkPreview';
 import LinkPreviewCard from './LinkPreviewCard';
 
+// A pasted link is overwhelmingly the common case (vs. typed character by
+// character), so a single paste delivers the complete URL in one
+// onChangeText call — we can recognize that synchronously and register it
+// right away, no debounce needed.
+const LOOKS_LIKE_URL = /^https?:\/\/[^\s]+\.[a-z]{2,}([/?#].*)?$/i;
+
+const extractDomain = (url) => {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
 // preview = { url, title, image, domain, description } | null
 const LinkInput = ({ preview, onPreviewChange }) => {
   const [url, setUrl] = useState(preview?.url ?? '');
   const [fetching, setFetching] = useState(false);
+
+  const fetchAndUpgrade = async (trimmed) => {
+    setFetching(true);
+    const result = await fetchLinkPreview(trimmed);
+    setFetching(false);
+    if (result) onPreviewChange({ url: trimmed, ...result });
+  };
+
+  // A complete-looking link is auto-attached to the post immediately as a
+  // plain link, then silently upgraded to a rich card (title/image) once
+  // the fetch resolves — so the link is never lost just because the user
+  // didn't wait for or tap "Preview".
+  const handleChangeText = (value) => {
+    setUrl(value);
+    const trimmed = value.trim();
+    if (LOOKS_LIKE_URL.test(trimmed)) {
+      onPreviewChange({ url: trimmed, domain: extractDomain(trimmed) });
+      fetchAndUpgrade(trimmed);
+    }
+  };
 
   const handlePreview = async () => {
     const trimmed = url.trim();
@@ -20,7 +54,8 @@ const LinkInput = ({ preview, onPreviewChange }) => {
     if (result) {
       onPreviewChange({ url: trimmed, ...result });
     } else {
-      Alert.alert('No preview', 'Could not load a preview for that link. Check the URL and try again.');
+      onPreviewChange({ url: trimmed, domain: extractDomain(trimmed) });
+      Alert.alert('No preview', 'Posting the plain link instead — could not load a rich preview for it.');
     }
   };
 
@@ -46,7 +81,7 @@ const LinkInput = ({ preview, onPreviewChange }) => {
         <TextInput
           style={styles.input}
           value={url}
-          onChangeText={setUrl}
+          onChangeText={handleChangeText}
           placeholder="Paste a link (YouTube, Spotify…)"
           placeholderTextColor={COLORS.textMuted}
           autoCapitalize="none"
