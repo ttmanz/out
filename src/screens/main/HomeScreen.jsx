@@ -28,7 +28,7 @@ const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
   <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
     <LinearGradient
-      colors={['#d09c38', '#815e1d', '#634a1d']}
+      colors={['#d09c38', '#bb8b34', '#aa7f2f']}
       locations={[0, 0.5, 1]}
       start={{ x: 0, y: 0.5 }}
       end={{ x: 1, y: 0.5 }}
