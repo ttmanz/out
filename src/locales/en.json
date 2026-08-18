@@ -331,6 +331,7 @@
     "replyPlaceholder": "Write a reply...",
     "send": "Send",
     "errorReplyFailed": "Could not send your reply. Please try again.",
+    "shareFallback": "Check out this story on Find-Mee!",
     "errors": {
       "contentRequired": "Please add some text or a photo/video",
       "mediaFailed": "Media upload failed. Post without media?",

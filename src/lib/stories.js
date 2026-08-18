@@ -8,7 +8,7 @@ const expiryThreshold = () =>
 export const getStories = () =>
   supabase
     .from('stories')
-    .select('*, profiles:user_id(full_name, photo_url)')
+    .select('*, profiles:user_id(full_name, photo_url), story_likes(count)')
     .gte('created_at', expiryThreshold())
     .order('created_at', { ascending: false })
     .limit(50);
@@ -31,7 +31,7 @@ export const getFriendStories = async (userId) => {
 
   return supabase
     .from('stories')
-    .select('*, profiles:user_id(full_name, photo_url)')
+    .select('*, profiles:user_id(full_name, photo_url), story_likes(count)')
     .in('user_id', ids)
     .gte('created_at', expiryThreshold())
     .order('created_at', { ascending: false })
@@ -57,3 +57,23 @@ export const getStoryReplies = (storyId) =>
 
 export const createStoryReply = (userId, storyId, message) =>
   supabase.from('story_replies').insert({ story_id: storyId, user_id: userId, message });
+
+// Which of the given stories the user has liked/saved — scoped to the
+// currently-loaded batch rather than their full history.
+export const getMyStoryLikes = (userId, storyIds) =>
+  supabase.from('story_likes').select('story_id').eq('user_id', userId).in('story_id', storyIds);
+
+export const getMyStorySaves = (userId, storyIds) =>
+  supabase.from('story_saves').select('story_id').eq('user_id', userId).in('story_id', storyIds);
+
+export const likeStory = (storyId, userId) =>
+  supabase.from('story_likes').insert({ story_id: storyId, user_id: userId });
+
+export const unlikeStory = (storyId, userId) =>
+  supabase.from('story_likes').delete().eq('story_id', storyId).eq('user_id', userId);
+
+export const saveStory = (storyId, userId) =>
+  supabase.from('story_saves').insert({ story_id: storyId, user_id: userId });
+
+export const unsaveStory = (storyId, userId) =>
+  supabase.from('story_saves').delete().eq('story_id', storyId).eq('user_id', userId);

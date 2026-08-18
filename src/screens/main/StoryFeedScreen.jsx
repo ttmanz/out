@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import {
   View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, RefreshControl, Alert, TextInput,
+  ActivityIndicator, RefreshControl, Alert, TextInput, Share,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useVideoPlayer, VideoView } from 'expo-video';
@@ -12,6 +12,7 @@ import { ROUTES } from '../../constants/routes';
 import {
   getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory, deleteStory,
   getStoryReplies, createStoryReply,
+  getMyStoryLikes, getMyStorySaves, likeStory, unlikeStory, saveStory, unsaveStory,
 } from '../../lib/stories';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
@@ -48,7 +49,7 @@ const StoryVideo = ({ uri }) => {
 const StoryCard = ({
   item, navigation, isAdmin, onAdminDelete, t,
   replyState, onToggleReplies, onReplyTextChange, onEmojiInsert, onSendReply,
-  myId, onReport,
+  myId, onReport, isLiked, isSaved, likeCount, onToggleLike, onToggleSave, onShare,
 }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
@@ -101,11 +102,26 @@ const StoryCard = ({
         <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />
       )}
 
-      <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(item.id)}>
-        <Text style={styles.replyToggleText}>
-          💬 {ps.expanded ? t('stories.hideReplies') : `${t('stories.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.actionsRow}>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => onToggleLike(item)}>
+          <Text style={[styles.actionText, isLiked && styles.actionTextLiked]}>
+            {isLiked ? '❤️' : '🤍'} {likeCount > 0 ? likeCount : ''}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => onShare(item)}>
+          <Text style={styles.actionText}>📤</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => onToggleSave(item)}>
+          <Text style={[styles.actionText, isSaved && styles.actionTextSaved]}>
+            {isSaved ? '🔖' : '📑'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionBtn} onPress={() => onToggleReplies(item.id)}>
+          <Text style={styles.actionText}>
+            💬 {ps.expanded ? t('stories.hideReplies') : `${t('stories.viewReplies')} ${ps.replies ? `(${replyCount})` : ''}`}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {ps.expanded && (
         <View style={styles.repliesSection}>
@@ -163,6 +179,9 @@ const StoryFeedScreen = ({ navigation, route }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [replyState, setReplyState] = useState({});
   const [reportTarget, setReportTarget] = useState(null);
+  const [likedIds, setLikedIds] = useState(new Set());
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [likeCounts, setLikeCounts] = useState({});
   const firstRender = useRef(true);
   const flatListRef = useRef(null);
   const focusedRef = useRef(false);
@@ -175,9 +194,27 @@ const StoryFeedScreen = ({ navigation, route }) => {
     const res = mode === 'friends' && uid
       ? await getFriendStories(uid)
       : await getStories();
-    if (!res.error) setStories(res.data ?? []);
+    const data = res.data ?? [];
+    if (!res.error) setStories(data);
     setLoading(false);
     setRefreshing(false);
+
+    const counts = {};
+    data.forEach((s) => { counts[s.id] = s.story_likes?.[0]?.count ?? 0; });
+    setLikeCounts(counts);
+
+    const ids = data.map((s) => s.id);
+    if (uid && ids.length) {
+      const [{ data: likes }, { data: saves }] = await Promise.all([
+        getMyStoryLikes(uid, ids),
+        getMyStorySaves(uid, ids),
+      ]);
+      setLikedIds(new Set((likes ?? []).map((l) => l.story_id)));
+      setSavedIds(new Set((saves ?? []).map((sv) => sv.story_id)));
+    } else {
+      setLikedIds(new Set());
+      setSavedIds(new Set());
+    }
   }, [mode]);
 
   // Initial load + re-load when screen is focused
@@ -201,6 +238,55 @@ const StoryFeedScreen = ({ navigation, route }) => {
 
   const patchReply = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const handleToggleLike = async (story) => {
+    const uid = profile?.id;
+    if (!uid) return;
+    const wasLiked = likedIds.has(story.id);
+    setLikedIds((prev) => {
+      const next = new Set(prev);
+      if (wasLiked) next.delete(story.id); else next.add(story.id);
+      return next;
+    });
+    setLikeCounts((prev) => ({ ...prev, [story.id]: (prev[story.id] ?? 0) + (wasLiked ? -1 : 1) }));
+    const { error } = wasLiked ? await unlikeStory(story.id, uid) : await likeStory(story.id, uid);
+    if (error) {
+      setLikedIds((prev) => {
+        const next = new Set(prev);
+        if (wasLiked) next.add(story.id); else next.delete(story.id);
+        return next;
+      });
+      setLikeCounts((prev) => ({ ...prev, [story.id]: (prev[story.id] ?? 0) + (wasLiked ? 1 : -1) }));
+    }
+  };
+
+  const handleToggleSave = async (story) => {
+    const uid = profile?.id;
+    if (!uid) return;
+    const wasSaved = savedIds.has(story.id);
+    setSavedIds((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(story.id); else next.add(story.id);
+      return next;
+    });
+    const { error } = wasSaved ? await unsaveStory(story.id, uid) : await saveStory(story.id, uid);
+    if (error) {
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(story.id); else next.delete(story.id);
+        return next;
+      });
+    }
+  };
+
+  const handleShare = async (story) => {
+    const message = [story.text, story.link_url].filter(Boolean).join('\n\n') || t('stories.shareFallback');
+    try {
+      await Share.share({ message });
+    } catch {
+      // user dismissed the share sheet — nothing to do
+    }
+  };
 
   const toggleReplies = async (storyId) => {
     const cur = replyState[storyId] ?? {};
@@ -309,6 +395,12 @@ const StoryFeedScreen = ({ navigation, route }) => {
             onEmojiInsert={(id, e) => patchReply(id, { text: (replyState[id]?.text ?? '') + e })}
             onSendReply={handleReply}
             myId={profile?.id}
+            isLiked={likedIds.has(item.id)}
+            isSaved={savedIds.has(item.id)}
+            likeCount={likeCounts[item.id] ?? 0}
+            onToggleLike={handleToggleLike}
+            onToggleSave={handleToggleSave}
+            onShare={handleShare}
             onReport={(it) => setReportTarget({
               targetType: 'story',
               targetId: it.id,
@@ -370,8 +462,11 @@ const styles = StyleSheet.create({
   expiryTextWarn: { color: '#E05520' },
   storyText: { fontSize: 15, color: COLORS.text, lineHeight: 22, marginBottom: 10 },
   media: { width: '100%', height: 200, borderRadius: 10, marginTop: 4 },
-  replyToggle: { alignSelf: 'flex-start', marginTop: 10 },
-  replyToggleText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 4 },
+  actionBtn: { paddingVertical: 4, paddingRight: 14 },
+  actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
+  actionTextLiked: { color: '#E05520' },
+  actionTextSaved: { color: COLORS.primary },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
   replyRow: { marginBottom: 10 },
