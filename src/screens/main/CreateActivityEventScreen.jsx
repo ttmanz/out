@@ -13,6 +13,7 @@ import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
+import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
@@ -27,6 +28,7 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
   const [pickerMode, setPickerMode] = useState('date');
   const [description, setDescription] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
+  const [linkPreview, setLinkPreview] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const formatDate = (date) =>
@@ -87,6 +89,10 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
       event_date: eventDate ? eventDate.toISOString() : null,
       description: description.trim() || null,
       photo_url,
+      link_url: linkPreview?.url ?? null,
+      link_title: linkPreview?.title ?? null,
+      link_image: linkPreview?.image ?? null,
+      link_domain: linkPreview?.domain ?? null,
     });
     setSaving(false);
     if (error) {
@@ -165,6 +171,9 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
             />
             <EmojiPickerButton onEmojiSelected={(e) => setDescription((prev) => prev + e)} style={styles.emojiBtn} />
           </View>
+
+          <Text style={styles.label}>{t('activityEvents.labelLink')}</Text>
+          <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <Text style={styles.label}>{t('activityEvents.labelPhoto')}</Text>
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />

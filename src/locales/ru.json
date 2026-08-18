@@ -471,6 +471,7 @@
     "tapToSetDate": "Нажмите, чтобы выбрать дату и время",
     "labelDescription": "Описание",
     "placeholderDescription": "Детали, которые стоит знать",
+    "labelLink": "Ссылка (необязательно)",
     "labelPhoto": "Фото",
     "submit": "Опубликовать",
     "postFailed": "Не удалось опубликовать событие"

@@ -16,6 +16,7 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
+import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 
 const formatEventDate = (iso) => {
   if (!iso) return null;
@@ -53,6 +54,9 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
         )}
         {!!event.description && (
           <Text style={styles.eventDesc}>{event.description}</Text>
+        )}
+        {!!event.link_url && (
+          <LinkPreviewCard url={event.link_url} title={event.link_title} image={event.link_image} domain={event.link_domain} />
         )}
         <TouchableOpacity style={styles.goingBtn} onPress={onGoing} activeOpacity={0.8}>
           <Text style={styles.goingBtnText}>I'm Going →</Text>

@@ -469,6 +469,7 @@
     "tapToSetDate": "Tap to set date & time",
     "labelDescription": "Description",
     "placeholderDescription": "Any details worth knowing?",
+    "labelLink": "Link (optional)",
     "labelPhoto": "Photo",
     "submit": "Post Event",
     "postFailed": "Could not post the event"
