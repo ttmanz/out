@@ -22,3 +22,18 @@ export const setStaffStatus = (userId, is_staff) =>
 // Self-declared at profile setup; admin can override afterward
 export const setAccountType = (userId, account_type) =>
   supabase.from('profiles').update({ account_type }).eq('id', userId).select('id');
+
+// Members (not venue_owner) with more than 2 AI-flagged commercial posts
+// this calendar month — flagged_commercial_members is a view that does
+// the count/having filtering server-side.
+export const getFlaggedCommercialMembers = () =>
+  supabase.from('flagged_commercial_members').select('*').order('flag_count', { ascending: false });
+
+// The specific posts behind one member's flag count, for review.
+export const getCommercialFlagsForUser = (userId) =>
+  supabase
+    .from('commercial_post_flags')
+    .select('*')
+    .eq('user_id', userId)
+    .gte('created_at', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString())
+    .order('created_at', { ascending: false });
