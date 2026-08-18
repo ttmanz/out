@@ -9,6 +9,7 @@
     "cancel": "Cancel",
     "photoUploadFailed": "Photo upload failed. Please try again.",
     "shareFallback": "Check out this post on Find-Mee!",
+    "noSavedItems": "You haven't saved anything here yet — tap the bookmark on a post to keep it.",
     "delete": "Delete",
     "deletePostTitle": "Delete post?",
     "deletePostDesc": "This will permanently remove this post."

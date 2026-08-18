@@ -95,3 +95,19 @@ export const saveGroupPost = (postId, userId) =>
 
 export const unsaveGroupPost = (postId, userId) =>
   supabase.from('group_post_saves').delete().eq('post_id', postId).eq('user_id', userId);
+
+export const getSavedGroupPosts = async (groupId, userId) => {
+  const { data: saves, error: saveErr } = await supabase
+    .from('group_post_saves')
+    .select('post_id')
+    .eq('user_id', userId);
+  if (saveErr) return { data: [], error: saveErr };
+  const ids = (saves ?? []).map((s) => s.post_id);
+  if (!ids.length) return { data: [], error: null };
+  return supabase
+    .from('group_posts')
+    .select('*, profiles:user_id(full_name, photo_url), group_post_likes(count)')
+    .eq('group_id', groupId)
+    .in('id', ids)
+    .order('created_at', { ascending: false });
+};

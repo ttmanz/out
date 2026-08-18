@@ -88,6 +88,34 @@ export const saveClubPost = (postId, userId) =>
 export const unsaveClubPost = (postId, userId) =>
   supabase.from('club_post_saves').delete().eq('post_id', postId).eq('user_id', userId);
 
+export const getClubPostReplies = (postId) =>
+  supabase
+    .from('club_post_replies')
+    .select('*, profiles:user_id(full_name)')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+
+export const createClubPostReply = (userId, postId, message) =>
+  supabase.from('club_post_replies').insert({ post_id: postId, user_id: userId, message });
+
+// Two-step (fetch save ids, then fetch posts) rather than a single embedded
+// join — keeps the "scoped to this club" filter simple and unambiguous.
+export const getSavedClubPosts = async (clubId, userId) => {
+  const { data: saves, error: saveErr } = await supabase
+    .from('club_post_saves')
+    .select('post_id')
+    .eq('user_id', userId);
+  if (saveErr) return { data: [], error: saveErr };
+  const ids = (saves ?? []).map((s) => s.post_id);
+  if (!ids.length) return { data: [], error: null };
+  return supabase
+    .from('club_posts')
+    .select('*, profiles:user_id(full_name, photo_url), club_post_likes(count)')
+    .eq('club_id', clubId)
+    .in('id', ids)
+    .order('created_at', { ascending: false });
+};
+
 // Admin-only: RLS restricts this to profiles.is_admin = true.
 // club_members and club_posts cascade on delete, so this also removes them.
 export const adminDeleteClub = (id) =>

@@ -53,3 +53,19 @@ export const saveEvent = (eventId, userId) =>
 
 export const unsaveEvent = (eventId, userId) =>
   supabase.from('event_saves').delete().eq('event_id', eventId).eq('user_id', userId);
+
+export const getSavedEvents = async (category, userId) => {
+  const { data: saves, error: saveErr } = await supabase
+    .from('event_saves')
+    .select('event_id')
+    .eq('user_id', userId);
+  if (saveErr) return { data: [], error: saveErr };
+  const ids = (saves ?? []).map((s) => s.event_id);
+  if (!ids.length) return { data: [], error: null };
+  return supabase
+    .from('events')
+    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at, created_by, event_likes(count)')
+    .eq('category', category)
+    .in('id', ids)
+    .order('event_date', { ascending: true });
+};
