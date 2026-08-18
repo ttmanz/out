@@ -14,13 +14,13 @@ import BackHeader from '../../components/common/BackHeader';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createOpenChatPost } from '../../lib/openChat';
 import { getSession } from '../../lib/auth';
-import { moderateContent } from '../../lib/moderation';
+import { moderateContent, checkAndFlagIfCommercial } from '../../lib/moderation';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 
 const CreateOpenChatScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { canAccessFeature } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const [message, setMessage] = useState('');
   const [venue, setVenue] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -77,6 +77,7 @@ const CreateOpenChatScreen = ({ navigation }) => {
     if (error) {
       Alert.alert(t('common.error'), t('openChat.errors.postFailed'));
     } else {
+      checkAndFlagIfCommercial(profile, 'open_chat', null, message.trim());
       navigation.goBack();
     }
   };

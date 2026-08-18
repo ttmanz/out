@@ -16,10 +16,11 @@ import { createStory } from '../../lib/stories';
 import { uploadStoryMedia } from '../../lib/storage';
 import { getSession } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
+import { checkAndFlagIfCommercial } from '../../lib/moderation';
 
 const CreateStoryScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { canAccessFeature } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const [text, setText] = useState('');
   const [mediaUri, setMediaUri] = useState(null);
   const [linkPreview, setLinkPreview] = useState(null);
@@ -63,8 +64,12 @@ const CreateStoryScreen = ({ navigation }) => {
       link_domain: linkPreview?.domain ?? null,
     });
     setLoading(false);
-    if (error) Alert.alert(t('common.error'), t('stories.errors.postFailed'));
-    else navigation.goBack();
+    if (error) {
+      Alert.alert(t('common.error'), t('stories.errors.postFailed'));
+    } else {
+      checkAndFlagIfCommercial(profile, 'story', null, text.trim());
+      navigation.goBack();
+    }
   };
 
   return (

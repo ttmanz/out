@@ -13,6 +13,7 @@ import {
   getMyClubPostLikes, getMyClubPostSaves, likeClubPost, unlikeClubPost, saveClubPost, unsaveClubPost,
   getSavedClubPosts, getClubPostReplies, createClubPostReply,
 } from '../../lib/clubs';
+import { checkAndFlagIfCommercial } from '../../lib/moderation';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { formatAgo } from '../../utils/format';
@@ -174,6 +175,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
       Alert.alert('Error', 'Could not post.');
       return;
     }
+    checkAndFlagIfCommercial(profile, 'club_post', null, text);
     setPostText('');
     setPostPhotoUri(null);
     setLinkPreview(null);

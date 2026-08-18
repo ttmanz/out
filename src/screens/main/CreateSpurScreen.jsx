@@ -18,10 +18,11 @@ import { createSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
+import { checkAndFlagIfCommercial } from '../../lib/moderation';
 
 const CreateSpurScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { canAccessFeature } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
   const [photoUri, setPhotoUri] = useState(null);
@@ -72,6 +73,7 @@ const CreateSpurScreen = ({ navigation }) => {
     if (error) {
       Alert.alert(t('common.error'), t('spur.errors.postFailed'));
     } else {
+      checkAndFlagIfCommercial(profile, 'spur', null, `${venue.trim()} ${activity.trim()}`);
       navigation.goBack();
     }
   };

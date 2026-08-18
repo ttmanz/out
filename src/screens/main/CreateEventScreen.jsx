@@ -12,6 +12,7 @@ import { createEvent } from '../../lib/events';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
+import { checkAndFlagIfCommercial } from '../../lib/moderation';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import LinkInput from '../../components/common/LinkInput';
 import BackHeader from '../../components/common/BackHeader';
@@ -19,7 +20,7 @@ import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const CreateEventScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { canAccessFeature } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const { category } = route.params;
   const [name, setName] = useState('');
   const [venue, setVenue] = useState('');
@@ -98,6 +99,7 @@ const CreateEventScreen = ({ navigation, route }) => {
     if (error) {
       Alert.alert(t('common.error'), t('events.postFailed'));
     } else {
+      checkAndFlagIfCommercial(profile, 'event', null, [name, description].filter(Boolean).join('\n'));
       navigation.goBack();
     }
   };

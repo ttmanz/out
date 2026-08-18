@@ -16,10 +16,11 @@ import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
+import { checkAndFlagIfCommercial } from '../../lib/moderation';
 
 const CreateHappeningScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
-  const { canAccessFeature } = useUser();
+  const { canAccessFeature, profile } = useUser();
   const prefill = route.params?.prefill ?? {};
   const [title, setTitle] = useState(prefill.title ?? '');
   const [venue, setVenue] = useState(prefill.venue ?? '');
@@ -71,6 +72,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
     if (error) {
       Alert.alert(t('common.error'), t('happenings.errors.postFailed'));
     } else {
+      checkAndFlagIfCommercial(profile, 'happening', null, [title, description].filter(Boolean).join('\n'));
       navigation.goBack();
     }
   };

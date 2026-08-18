@@ -16,7 +16,7 @@ import {
 } from '../../lib/groups';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
-import { moderateContent } from '../../lib/moderation';
+import { moderateContent, checkAndFlagIfCommercial } from '../../lib/moderation';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
 import AdBanner from '../../components/common/AdBanner';
@@ -240,6 +240,7 @@ const GroupDetailScreen = ({ navigation, route }) => {
       Alert.alert(t('common.error'), t('openGroups.errors.postFailed'));
       return;
     }
+    checkAndFlagIfCommercial(profile, 'group_post', null, text);
     setPostText('');
     setPostPhotoUri(null);
     setLinkPreview(null);
