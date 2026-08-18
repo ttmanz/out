@@ -66,7 +66,7 @@ export const UserProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, [refreshProfile, refreshAccessConfig]);
 
-  const { hasAccess } = subscriptionStatus(profile);
+  const { hasAccess } = subscriptionStatus(profile, settings);
 
   const checkFeature = useCallback(
     (featureKey) => canAccessFeature(featureKey, { profile, settings, featureMap, unlockedFeatureKeys }),

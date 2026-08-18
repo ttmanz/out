@@ -14,6 +14,7 @@ const MODES = [
   { key: 'free', label: 'Free', desc: 'Everyone has full access to every feature' },
   { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, any active subscription (any plan, any tier) is required just to post anywhere. The paid list below does not apply in this mode.' },
   { key: 'free_except', label: 'Free Except…', desc: 'Everyone keeps full access, except the paid list below, which costs its one-off price unless subscribed (any plan, any tier)' },
+  { key: 'free_except_venue', label: 'Free Except Venue', desc: 'Members keep full free access, same as "Free". Venue accounts get a 30-day trial from signup, then need an active subscription for the whole app. The paid list below does not apply in this mode.' },
 ];
 
 const AdminAccessControlScreen = ({ navigation }) => {
@@ -144,7 +145,9 @@ const AdminAccessControlScreen = ({ navigation }) => {
             ? 'Right now: any subscribed member (any tier) posts these for free. Without a subscription, the one-off price applies.'
             : mode === 'free_until'
               ? 'Not in effect while mode is "Free Until" — after the date passes, any subscription alone unlocks everything, including these.'
-              : 'Not in effect while mode is "Free" — nobody is charged for anything.'}
+              : mode === 'free_except_venue'
+                ? 'Not in effect while mode is "Free Except Venue" — members stay free, venue accounts are gated by subscription alone.'
+                : 'Not in effect while mode is "Free" — nobody is charged for anything.'}
         </Text>
 
         {features.map((f) => (

@@ -51,9 +51,9 @@ const hasActivePlan = (profile) => {
   return new Date(profile.subscription_expires_at) > new Date();
 };
 
-// Venue accounts always pay, regardless of the site-wide mode below — the
-// only thing they get is a trial window from signup, timed off
-// profiles.created_at since there's no separate trial-start column.
+// Under 'free_except_venue' mode only: venue accounts get a trial window
+// from signup (timed off profiles.created_at, since there's no separate
+// trial-start column), then need an active subscription for the whole app.
 const VENUE_TRIAL_DAYS = 30;
 const isBypassRole = (profile) => profile?.is_staff || profile?.is_admin;
 
@@ -63,12 +63,13 @@ const venueDaysLeftInTrial = (profile) => {
   return Math.max(0, Math.ceil((trialEnd - Date.now()) / (1000 * 60 * 60 * 24)));
 };
 
+const isVenueLocked = (profile) =>
+  profile?.account_type === 'venue_owner'
+  && !hasActivePlan(profile)
+  && venueDaysLeftInTrial(profile) <= 0;
+
 // Resolves whether a member can currently post/write to a given feature,
 // given the global subscription mode + that feature's paid flag.
-//
-// Venue accounts (account_type = 'venue_owner') are handled first and are
-// entirely independent of the modes below: 30-day trial from signup, then
-// an active subscription is required for the whole app, full stop.
 //
 // - 'free': everyone has full access everywhere.
 // - 'free_except': everyone has full access, except the features on the
@@ -78,16 +79,18 @@ const venueDaysLeftInTrial = (profile) => {
 //   any active subscription (any plan, any tier) is the sole requirement
 //   for everything — no subscription, no posting anywhere, full stop.
 //   The per-feature paid list does not apply in this mode.
+// - 'free_except_venue': members have full free access, same as 'free'.
+//   Venue accounts (account_type = 'venue_owner') get a 30-day trial from
+//   signup, then need an active subscription for the whole app.
 export const canAccessFeature = (featureKey, { profile, settings, featureMap, unlockedFeatureKeys }) => {
   if (isBypassRole(profile)) return { allowed: true };
 
-  if (profile?.account_type === 'venue_owner') {
-    if (hasActivePlan(profile)) return { allowed: true };
-    if (venueDaysLeftInTrial(profile) > 0) return { allowed: true };
-    return { allowed: false, venueLocked: true };
-  }
-
   const mode = settings?.mode ?? 'free';
+
+  if (mode === 'free_except_venue') {
+    if (profile?.account_type !== 'venue_owner') return { allowed: true };
+    return isVenueLocked(profile) ? { allowed: false, venueLocked: true } : { allowed: true };
+  }
 
   if (mode === 'free') return { allowed: true };
 
@@ -105,7 +108,7 @@ export const canAccessFeature = (featureKey, { profile, settings, featureMap, un
   return { allowed: false, featureKey, price: feature.one_off_price };
 };
 
-export const subscriptionStatus = (profile) => {
+export const subscriptionStatus = (profile, settings) => {
   if (isBypassRole(profile)) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: 0, planId: 'staff' };
 
   const plan = profile?.subscription_plan;
@@ -115,14 +118,15 @@ export const subscriptionStatus = (profile) => {
     ? Math.max(0, Math.ceil((new Date(expires) - new Date()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  if (profile?.account_type === 'venue_owner') {
+  const mode = settings?.mode ?? 'free';
+  if (mode === 'free_except_venue' && profile?.account_type === 'venue_owner') {
     if (activePlan) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: activeDaysLeft, planId: plan };
     const trialDaysLeft = venueDaysLeftInTrial(profile);
     if (trialDaysLeft > 0) return { hasAccess: true, isOnTrial: true, isActive: false, daysLeft: trialDaysLeft, planId: null };
     return { hasAccess: false, isOnTrial: false, isActive: false, daysLeft: 0, planId: null };
   }
 
-  // Regular members: v1 free rollout — full access either way, this just
+  // Everyone else: v1 free rollout — full access either way, this just
   // reports plan status for display (e.g. "Current Plan" badge if they
   // happen to have one).
   if (activePlan) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: activeDaysLeft, planId: plan };

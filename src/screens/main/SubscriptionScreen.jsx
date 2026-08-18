@@ -22,7 +22,7 @@ const packageForPlan = (offering, durationMonths) => {
 
 const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const { t } = useTranslation();
-  const { profile, refreshProfile } = useUser();
+  const { profile, refreshProfile, settings } = useUser();
   const [plans, setPlans] = useState([]);
   const [offering, setOffering] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const [subscribing, setSubscribing] = useState(null);
   const [restoring, setRestoring] = useState(false);
 
-  const status = subscriptionStatus(profile);
+  const status = subscriptionStatus(profile, settings);
 
   useEffect(() => {
     getSession().then(({ data: { session } }) => {

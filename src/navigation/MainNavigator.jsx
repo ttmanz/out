@@ -144,14 +144,15 @@ const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
   const [msgCount, setMsgCount] = useState(0);
   const insets = useSafeAreaInsets();
-  const { profile } = useUser();
+  const { profile, settings } = useUser();
 
   const isRestricted = profile?.status === 'restricted';
   const isAdmin = profile?.is_admin === true;
-  // Venue accounts get a 30-day trial from signup, then need an active
-  // subscription for the whole app — checked here, before any tab/stack is
-  // reachable, rather than per-feature like the member-facing modes.
-  const venueLocked = profile?.account_type === 'venue_owner' && !subscriptionStatus(profile).hasAccess;
+  // Under 'free_except_venue' mode, venue accounts get a 30-day trial from
+  // signup, then need an active subscription for the whole app — checked
+  // here, before any tab/stack is reachable, rather than per-feature like
+  // the member-facing modes.
+  const venueLocked = profile?.account_type === 'venue_owner' && !subscriptionStatus(profile, settings).hasAccess;
 
   useEffect(() => {
     if (isRestricted || venueLocked) return;
