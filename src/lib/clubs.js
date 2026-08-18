@@ -56,7 +56,7 @@ export const unblockClubMember = (clubId, userId) =>
 export const getClubPosts = (clubId) =>
   supabase
     .from('club_posts')
-    .select('*, profiles:user_id(full_name, photo_url)')
+    .select('*, profiles:user_id(full_name, photo_url), club_post_likes(count)')
     .eq('club_id', clubId)
     .order('created_at', { ascending: false });
 
@@ -69,6 +69,24 @@ export const adminDeleteClubPost = (id) =>
 
 export const deleteClubPost = (id, userId) =>
   supabase.from('club_posts').delete().eq('id', id).eq('user_id', userId);
+
+export const getMyClubPostLikes = (userId, postIds) =>
+  supabase.from('club_post_likes').select('post_id').eq('user_id', userId).in('post_id', postIds);
+
+export const getMyClubPostSaves = (userId, postIds) =>
+  supabase.from('club_post_saves').select('post_id').eq('user_id', userId).in('post_id', postIds);
+
+export const likeClubPost = (postId, userId) =>
+  supabase.from('club_post_likes').insert({ post_id: postId, user_id: userId });
+
+export const unlikeClubPost = (postId, userId) =>
+  supabase.from('club_post_likes').delete().eq('post_id', postId).eq('user_id', userId);
+
+export const saveClubPost = (postId, userId) =>
+  supabase.from('club_post_saves').insert({ post_id: postId, user_id: userId });
+
+export const unsaveClubPost = (postId, userId) =>
+  supabase.from('club_post_saves').delete().eq('post_id', postId).eq('user_id', userId);
 
 // Admin-only: RLS restricts this to profiles.is_admin = true.
 // club_members and club_posts cascade on delete, so this also removes them.

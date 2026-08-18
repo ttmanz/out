@@ -8,6 +8,7 @@
     "refresh": "Обновить",
     "cancel": "Отмена",
     "photoUploadFailed": "Не удалось загрузить фото. Попробуйте ещё раз.",
+    "shareFallback": "Посмотрите этот пост в Find-Mee!",
     "delete": "Удалить",
     "deletePostTitle": "Удалить публикацию?",
     "deletePostDesc": "Это навсегда удалит эту публикацию."

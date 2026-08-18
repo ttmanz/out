@@ -19,7 +19,7 @@ export const deleteOpenGroup = (id) =>
 export const getGroupPosts = (groupId) =>
   supabase
     .from('group_posts')
-    .select('*, profiles:user_id(full_name, photo_url)')
+    .select('*, profiles:user_id(full_name, photo_url), group_post_likes(count)')
     .eq('group_id', groupId)
     .order('created_at', { ascending: false })
     .limit(50);
@@ -42,7 +42,7 @@ export const getFriendGroupPosts = async (groupId, userId) => {
 
   return supabase
     .from('group_posts')
-    .select('*, profiles:user_id(full_name, photo_url)')
+    .select('*, profiles:user_id(full_name, photo_url), group_post_likes(count)')
     .eq('group_id', groupId)
     .in('user_id', ids)
     .order('created_at', { ascending: false })
@@ -77,3 +77,21 @@ export const adminDeleteGroupPost = (id) =>
 
 export const deleteGroupPost = (id, userId) =>
   supabase.from('group_posts').delete().eq('id', id).eq('user_id', userId);
+
+export const getMyGroupPostLikes = (userId, postIds) =>
+  supabase.from('group_post_likes').select('post_id').eq('user_id', userId).in('post_id', postIds);
+
+export const getMyGroupPostSaves = (userId, postIds) =>
+  supabase.from('group_post_saves').select('post_id').eq('user_id', userId).in('post_id', postIds);
+
+export const likeGroupPost = (postId, userId) =>
+  supabase.from('group_post_likes').insert({ post_id: postId, user_id: userId });
+
+export const unlikeGroupPost = (postId, userId) =>
+  supabase.from('group_post_likes').delete().eq('post_id', postId).eq('user_id', userId);
+
+export const saveGroupPost = (postId, userId) =>
+  supabase.from('group_post_saves').insert({ post_id: postId, user_id: userId });
+
+export const unsaveGroupPost = (postId, userId) =>
+  supabase.from('group_post_saves').delete().eq('post_id', postId).eq('user_id', userId);

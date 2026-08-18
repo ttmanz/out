@@ -6,7 +6,7 @@ export const getEvents = (category) => {
   startOfToday.setHours(0, 0, 0, 0);
   return supabase
     .from('events')
-    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at, created_by')
+    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at, created_by, event_likes(count)')
     .eq('category', category)
     .eq('active', true)
     .or(`event_date.is.null,event_date.gte.${startOfToday.toISOString()}`)
@@ -35,3 +35,21 @@ export const adminDeleteEvent = (id) =>
 
 export const deleteEvent = (id, userId) =>
   supabase.from('events').delete().eq('id', id).eq('created_by', userId);
+
+export const getMyEventLikes = (userId, eventIds) =>
+  supabase.from('event_likes').select('event_id').eq('user_id', userId).in('event_id', eventIds);
+
+export const getMyEventSaves = (userId, eventIds) =>
+  supabase.from('event_saves').select('event_id').eq('user_id', userId).in('event_id', eventIds);
+
+export const likeEvent = (eventId, userId) =>
+  supabase.from('event_likes').insert({ event_id: eventId, user_id: userId });
+
+export const unlikeEvent = (eventId, userId) =>
+  supabase.from('event_likes').delete().eq('event_id', eventId).eq('user_id', userId);
+
+export const saveEvent = (eventId, userId) =>
+  supabase.from('event_saves').insert({ event_id: eventId, user_id: userId });
+
+export const unsaveEvent = (eventId, userId) =>
+  supabase.from('event_saves').delete().eq('event_id', eventId).eq('user_id', userId);

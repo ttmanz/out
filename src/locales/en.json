@@ -8,6 +8,7 @@
     "refresh": "Refresh",
     "cancel": "Cancel",
     "photoUploadFailed": "Photo upload failed. Please try again.",
+    "shareFallback": "Check out this post on Find-Mee!",
     "delete": "Delete",
     "deletePostTitle": "Delete post?",
     "deletePostDesc": "This will permanently remove this post."
