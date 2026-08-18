@@ -28,14 +28,14 @@ const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
   <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
     <LinearGradient
-      colors={['#a0782b', '#634816', '#4c3916']}
+      colors={['#d09c38', '#815e1d', '#634a1d']}
       locations={[0, 0.5, 1]}
       start={{ x: 0, y: 0.5 }}
       end={{ x: 1, y: 0.5 }}
       style={styles.cardStroke}
     >
       <LinearGradient
-        colors={['#a0782b', '#634816', '#4c3916']}
+        colors={['#d09c38', '#815e1d', '#634a1d']}
         locations={[0, 0.5, 1]}
         start={{ x: 1, y: 0.5 }}
         end={{ x: 0, y: 0.5 }}
