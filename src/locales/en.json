@@ -320,6 +320,8 @@
     "createPost": "Share Your Story",
     "seeAll": "See All",
     "onlyFriends": "Only Friends",
+    "saved": "Saved",
+    "noSavedStories": "You haven't saved any stories yet — tap the bookmark on one to keep it here.",
     "labelText": "What's your story?",
     "placeholderText": "Share something about your night out...",
     "submitPost": "Post Story",

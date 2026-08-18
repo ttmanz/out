@@ -13,6 +13,7 @@ import {
   getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory, deleteStory,
   getStoryReplies, createStoryReply,
   getMyStoryLikes, getMyStorySaves, likeStory, unlikeStory, saveStory, unsaveStory,
+  getSavedStories,
 } from '../../lib/stories';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
@@ -193,6 +194,8 @@ const StoryFeedScreen = ({ navigation, route }) => {
     const uid = session?.user?.id ?? null;
     const res = mode === 'friends' && uid
       ? await getFriendStories(uid)
+      : mode === 'saved'
+      ? (uid ? await getSavedStories(uid) : { data: [], error: null })
       : await getStories();
     const data = res.data ?? [];
     if (!res.error) setStories(data);
@@ -361,6 +364,14 @@ const StoryFeedScreen = ({ navigation, route }) => {
             {t('stories.onlyFriends')}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleBtn, mode === 'saved' && styles.toggleBtnActive]}
+          onPress={() => setMode('saved')}
+        >
+          <Text style={[styles.toggleText, mode === 'saved' && styles.toggleTextActive]}>
+            {t('stories.saved')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList
@@ -379,7 +390,11 @@ const StoryFeedScreen = ({ navigation, route }) => {
         ListHeaderComponent={<AdBanner page="MyStory" />}
         ListEmptyComponent={
           <Text style={styles.empty}>
-            {mode === 'friends' ? t('stories.noFriendStories') : t('stories.noStories')}
+            {mode === 'friends'
+              ? t('stories.noFriendStories')
+              : mode === 'saved'
+              ? t('stories.noSavedStories')
+              : t('stories.noStories')}
           </Text>
         }
         renderItem={({ item }) => (

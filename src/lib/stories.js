@@ -77,3 +77,14 @@ export const saveStory = (storyId, userId) =>
 
 export const unsaveStory = (storyId, userId) =>
   supabase.from('story_saves').delete().eq('story_id', storyId).eq('user_id', userId);
+
+// No expiry filter here — the whole point of saving is to still find it
+// later, even after it's aged out of the main feed.
+export const getSavedStories = async (userId) => {
+  const { data, error } = await supabase
+    .from('story_saves')
+    .select('story:stories(*, profiles:user_id(full_name, photo_url), story_likes(count))')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  return { data: (data ?? []).map((r) => r.story).filter(Boolean), error };
+};
