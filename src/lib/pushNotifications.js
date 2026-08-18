@@ -31,9 +31,14 @@ export const getOpenConversationId = () => openConversationId;
 
 // --- Device token registration ---
 let currentToken = null;
+// Bumped by unregisterPushToken so a registration still in flight when the
+// user signs out (this call runs unawaited from UserContext) discards its
+// result instead of writing a token for the account that just logged out.
+let registrationEpoch = 0;
 
 export const registerForPushNotificationsAsync = async (userId) => {
   if (!Device.isDevice || !userId) return;
+  const epoch = ++registrationEpoch;
 
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -54,7 +59,7 @@ export const registerForPushNotificationsAsync = async (userId) => {
 
     const projectId = Constants.expoConfig?.extra?.eas?.projectId;
     const { data: token } = await Notifications.getExpoPushTokenAsync({ projectId });
-    if (!token) return;
+    if (!token || epoch !== registrationEpoch) return;
 
     currentToken = token;
     const { error } = await supabase
@@ -72,6 +77,7 @@ export const registerForPushNotificationsAsync = async (userId) => {
 };
 
 export const unregisterPushToken = async () => {
+  registrationEpoch++;
   if (!currentToken) return;
   await supabase.from('push_tokens').delete().eq('token', currentToken);
   currentToken = null;
@@ -110,6 +116,43 @@ const resolveGroupPostRoute = async (postId) => {
   };
 };
 
+// Same shape as resolveGroupPostRoute — ClubDetailScreen only needs clubId.
+const resolveClubPostRoute = async (postId) => {
+  const { data } = await supabase
+    .from('club_posts')
+    .select('club_id')
+    .eq('id', postId)
+    .single();
+  if (!data) return { stack: 'HomeTab', screen: ROUTES.CLUB_GROUPS };
+  return {
+    stack: 'HomeTab',
+    screen: ROUTES.CLUB_DETAIL,
+    params: { clubId: data.club_id, focusItemId: postId },
+  };
+};
+
+// events/activity_events feeds are per-category, so a reply notification
+// needs a lookup to know which category feed to open.
+const resolveEventRoute = async (eventId) => {
+  const { data } = await supabase.from('events').select('category').eq('id', eventId).single();
+  if (!data) return { stack: 'HomeTab', screen: ROUTES.EVENTS };
+  return {
+    stack: 'HomeTab',
+    screen: ROUTES.EVENT_FEED,
+    params: { category: data.category, focusItemId: eventId },
+  };
+};
+
+const resolveActivityEventRoute = async (eventId) => {
+  const { data } = await supabase.from('activity_events').select('category').eq('id', eventId).single();
+  if (!data) return { stack: 'HomeTab', screen: ROUTES.ACTIVITIES };
+  return {
+    stack: 'HomeTab',
+    screen: ROUTES.ACTIVITY_EVENTS,
+    params: { filter: data.category, focusItemId: eventId },
+  };
+};
+
 export const resolveNotificationRoute = async (item, fallbackName = 'Someone') => {
   const actorName = item.actor?.full_name ?? fallbackName;
 
@@ -118,6 +161,9 @@ export const resolveNotificationRoute = async (item, fallbackName = 'Someone') =
   }
   if (item.type === 'reply') {
     if (item.reference_type === 'group_post') return resolveGroupPostRoute(item.reference_id);
+    if (item.reference_type === 'club_post') return resolveClubPostRoute(item.reference_id);
+    if (item.reference_type === 'event') return resolveEventRoute(item.reference_id);
+    if (item.reference_type === 'activity_event') return resolveActivityEventRoute(item.reference_id);
     const screen = REPLY_TARGETS[item.reference_type];
     return screen ? { stack: 'HomeTab', screen, params: { focusItemId: item.reference_id } } : null;
   }
