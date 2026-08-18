@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
   ActivityIndicator, Alert, RefreshControl, TextInput, Share,
@@ -11,6 +11,7 @@ import {
   getClubPosts, createClubPost, adminDeleteClubPost, deleteClubPost, adminDeleteClub,
   getClubBlocks, blockClubMember, unblockClubMember, suspendClub, unsuspendClub,
   getMyClubPostLikes, getMyClubPostSaves, likeClubPost, unlikeClubPost, saveClubPost, unsaveClubPost,
+  getSavedClubPosts, getClubPostReplies, createClubPostReply,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -45,23 +46,28 @@ const ClubDetailScreen = ({ navigation, route }) => {
   const [likedIds, setLikedIds] = useState(new Set());
   const [savedIds, setSavedIds] = useState(new Set());
   const [likeCounts, setLikeCounts] = useState({});
+  const [postsMode, setPostsMode] = useState('all');
+  const [replyState, setReplyState] = useState({});
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-    const [{ data: { session } }, clubRes, membersRes, postsRes, blocksRes] = await Promise.all([
+    const [{ data: { session } }, clubRes, membersRes, blocksRes] = await Promise.all([
       getSession(),
       getClub(clubId),
       getClubMembers(clubId),
-      getClubPosts(clubId),
       getClubBlocks(clubId),
     ]);
     const uid = session?.user?.id ?? null;
     setUserId(uid);
     setClub(clubRes.data ?? null);
     setMembers(membersRes.data ?? []);
+    setBlocked(blocksRes.data ?? []);
+
+    const postsRes = postsMode === 'saved'
+      ? (uid ? await getSavedClubPosts(clubId, uid) : { data: [], error: null })
+      : await getClubPosts(clubId);
     const posts_ = postsRes.data ?? [];
     setPosts(posts_);
-    setBlocked(blocksRes.data ?? []);
 
     const counts = {};
     posts_.forEach((p) => { counts[p.id] = p.club_post_likes?.[0]?.count ?? 0; });
@@ -84,9 +90,15 @@ const ClubDetailScreen = ({ navigation, route }) => {
     setMyStatus(statusRes.data?.status ?? null);
     setLoading(false);
     setRefreshing(false);
-  }, [clubId]);
+  }, [clubId, postsMode]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    load();
+  }, [postsMode]);
 
   const isAdmin = club?.admin_id === userId;
   const canModerate = isAdmin || isSiteAdmin;
@@ -212,6 +224,31 @@ const ClubDetailScreen = ({ navigation, route }) => {
       await Share.share({ message });
     } catch {
       // user dismissed the share sheet
+    }
+  };
+
+  const patchPost = (id, patch) =>
+    setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
+
+  const toggleReplies = async (postId) => {
+    const cur = replyState[postId] ?? {};
+    if (cur.expanded) { patchPost(postId, { expanded: false }); return; }
+    patchPost(postId, { expanded: true, loading: true });
+    const { data } = await getClubPostReplies(postId);
+    patchPost(postId, { loading: false, replies: data ?? [] });
+  };
+
+  const handleReply = async (postId) => {
+    const text = (replyState[postId]?.text ?? '').trim();
+    if (!text) return;
+    patchPost(postId, { sending: true });
+    const { error } = await createClubPostReply(userId, postId, text);
+    if (error) {
+      Alert.alert('Error', 'Could not send your reply.');
+      patchPost(postId, { sending: false });
+    } else {
+      const { data } = await getClubPostReplies(postId);
+      patchPost(postId, { sending: false, text: '', replies: data ?? [] });
     }
   };
 
@@ -486,6 +523,21 @@ const ClubDetailScreen = ({ navigation, route }) => {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Club Posts</Text>
 
+            <View style={styles.postsToggleBar}>
+              <TouchableOpacity
+                style={[styles.postsToggleBtn, postsMode === 'all' && styles.postsToggleBtnActive]}
+                onPress={() => setPostsMode('all')}
+              >
+                <Text style={[styles.postsToggleText, postsMode === 'all' && styles.postsToggleTextActive]}>All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.postsToggleBtn, postsMode === 'saved' && styles.postsToggleBtnActive]}
+                onPress={() => setPostsMode('saved')}
+              >
+                <Text style={[styles.postsToggleText, postsMode === 'saved' && styles.postsToggleTextActive]}>Saved</Text>
+              </TouchableOpacity>
+            </View>
+
             <View style={styles.composeBox}>
               <View style={styles.composeInputRow}>
                 <TextInput
@@ -509,7 +561,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
             </View>
 
             {posts.length === 0
-              ? <Text style={styles.empty}>No posts yet — be the first!</Text>
+              ? <Text style={styles.empty}>{postsMode === 'saved' ? "You haven't saved any posts here yet." : 'No posts yet — be the first!'}</Text>
               : posts.map((p) => (
                 <View key={p.id} style={styles.postCard}>
                   <View style={styles.postHeader}>
@@ -549,7 +601,57 @@ const ClubDetailScreen = ({ navigation, route }) => {
                         {savedIds.has(p.id) ? '🔖' : '📑'}
                       </Text>
                     </TouchableOpacity>
+                    <TouchableOpacity style={styles.actionBtn} onPress={() => toggleReplies(p.id)}>
+                      <Text style={styles.actionText}>
+                        💬 {replyState[p.id]?.expanded
+                          ? 'Hide replies'
+                          : `View replies${replyState[p.id]?.replies != null ? ` (${replyState[p.id].replies.length})` : ''}`}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
+
+                  {replyState[p.id]?.expanded && (
+                    <View style={styles.repliesSection}>
+                      {replyState[p.id]?.loading ? (
+                        <ActivityIndicator size="small" color={COLORS.primary} style={{ marginVertical: 8 }} />
+                      ) : (
+                        <>
+                          {(replyState[p.id]?.replies ?? []).length === 0 && (
+                            <Text style={styles.noReplies}>No replies yet — be the first!</Text>
+                          )}
+                          {(replyState[p.id]?.replies ?? []).map((r) => (
+                            <View key={r.id} style={styles.replyRow}>
+                              <Text style={styles.replyName}>{r.profiles?.full_name ?? 'Someone'}</Text>
+                              <Text style={styles.replyText}>{r.message}</Text>
+                              <Text style={styles.replyTime}>{formatAgo(r.created_at)}</Text>
+                            </View>
+                          ))}
+                          <View style={styles.replyInputRow}>
+                            <TextInput
+                              style={styles.replyInput}
+                              placeholder="Write a reply..."
+                              placeholderTextColor={COLORS.textMuted}
+                              value={replyState[p.id]?.text ?? ''}
+                              onChangeText={(v) => patchPost(p.id, { text: v })}
+                              returnKeyType="send"
+                              onSubmitEditing={() => handleReply(p.id)}
+                            />
+                            <EmojiPickerButton onEmojiSelected={(e) => patchPost(p.id, { text: (replyState[p.id]?.text ?? '') + e })} />
+                            <TouchableOpacity
+                              style={styles.sendBtn}
+                              onPress={() => handleReply(p.id)}
+                              disabled={replyState[p.id]?.sending}
+                            >
+                              {replyState[p.id]?.sending
+                                ? <ActivityIndicator size="small" color={COLORS.black} />
+                                : <Text style={styles.sendBtnText}>Send</Text>
+                              }
+                            </TouchableOpacity>
+                          </View>
+                        </>
+                      )}
+                    </View>
+                  )}
                 </View>
               ))
             }
@@ -691,6 +793,29 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
   actionTextLiked: { color: '#E05520' },
   actionTextSaved: { color: COLORS.primary },
+  postsToggleBar: {
+    flexDirection: 'row', marginBottom: 14,
+    backgroundColor: COLORS.background, borderRadius: 10,
+    borderWidth: 1, borderColor: COLORS.borderAccent, overflow: 'hidden',
+  },
+  postsToggleBtn: { flex: 1, paddingVertical: 9, alignItems: 'center' },
+  postsToggleBtnActive: { backgroundColor: COLORS.primary },
+  postsToggleText: { fontSize: 12, fontWeight: '700', color: COLORS.textMuted },
+  postsToggleTextActive: { color: COLORS.black },
+  repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
+  noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },
+  replyRow: { marginBottom: 12 },
+  replyName: { fontSize: 13, fontWeight: '700', color: COLORS.text },
+  replyText: { fontSize: 13, color: COLORS.text, marginTop: 1 },
+  replyTime: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
+  replyInputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
+  replyInput: {
+    flex: 1, borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
+    paddingHorizontal: 12, paddingVertical: 8,
+    fontSize: 13, backgroundColor: COLORS.background, color: COLORS.text,
+  },
+  sendBtn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
+  sendBtnText: { fontSize: 13, fontWeight: '700', color: COLORS.black },
 });
 
 export default ClubDetailScreen;

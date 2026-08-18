@@ -12,6 +12,7 @@ import {
   getGroupPosts, getFriendGroupPosts, createGroupPost,
   getGroupPostReplies, createGroupPostReply, adminDeleteGroupPost, deleteGroupPost,
   getMyGroupPostLikes, getMyGroupPostSaves, likeGroupPost, unlikeGroupPost, saveGroupPost, unsaveGroupPost,
+  getSavedGroupPosts,
 } from '../../lib/groups';
 import { getSession } from '../../lib/auth';
 import { uploadPostPhoto } from '../../lib/storage';
@@ -61,6 +62,8 @@ const GroupDetailScreen = ({ navigation, route }) => {
     setUserId(uid);
     const res = mode === 'friends' && uid
       ? await getFriendGroupPosts(groupId, uid)
+      : mode === 'saved'
+      ? (uid ? await getSavedGroupPosts(groupId, uid) : { data: [], error: null })
       : await getGroupPosts(groupId);
     const rows = res.data ?? [];
     if (!res.error) setPosts(rows);
@@ -401,6 +404,14 @@ const GroupDetailScreen = ({ navigation, route }) => {
             {t('stories.onlyFriends')}
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleBtn, mode === 'saved' && styles.toggleBtnActive]}
+          onPress={() => setMode('saved')}
+        >
+          <Text style={[styles.toggleText, mode === 'saved' && styles.toggleTextActive]}>
+            {t('stories.saved')}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -438,7 +449,11 @@ const GroupDetailScreen = ({ navigation, route }) => {
 
         {posts.length === 0 ? (
           <Text style={styles.empty}>
-            {mode === 'friends' ? t('openGroups.noFriendPosts') : t('openGroups.noPosts')}
+            {mode === 'friends'
+              ? t('openGroups.noFriendPosts')
+              : mode === 'saved'
+              ? t('common.noSavedItems')
+              : t('openGroups.noPosts')}
           </Text>
         ) : (
           posts.map(renderPost)

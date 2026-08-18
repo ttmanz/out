@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
   ActivityIndicator, RefreshControl, Image, TextInput, Alert, Share,
@@ -11,6 +11,7 @@ import { ROUTES } from '../../constants/routes';
 import {
   getEvents, getEventReplies, createEventReply, adminDeleteEvent, deleteEvent,
   getMyEventLikes, getMyEventSaves, likeEvent, unlikeEvent, saveEvent, unsaveEvent,
+  getSavedEvents,
 } from '../../lib/events';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
@@ -146,11 +147,16 @@ const EventFeedScreen = ({ navigation, route }) => {
   const [likedIds, setLikedIds] = useState(new Set());
   const [savedIds, setSavedIds] = useState(new Set());
   const [likeCounts, setLikeCounts] = useState({});
+  const [mode, setMode] = useState('all');
+  const firstRender = useRef(true);
 
   const load = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
-    const { data, error } = await getEvents(category);
-    const rows = data ?? [];
+    const uidForLoad = profile?.id;
+    const { data, error } = mode === 'saved' && uidForLoad
+      ? await getSavedEvents(category, uidForLoad)
+      : await getEvents(category);
+    const rows = mode === 'saved' && !uidForLoad ? [] : (data ?? []);
     if (!error) setEvents(rows);
     setLoading(false);
     setRefreshing(false);
@@ -172,9 +178,15 @@ const EventFeedScreen = ({ navigation, route }) => {
       setLikedIds(new Set());
       setSavedIds(new Set());
     }
-  }, [category, profile?.id]);
+  }, [category, mode, profile?.id]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
+
+  useEffect(() => {
+    if (firstRender.current) { firstRender.current = false; return; }
+    setLoading(true);
+    load();
+  }, [mode]);
 
   const patchReply = (id, patch) =>
     setReplyState((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -284,6 +296,25 @@ const EventFeedScreen = ({ navigation, route }) => {
     <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={t(`events.${category}`)} onBack={() => navigation.goBack()} />
 
+      <View style={styles.toggleBar}>
+        <TouchableOpacity
+          style={[styles.toggleBtn, mode === 'all' && styles.toggleBtnActive]}
+          onPress={() => setMode('all')}
+        >
+          <Text style={[styles.toggleText, mode === 'all' && styles.toggleTextActive]}>
+            {t('stories.seeAll')}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleBtn, mode === 'saved' && styles.toggleBtnActive]}
+          onPress={() => setMode('saved')}
+        >
+          <Text style={[styles.toggleText, mode === 'saved' && styles.toggleTextActive]}>
+            {t('stories.saved')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
         data={events}
         keyExtractor={(item) => item.id}
@@ -298,7 +329,9 @@ const EventFeedScreen = ({ navigation, route }) => {
           </>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>{t('events.empty')}</Text>
+          <Text style={styles.empty}>
+            {mode === 'saved' ? t('common.noSavedItems') : t('events.empty')}
+          </Text>
         }
         renderItem={({ item }) => (
           <EventCard
@@ -336,6 +369,15 @@ const EventFeedScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
+  toggleBar: {
+    flexDirection: 'row', margin: 16, marginBottom: 4,
+    backgroundColor: COLORS.surface, borderRadius: 12,
+    borderWidth: 1, borderColor: COLORS.borderAccent, overflow: 'hidden',
+  },
+  toggleBtn: { flex: 1, paddingVertical: 11, alignItems: 'center' },
+  toggleBtnActive: { backgroundColor: COLORS.primary },
+  toggleText: { fontSize: 13, fontWeight: '700', color: COLORS.textMuted },
+  toggleTextActive: { color: COLORS.black },
   list: { padding: 16, paddingBottom: 40 },
   empty: { textAlign: 'center', color: COLORS.textLight, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
   card: {
