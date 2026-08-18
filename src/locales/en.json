@@ -267,6 +267,7 @@
     "noConversations": "No conversations yet — message a friend from your Friends list!",
     "noMessages": "No messages yet — say hello!",
     "messagePlaceholder": "Type a message...",
+    "sendFailed": "Message failed to send. Please try again.",
     "sendMessage": "Send Message",
     "unknownMember": "Member"
   },

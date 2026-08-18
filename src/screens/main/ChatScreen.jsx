@@ -45,9 +45,10 @@ const ChatScreen = ({ navigation, route }) => {
   useFocusEffect(useCallback(() => {
     let uid;
     let channel;
+    let cancelled = false;
     setOpenConversationId(conversationId);
     getSession().then(({ data: { session } }) => {
-      if (!session) return;
+      if (cancelled || !session) return;
       uid = session.user.id;
       setMyId(uid);
       // Authorise the realtime socket so RLS lets this user receive their rows
@@ -69,6 +70,7 @@ const ChatScreen = ({ navigation, route }) => {
       intervalRef.current = setInterval(() => loadMessages(uid), 20000);
     });
     return () => {
+      cancelled = true;
       setOpenConversationId(null);
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (channel) supabase.removeChannel(channel);
@@ -92,8 +94,13 @@ const ChatScreen = ({ navigation, route }) => {
     if (!content || !myId) return;
     setText('');
     setSending(true);
-    await sendMessage(conversationId, myId, content);
-    await loadMessages(myId);
+    const { error } = await sendMessage(conversationId, myId, content);
+    if (error) {
+      setText(content);
+      Alert.alert(t('common.error'), t('messages.sendFailed'));
+    } else {
+      await loadMessages(myId);
+    }
     setSending(false);
   };
 
