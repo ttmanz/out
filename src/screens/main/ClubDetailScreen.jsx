@@ -221,9 +221,10 @@ const ClubDetailScreen = ({ navigation, route }) => {
   };
 
   const handleShare = async (post) => {
-    const message = [post.text, post.link_url].filter(Boolean).join('\n\n') || 'Check out this post on Find-Mee!';
+    const shareUrl = `https://find-mee.com/p/club_post/${post.id}`;
+    const message = [post.text || 'Check out this post on Find-Mee!', post.link_url, shareUrl].filter(Boolean).join('\n\n');
     try {
-      await Share.share({ message });
+      await Share.share({ message, url: shareUrl });
     } catch {
       // user dismissed the share sheet
     }

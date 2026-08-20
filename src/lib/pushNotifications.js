@@ -153,6 +153,16 @@ const resolveActivityEventRoute = async (eventId) => {
   };
 };
 
+// --- Shared-post deep links (find-mee.com/p/:type/:id -> outandaround://post/:type/:id) ---
+// Reuses the same per-type route resolvers as reply notifications above.
+export const resolvePostDeepLink = async (type, id) => {
+  if (type === 'story') return { stack: 'HomeTab', screen: ROUTES.STORY_FEED, params: { focusItemId: id } };
+  if (type === 'event') return resolveEventRoute(id);
+  if (type === 'group_post') return resolveGroupPostRoute(id);
+  if (type === 'club_post') return resolveClubPostRoute(id);
+  return null;
+};
+
 export const resolveNotificationRoute = async (item, fallbackName = 'Someone') => {
   const actorName = item.actor?.full_name ?? fallbackName;
 

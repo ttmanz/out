@@ -283,9 +283,10 @@ const StoryFeedScreen = ({ navigation, route }) => {
   };
 
   const handleShare = async (story) => {
-    const message = [story.text, story.link_url].filter(Boolean).join('\n\n') || t('stories.shareFallback');
+    const shareUrl = `https://find-mee.com/p/story/${story.id}`;
+    const message = [story.text || t('stories.shareFallback'), story.link_url, shareUrl].filter(Boolean).join('\n\n');
     try {
-      await Share.share({ message });
+      await Share.share({ message, url: shareUrl });
     } catch {
       // user dismissed the share sheet — nothing to do
     }

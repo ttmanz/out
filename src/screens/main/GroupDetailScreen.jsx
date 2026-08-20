@@ -159,9 +159,10 @@ const GroupDetailScreen = ({ navigation, route }) => {
   };
 
   const handleShare = async (post) => {
-    const message = [post.text, post.link_url].filter(Boolean).join('\n\n') || t('common.shareFallback');
+    const shareUrl = `https://find-mee.com/p/group_post/${post.id}`;
+    const message = [post.text || t('common.shareFallback'), post.link_url, shareUrl].filter(Boolean).join('\n\n');
     try {
-      await Share.share({ message });
+      await Share.share({ message, url: shareUrl });
     } catch {
       // user dismissed the share sheet
     }

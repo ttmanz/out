@@ -232,9 +232,10 @@ const EventFeedScreen = ({ navigation, route }) => {
   };
 
   const handleShare = async (event) => {
-    const message = [event.name, event.link_url].filter(Boolean).join('\n\n') || t('common.shareFallback');
+    const shareUrl = `https://find-mee.com/p/event/${event.id}`;
+    const message = [event.name || t('common.shareFallback'), event.link_url, shareUrl].filter(Boolean).join('\n\n');
     try {
-      await Share.share({ message });
+      await Share.share({ message, url: shareUrl });
     } catch {
       // user dismissed the share sheet
     }
