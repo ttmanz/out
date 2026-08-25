@@ -14,26 +14,36 @@ import { addNotificationResponseListener, resolvePostDeepLink } from './src/lib/
 
 const navigationRef = createNavigationContainerRef();
 
-// navigationRef may not be ready yet on a cold start, so retry briefly
-// instead of dropping the navigation.
-const navigateWhenReady = (route, attempt = 0) => {
-  if (navigationRef.isReady()) {
-    navigationRef.navigate(route.stack, { screen: route.screen, params: route.params });
-  } else if (attempt < 10) {
-    setTimeout(() => navigateWhenReady(route, attempt + 1), 300);
-  }
-};
-
 // Shared-post links (outandaround://post/:type/:id, opened from the
-// find-mee.com/p/:type/:id web fallback).
-const handlePostDeepLink = async (url) => {
-  if (!url) return;
+// find-mee.com/p/:type/:id web fallback) can arrive before the navigator
+// has mounted, and their route resolution (e.g. resolveEventRoute) queries
+// tables gated by RLS on auth.uid() — which is only reliably set once the
+// restored session has actually been attached to the Supabase client. A
+// fixed timeout retry can't guarantee either of those, so instead the link
+// is queued and only processed once both are confirmed ready.
+let navigationIsReady = false;
+let sessionIsReady = false;
+let queuedDeepLinkUrl = null;
+
+const flushQueuedDeepLink = async () => {
+  if (!navigationIsReady || !sessionIsReady || !queuedDeepLinkUrl) return;
+  const url = queuedDeepLinkUrl;
+  queuedDeepLinkUrl = null;
+
   const { path } = Linking.parse(url);
   const parts = (path ?? '').split('/').filter(Boolean);
   if (parts[0] !== 'post' || parts.length < 3) return;
   const [, type, id] = parts;
   const route = await resolvePostDeepLink(type, id);
-  if (route) navigateWhenReady(route);
+  if (route && navigationRef.isReady()) {
+    navigationRef.navigate(route.stack, { screen: route.screen, params: route.params });
+  }
+};
+
+const queueDeepLink = (url) => {
+  if (!url) return;
+  queuedDeepLinkUrl = url;
+  flushQueuedDeepLink();
 };
 
 export default function App() {
@@ -42,6 +52,8 @@ export default function App() {
   useEffect(() => {
     getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
+      sessionIsReady = true;
+      flushQueuedDeepLink();
     });
 
     const { data: { subscription } } = onAuthStateChange((_event, activeSession) => {
@@ -56,8 +68,8 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    Linking.getInitialURL().then(handlePostDeepLink);
-    const sub = Linking.addEventListener('url', ({ url }) => handlePostDeepLink(url));
+    Linking.getInitialURL().then(queueDeepLink);
+    const sub = Linking.addEventListener('url', ({ url }) => queueDeepLink(url));
     return () => sub.remove();
   }, []);
 
@@ -72,7 +84,10 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <KeyboardProvider>
-        <NavigationContainer ref={navigationRef}>
+        <NavigationContainer
+          ref={navigationRef}
+          onReady={() => { navigationIsReady = true; flushQueuedDeepLink(); }}
+        >
           {session
             ? <UserProvider><MainNavigator /></UserProvider>
             : <AuthNavigator />
