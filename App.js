@@ -30,8 +30,11 @@ const flushQueuedDeepLink = async () => {
   const url = queuedDeepLinkUrl;
   queuedDeepLinkUrl = null;
 
-  const { path } = Linking.parse(url);
-  const parts = (path ?? '').split('/').filter(Boolean);
+  // For outandaround://post/:type/:id, "post" parses as the URL's hostname,
+  // not the first path segment (non-special schemes treat the first
+  // component after // as an opaque host) — path alone is just ":type/:id".
+  const { hostname, path } = Linking.parse(url);
+  const parts = [hostname, ...(path ?? '').split('/')].filter(Boolean);
   if (parts[0] !== 'post' || parts.length < 3) return;
   const [, type, id] = parts;
   const route = await resolvePostDeepLink(type, id);
