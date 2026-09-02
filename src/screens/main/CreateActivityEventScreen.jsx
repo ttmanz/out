@@ -10,7 +10,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { createActivityEvent } from '../../lib/activityEvents';
 import { getSession } from '../../lib/auth';
-import { uploadPostPhoto } from '../../lib/storage';
+import { uploadPostMedia } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import { checkAndFlagIfCommercial } from '../../lib/moderation';
 import PhotoPicker from '../../components/common/PhotoPicker';
@@ -22,13 +22,14 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
   const { category } = route.params;
+  const prefill = route.params?.prefill ?? {};
   const [name, setName] = useState('');
   const [venue, setVenue] = useState('');
   const [eventDate, setEventDate] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
   const [pickerMode, setPickerMode] = useState('date');
   const [description, setDescription] = useState('');
-  const [photoUri, setPhotoUri] = useState(null);
+  const [mediaUri, setMediaUri] = useState(prefill.mediaUri ?? null);
   const [linkPreview, setLinkPreview] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -73,14 +74,16 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
     if (!session) { setSaving(false); return; }
 
     let photo_url = null;
-    if (photoUri) {
-      const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
+    let video_url = null;
+    if (mediaUri) {
+      const { url, isVideo, error } = await uploadPostMedia(session.user.id, mediaUri);
       if (error) {
         Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setSaving(false);
         return;
       }
-      photo_url = url;
+      if (isVideo) video_url = url;
+      else photo_url = url;
     }
 
     const { error } = await createActivityEvent({
@@ -90,6 +93,7 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
       event_date: eventDate ? eventDate.toISOString() : null,
       description: description.trim() || null,
       photo_url,
+      video_url,
       link_url: linkPreview?.url ?? null,
       link_title: linkPreview?.title ?? null,
       link_image: linkPreview?.image ?? null,
@@ -178,7 +182,7 @@ const CreateActivityEventScreen = ({ navigation, route }) => {
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <Text style={styles.label}>{t('activityEvents.labelPhoto')}</Text>
-          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <PhotoPicker uri={mediaUri} onChange={setMediaUri} allowVideo />
 
           <TouchableOpacity style={styles.submitBtn} onPress={handlePost} disabled={saving}>
             {saving

@@ -16,16 +16,17 @@ import BackHeader from '../../components/common/BackHeader';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
-import { uploadPostPhoto } from '../../lib/storage';
+import { uploadPostMedia } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import { checkAndFlagIfCommercial } from '../../lib/moderation';
 
-const CreateSpurScreen = ({ navigation }) => {
+const CreateSpurScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
+  const prefill = route?.params?.prefill ?? {};
   const [venue, setVenue] = useState('');
   const [activity, setActivity] = useState('');
-  const [photoUri, setPhotoUri] = useState(null);
+  const [mediaUri, setMediaUri] = useState(prefill.mediaUri ?? null);
   const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [venueError, setVenueError] = useState('');
@@ -50,20 +51,23 @@ const CreateSpurScreen = ({ navigation }) => {
     if (!session) { setLoading(false); return; }
 
     let photo_url = null;
-    if (photoUri) {
-      const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
+    let video_url = null;
+    if (mediaUri) {
+      const { url, isVideo, error } = await uploadPostMedia(session.user.id, mediaUri);
       if (error) {
         Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setLoading(false);
         return;
       }
-      photo_url = url;
+      if (isVideo) video_url = url;
+      else photo_url = url;
     }
 
     const { error } = await createSpurPost(session.user.id, {
       venue: venue.trim(),
       activity: activity.trim(),
       photo_url,
+      video_url,
       link_url: linkPreview?.url ?? null,
       link_title: linkPreview?.title ?? null,
       link_image: linkPreview?.image ?? null,
@@ -111,7 +115,7 @@ const CreateSpurScreen = ({ navigation }) => {
             <EmojiPickerButton onEmojiSelected={(e) => setActivity((prev) => prev + e)} style={styles.emojiBtn} />
           </View>
 
-          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <PhotoPicker uri={mediaUri} onChange={setMediaUri} allowVideo />
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>

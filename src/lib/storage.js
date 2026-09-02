@@ -39,6 +39,19 @@ export const uploadPostPhoto = (userId, uri) => {
   return uploadToBucket('post-photos', path, uri, `image/${ext}`, false);
 };
 
+// Photo OR video for the feed features (happenings, events, activity events,
+// spur, market). Routed to the `story-media` bucket rather than `post-photos`
+// because that bucket already permits video. Mirrors uploadStoryMedia.
+export const uploadPostMedia = async (userId, uri) => {
+  const ext = uri.split('.').pop().split('?')[0].toLowerCase() || 'jpg';
+  const isVideo = VIDEO_EXTS.includes(ext);
+  const path = `${userId}/posts/${Date.now()}.${ext}`;
+  const contentType = isVideo ? `video/${ext === 'mov' ? 'quicktime' : ext}` : `image/${ext}`;
+  const { url, error } = await uploadToBucket('story-media', path, uri, contentType, false);
+  if (error) return { error };
+  return { url, isVideo };
+};
+
 export const uploadStoryMedia = async (userId, uri) => {
   const ext = uri.split('.').pop().split('?')[0].toLowerCase() || 'jpg';
   const isVideo = VIDEO_EXTS.includes(ext);

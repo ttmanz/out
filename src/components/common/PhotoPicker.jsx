@@ -24,9 +24,7 @@ const PhotoPicker = ({ uri, onChange, aspect = [16, 9], allowVideo = false }) =>
       }
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: allowVideo
-        ? ImagePicker.MediaTypeOptions.All
-        : ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: allowVideo ? ['images', 'videos'] : ['images'],
       allowsEditing: !allowVideo,
       aspect: allowVideo ? undefined : aspect,
       quality: 0.8,

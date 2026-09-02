@@ -24,6 +24,7 @@ import ReportModal from '../../components/common/ReportModal';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
+import { LiveTabButton } from '../../components/common/LiveTabButton';
 
 const daysLeft = (createdAt) => {
   const ms = new Date(createdAt).getTime() + STORY_EXPIRY_DAYS * 24 * 60 * 60 * 1000 - Date.now();
@@ -373,6 +374,7 @@ const StoryFeedScreen = ({ navigation, route }) => {
             {t('stories.saved')}
           </Text>
         </TouchableOpacity>
+        <LiveTabButton navigation={navigation} createRoute={ROUTES.CREATE_STORY} />
       </View>
 
       <FlatList

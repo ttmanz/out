@@ -14,7 +14,7 @@ import BackHeader from '../../components/common/BackHeader';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import { createHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
-import { uploadPostPhoto } from '../../lib/storage';
+import { uploadPostMedia } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import { checkAndFlagIfCommercial } from '../../lib/moderation';
 
@@ -26,7 +26,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
   const [venue, setVenue] = useState(prefill.venue ?? '');
   const [when] = useState(prefill.when ?? 'today');
   const [description, setDescription] = useState('');
-  const [photoUri, setPhotoUri] = useState(null);
+  const [mediaUri, setMediaUri] = useState(prefill.mediaUri ?? null);
   const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [titleError, setTitleError] = useState('');
@@ -47,14 +47,16 @@ const CreateHappeningScreen = ({ navigation, route }) => {
     if (!session) { setLoading(false); return; }
 
     let photo_url = null;
-    if (photoUri) {
-      const { url, error } = await uploadPostPhoto(session.user.id, photoUri);
+    let video_url = null;
+    if (mediaUri) {
+      const { url, isVideo, error } = await uploadPostMedia(session.user.id, mediaUri);
       if (error) {
         Alert.alert(t('common.error'), t('common.photoUploadFailed'));
         setLoading(false);
         return;
       }
-      photo_url = url;
+      if (isVideo) video_url = url;
+      else photo_url = url;
     }
 
     const { error } = await createHappening(session.user.id, {
@@ -63,6 +65,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
       happening_at: when,
       description: description.trim() || null,
       photo_url,
+      video_url,
       link_url: linkPreview?.url ?? null,
       link_title: linkPreview?.title ?? null,
       link_image: linkPreview?.image ?? null,
@@ -111,7 +114,7 @@ const CreateHappeningScreen = ({ navigation, route }) => {
             <EmojiPickerButton onEmojiSelected={(e) => setDescription((prev) => prev + e)} style={styles.emojiBtn} />
           </View>
 
-          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <PhotoPicker uri={mediaUri} onChange={setMediaUri} allowVideo />
           <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
 
           <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={loading}>

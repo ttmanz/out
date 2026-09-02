@@ -6,7 +6,7 @@ export const getEvents = (category) => {
   startOfToday.setHours(0, 0, 0, 0);
   return supabase
     .from('events')
-    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at, created_by, event_likes(count)')
+    .select('id, category, name, venue, event_date, description, photo_url, video_url, link_url, link_title, link_image, link_domain, created_at, created_by, event_likes(count)')
     .eq('category', category)
     .eq('active', true)
     .or(`event_date.is.null,event_date.gte.${startOfToday.toISOString()}`)
@@ -14,10 +14,10 @@ export const getEvents = (category) => {
 };
 
 // created_by is trigger-forced to auth.uid() server-side
-export const createEvent = ({ category, name, venue, event_date, description, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
+export const createEvent = ({ category, name, venue, event_date, description, photo_url = null, video_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
   supabase
     .from('events')
-    .insert({ category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, active: true });
+    .insert({ category, name, venue, event_date, description, photo_url, video_url, link_url, link_title, link_image, link_domain, active: true });
 
 export const getEventReplies = (eventId) =>
   supabase
@@ -64,7 +64,7 @@ export const getSavedEvents = async (category, userId) => {
   if (!ids.length) return { data: [], error: null };
   return supabase
     .from('events')
-    .select('id, category, name, venue, event_date, description, photo_url, link_url, link_title, link_image, link_domain, created_at, created_by, event_likes(count)')
+    .select('id, category, name, venue, event_date, description, photo_url, video_url, link_url, link_title, link_image, link_domain, created_at, created_by, event_likes(count)')
     .eq('category', category)
     .in('id', ids)
     .order('event_date', { ascending: true });

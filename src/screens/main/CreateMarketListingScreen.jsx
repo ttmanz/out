@@ -10,18 +10,19 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { createMarketListing } from '../../lib/market';
-import { uploadPostPhoto } from '../../lib/storage';
+import { uploadPostMedia } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
-const CreateMarketListingScreen = ({ navigation }) => {
+const CreateMarketListingScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature } = useUser();
+  const prefill = route?.params?.prefill ?? {};
   const [userId, setUserId] = useState(null);
   const [description, setDescription] = useState('');
-  const [photoUri, setPhotoUri] = useState(null);
+  const [mediaUri, setMediaUri] = useState(prefill.mediaUri ?? null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -44,17 +45,19 @@ const CreateMarketListingScreen = ({ navigation }) => {
     setSaving(true);
 
     let photo_url = null;
-    if (photoUri) {
-      const { url, error } = await uploadPostPhoto(userId, photoUri);
+    let video_url = null;
+    if (mediaUri) {
+      const { url, isVideo, error } = await uploadPostMedia(userId, mediaUri);
       if (error) {
         Alert.alert(t('common.error'), t('market.photoFailed'));
         setSaving(false);
         return;
       }
-      photo_url = url;
+      if (isVideo) video_url = url;
+      else photo_url = url;
     }
 
-    const { error } = await createMarketListing(userId, description.trim(), photo_url);
+    const { error } = await createMarketListing(userId, description.trim(), photo_url, video_url);
     setSaving(false);
     if (error) {
       Alert.alert(t('common.error'), t('market.createFailed'));
@@ -70,7 +73,7 @@ const CreateMarketListingScreen = ({ navigation }) => {
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <Text style={styles.label}>{t('market.labelPhoto')}</Text>
-          <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
+          <PhotoPicker uri={mediaUri} onChange={setMediaUri} allowVideo />
 
           <Text style={styles.label}>{t('market.labelDescription')} *</Text>
           <View style={styles.inputWrap}>

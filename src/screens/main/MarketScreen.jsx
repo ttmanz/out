@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ActivityIndicator, Alert, Image, StatusBar, RefreshControl, TextInput,
+  ActivityIndicator, Alert, StatusBar, RefreshControl, TextInput,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
@@ -20,6 +20,8 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
+import FeedMedia from '../../components/common/FeedMedia';
+import { LiveTabBar } from '../../components/common/LiveTabButton';
 
 const MarketScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
@@ -132,6 +134,13 @@ const MarketScreen = ({ navigation, route }) => {
         </TouchableOpacity>
       </View>
 
+      <LiveTabBar
+        navigation={navigation}
+        createRoute={ROUTES.CREATE_MARKET_LISTING}
+        extraParams={{}}
+        label={t('market.title')}
+      />
+
       <FlatList
         ref={flatListRef}
         data={listings}
@@ -162,9 +171,7 @@ const MarketScreen = ({ navigation, route }) => {
           const replyCount = ps.replies?.length ?? 0;
           return (
             <View style={styles.card}>
-              {item.photo_url ? (
-                <Image source={{ uri: item.photo_url }} style={styles.photo} resizeMode="cover" />
-              ) : null}
+              <FeedMedia photo={item.photo_url} video={item.video_url} style={styles.photo} />
               <View style={styles.cardBody}>
                 <Text style={styles.description}>{item.description}</Text>
                 <View style={styles.cardFooter}>

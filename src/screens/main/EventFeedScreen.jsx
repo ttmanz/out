@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, FlatList,
-  ActivityIndicator, RefreshControl, Image, TextInput, Alert, Share,
+  ActivityIndicator, RefreshControl, TextInput, Alert, Share,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
@@ -21,6 +21,8 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
+import FeedMedia from '../../components/common/FeedMedia';
+import { LiveTabButton } from '../../components/common/LiveTabButton';
 
 const formatEventDate = (iso) => {
   if (!iso) return null;
@@ -38,9 +40,7 @@ const EventCard = ({
   const replyCount = ps.replies?.length ?? 0;
   return (
     <View style={styles.card}>
-      {!!event.photo_url && (
-        <Image source={{ uri: event.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
-      )}
+      <FeedMedia photo={event.photo_url} video={event.video_url} style={styles.cardPhoto} />
       <View style={styles.cardBody}>
         <View style={styles.cardTitleRow}>
           <Text style={[styles.eventName, { flex: 1 }]}>{event.name}</Text>
@@ -314,6 +314,7 @@ const EventFeedScreen = ({ navigation, route }) => {
             {t('stories.saved')}
           </Text>
         </TouchableOpacity>
+        <LiveTabButton navigation={navigation} createRoute={ROUTES.CREATE_EVENT} extraParams={{ category }} />
       </View>
 
       <FlatList

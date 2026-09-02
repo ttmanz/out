@@ -3,13 +3,13 @@ import { supabase } from './supabase';
 export const getMarketListings = () =>
   supabase
     .from('market_listings')
-    .select('id, description, photo_url, created_at, user_id, profiles(full_name, photo_url)')
+    .select('id, description, photo_url, video_url, created_at, user_id, profiles(full_name, photo_url)')
     .order('created_at', { ascending: false });
 
-export const createMarketListing = (userId, description, photoUrl) =>
+export const createMarketListing = (userId, description, photoUrl, videoUrl = null) =>
   supabase
     .from('market_listings')
-    .insert({ user_id: userId, description, photo_url: photoUrl ?? null })
+    .insert({ user_id: userId, description, photo_url: photoUrl ?? null, video_url: videoUrl ?? null })
     .select()
     .single();
 

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
-  View, Text, Image, FlatList, TouchableOpacity, StyleSheet,
+  View, Text, FlatList, TouchableOpacity, StyleSheet,
   ActivityIndicator, RefreshControl, TextInput, Alert,
 } from 'react-native';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
@@ -19,6 +19,8 @@ import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
+import FeedMedia from '../../components/common/FeedMedia';
+import { LiveTabBar } from '../../components/common/LiveTabButton';
 
 const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onEmojiInsert, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
   const ps = replyState ?? {};
@@ -47,7 +49,7 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
       <Text style={styles.title}>{item.title}</Text>
       {!!item.venue && <Text style={styles.meta}>📍 {item.venue}</Text>}
       {!!item.description && <Text style={styles.desc}>{item.description}</Text>}
-      {!!item.photo_url && <Image source={{ uri: item.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+      <FeedMedia photo={item.photo_url} video={item.video_url} style={styles.postPhoto} />
       {!!item.link_url && <LinkPreviewCard url={item.link_url} title={item.link_title} image={item.link_image} domain={item.link_domain} />}
 
       <TouchableOpacity style={styles.replyToggle} onPress={() => onToggleReplies(item.id)}>
@@ -216,6 +218,13 @@ const HappeningFeedScreen = ({ navigation, route }) => {
   return (
     <KeyboardAvoidingView style={styles.safe} behavior="padding">
       <BackHeader title={t(`happenings.${filter}`).toUpperCase()} onBack={() => navigation.goBack()} />
+
+      <LiveTabBar
+        navigation={navigation}
+        createRoute={ROUTES.CREATE_HAPPENING}
+        extraParams={{ when: filter }}
+        label={t(`happenings.${filter}`)}
+      />
 
       <FlatList
         ref={flatListRef}

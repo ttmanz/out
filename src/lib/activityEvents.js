@@ -7,7 +7,7 @@ export const getActivityEvents = (category) => {
   startOfToday.setHours(0, 0, 0, 0);
   return supabase
     .from('activity_events')
-    .select('id, category, name, venue, event_date, description, photo_url, created_by, link_url, link_title, link_image, link_domain')
+    .select('id, category, name, venue, event_date, description, photo_url, video_url, created_by, link_url, link_title, link_image, link_domain')
     .eq('category', category)
     .eq('active', true)
     .or(`event_date.is.null,event_date.gte.${startOfToday.toISOString()}`)
@@ -15,10 +15,10 @@ export const getActivityEvents = (category) => {
 };
 
 // Member-posted event — created_by is trigger-forced to auth.uid() server-side
-export const createActivityEvent = ({ category, name, venue, event_date, description, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
+export const createActivityEvent = ({ category, name, venue, event_date, description, photo_url = null, video_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
   supabase
     .from('activity_events')
-    .insert({ category, name, venue, event_date, description, photo_url, active: true, link_url, link_title, link_image, link_domain });
+    .insert({ category, name, venue, event_date, description, photo_url, video_url, active: true, link_url, link_title, link_image, link_domain });
 
 export const getActivityEventReplies = (eventId) =>
   supabase

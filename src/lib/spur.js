@@ -10,12 +10,13 @@ export const getSpurPosts = () => {
     .limit(30);
 };
 
-export const createSpurPost = (userId, { venue, activity, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
+export const createSpurPost = (userId, { venue, activity, photo_url = null, video_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
   supabase.from('spur_posts').insert({
     user_id: userId,
     title: `Going to ${venue} for ${activity}, join me?`,
     venue,
     photo_url,
+    video_url,
     link_url,
     link_title,
     link_image,

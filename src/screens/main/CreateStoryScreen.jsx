@@ -18,11 +18,11 @@ import { getSession } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
 import { checkAndFlagIfCommercial } from '../../lib/moderation';
 
-const CreateStoryScreen = ({ navigation }) => {
+const CreateStoryScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
   const [text, setText] = useState('');
-  const [mediaUri, setMediaUri] = useState(null);
+  const [mediaUri, setMediaUri] = useState(route?.params?.prefill?.mediaUri ?? null);
   const [linkPreview, setLinkPreview] = useState(null);
   const [loading, setLoading] = useState(false);
 
