@@ -8,6 +8,7 @@ import { useVideoPlayer, VideoView } from 'expo-video';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import {
   getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory, deleteStory,
@@ -172,6 +173,7 @@ const StoryCard = ({
 };
 
 const StoryFeedScreen = ({ navigation, route }) => {
+  useFeatureGate('my_story');
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;

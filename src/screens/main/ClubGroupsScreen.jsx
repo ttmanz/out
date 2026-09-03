@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import { getClubs, getMyClubs } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
@@ -33,6 +34,7 @@ const ClubCard = ({ club, onPress }) => (
 );
 
 const ClubGroupsScreen = ({ navigation }) => {
+  useFeatureGate('club_groups');
   const [userId, setUserId] = useState(null);
   const [allClubs, setAllClubs] = useState([]);
   const [myClubIds, setMyClubIds] = useState(new Set());

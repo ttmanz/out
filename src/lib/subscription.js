@@ -42,6 +42,11 @@ export const updateSubscriptionSettings = (fields) =>
 export const getFeatureAccess = () =>
   supabase.from('feature_access').select('*').order('label');
 
+// Progressive rollout: a feature row with enabled = false is hidden app-wide.
+// Missing row / missing flag ⇒ treated as enabled.
+export const isFeatureEnabled = (featureKey, featureMap) =>
+  featureMap?.[featureKey]?.enabled !== false;
+
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const updateFeatureAccess = (featureKey, fields) =>
   supabase.from('feature_access').update(fields).eq('feature_key', featureKey);
@@ -83,6 +88,9 @@ const isVenueLocked = (profile) =>
 //   Venue accounts (account_type = 'venue_owner') get a 30-day trial from
 //   signup, then need an active subscription for the whole app.
 export const canAccessFeature = (featureKey, { profile, settings, featureMap, unlockedFeatureKeys }) => {
+  // Admin-disabled feature: hidden for everyone, staff/admin included.
+  if (featureMap?.[featureKey]?.enabled === false) return { allowed: false, disabled: true };
+
   if (isBypassRole(profile)) return { allowed: true };
 
   const mode = settings?.mode ?? 'free';

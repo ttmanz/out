@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import {
   getGroupPosts, getFriendGroupPosts, createGroupPost,
   getGroupPostReplies, createGroupPostReply, adminDeleteGroupPost, deleteGroupPost,
@@ -30,6 +31,7 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const GroupDetailScreen = ({ navigation, route }) => {
+  useFeatureGate('open_groups');
   const { groupId, groupName, focusItemId } = route.params;
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
@@ -202,7 +204,8 @@ const GroupDetailScreen = ({ navigation, route }) => {
   const handlePost = async () => {
     const access = canAccessFeature('open_groups');
     if (!access.allowed) {
-      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      if (access.disabled) Alert.alert(t('common.error'), t('common.featureUnavailable'));
+      else if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
       else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }

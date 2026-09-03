@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import {
   getMarketListings, deleteMarketListing, adminDeleteListing,
@@ -24,6 +25,7 @@ import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabBar } from '../../components/common/LiveTabButton';
 
 const MarketScreen = ({ navigation, route }) => {
+  useFeatureGate('market');
   const { t } = useTranslation();
   const { canAccessFeature, profile } = useUser();
   const isAdmin = profile?.is_admin === true;
@@ -64,7 +66,8 @@ const MarketScreen = ({ navigation, route }) => {
   const handlePostPress = () => {
     const access = canAccessFeature('market');
     if (!access.allowed) {
-      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      if (access.disabled) Alert.alert(t('common.error'), t('common.featureUnavailable'));
+      else if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
       else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }

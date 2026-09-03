@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { getHappenings, getHappeningReplies, createHappeningReply, adminDeleteHappening, deleteHappening } from '../../lib/happenings';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
@@ -105,6 +106,7 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
 };
 
 const HappeningFeedScreen = ({ navigation, route }) => {
+  useFeatureGate('whats_happening');
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;

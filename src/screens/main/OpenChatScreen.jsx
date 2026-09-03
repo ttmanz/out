@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import {
   getOpenChatPosts, getOpenChatReplies, createOpenChatReply,
@@ -25,6 +26,7 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const OpenChatScreen = ({ navigation, route }) => {
+  useFeatureGate('open_chat');
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;

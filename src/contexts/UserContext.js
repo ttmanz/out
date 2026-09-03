@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Alert } from 'react-native';
 import { getSession, onAuthStateChange, signOut } from '../lib/auth';
 import { getProfile } from '../lib/profile';
-import { subscriptionStatus, getSubscriptionSettings, getSubscriptionPlans, getFeatureAccess, getMyFeatureUnlocks, canAccessFeature } from '../lib/subscription';
+import { subscriptionStatus, getSubscriptionSettings, getSubscriptionPlans, getFeatureAccess, getMyFeatureUnlocks, canAccessFeature, isFeatureEnabled } from '../lib/subscription';
 import { configurePurchases } from '../lib/purchases';
 import { registerForPushNotificationsAsync } from '../lib/pushNotifications';
 
@@ -11,6 +11,7 @@ const UserContext = createContext({
   refreshProfile: () => {},
   hasAccess: true,
   canAccessFeature: () => ({ allowed: true }),
+  isFeatureEnabled: () => true,
 });
 
 export const UserProvider = ({ children }) => {
@@ -66,6 +67,11 @@ export const UserProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, [refreshProfile, refreshAccessConfig]);
 
+  // Lightweight re-pull of just the access config (subscription mode + feature
+  // flags) — called after an admin edits it in Admin → Access so the change
+  // lands app-wide without waiting for the next auth refresh.
+  const refreshFeatureConfig = useCallback(() => refreshAccessConfig(), [refreshAccessConfig]);
+
   const { hasAccess } = subscriptionStatus(profile, settings);
 
   const checkFeature = useCallback(
@@ -73,8 +79,13 @@ export const UserProvider = ({ children }) => {
     [profile, settings, featureMap, unlockedFeatureKeys]
   );
 
+  const checkFeatureEnabled = useCallback(
+    (featureKey) => isFeatureEnabled(featureKey, featureMap),
+    [featureMap]
+  );
+
   return (
-    <UserContext.Provider value={{ profile, refreshProfile, hasAccess, canAccessFeature: checkFeature, settings, monthlyPlan }}>
+    <UserContext.Provider value={{ profile, refreshProfile, refreshFeatureConfig, hasAccess, canAccessFeature: checkFeature, isFeatureEnabled: checkFeatureEnabled, settings, monthlyPlan }}>
       {children}
     </UserContext.Provider>
   );

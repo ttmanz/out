@@ -7,6 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import { getSpurPosts, getSpurReplies, createSpurReply, adminDeleteSpurPost, deleteSpurPost } from '../../lib/spur';
 import { getSession } from '../../lib/auth';
@@ -23,6 +24,7 @@ import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabBar } from '../../components/common/LiveTabButton';
 
 const SpurOfMomentScreen = ({ navigation, route }) => {
+  useFeatureGate('spur_of_moment');
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;

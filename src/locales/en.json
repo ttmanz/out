@@ -13,6 +13,7 @@
     "livePhoto": "Photo",
     "liveVideo": "Video",
     "cameraPermissionNeeded": "Allow camera access to capture a live photo or video.",
+    "featureUnavailable": "This feature isn't available right now.",
     "shareFallback": "Check out this post on Find-Mee!",
     "noSavedItems": "You haven't saved anything here yet — tap the bookmark on a post to keep it.",
     "delete": "Delete",

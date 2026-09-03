@@ -94,7 +94,8 @@ const MemberProfileScreen = ({ navigation, route }) => {
   const handleAddFriend = async () => {
     const access = canAccessFeature('friends');
     if (!access.allowed) {
-      if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
+      if (access.disabled) Alert.alert(t('common.error'), t('common.featureUnavailable'));
+      else if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
       else navigation.navigate(ROUTES.SUBSCRIPTION);
       return;
     }

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
@@ -23,6 +24,7 @@ const CategoryCard = ({ emoji, title, onPress }) => (
 );
 
 const ActivitiesScreen = ({ navigation }) => {
+  useFeatureGate('whats_happening');
   const { t } = useTranslation();
 
   return (

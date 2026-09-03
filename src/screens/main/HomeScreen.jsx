@@ -9,18 +9,18 @@ import { useUser } from '../../contexts/UserContext';
 import LanguagePicker from '../../components/common/LanguagePicker';
 
 const FEATURES = [
-  { emoji: '👥', titleKey: 'home.friends',        descKey: 'home.friendsDesc',        route: ROUTES.FRIENDS_HUB,    watermark: '🤝' },
-  { emoji: '📸', titleKey: 'home.myStory',        descKey: 'home.myStoryDesc',        route: ROUTES.STORY_FEED,     watermark: '🌟' },
-  { emoji: '🎉', titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, watermark: '🎆' },
-  { emoji: '🗺️', titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️' },
-  { emoji: '⚡', titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡' },
-  { emoji: '💬', titleKey: 'home.openChat',        descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      watermark: '💭' },
-  { emoji: '📍', titleKey: 'home.atVenue',         descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       watermark: '👥' },
-  { emoji: '🏛️', titleKey: 'home.clubGroups',      descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    watermark: '🎭' },
-  { emoji: '🧩', titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    watermark: '🌐' },
-  { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍' },
-  { emoji: '🛍️', titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         watermark: '🏷️' },
-  { emoji: '🎟️', titleKey: 'home.events',          descKey: 'home.eventsDesc',         route: ROUTES.EVENTS,         watermark: '🚀' },
+  { emoji: '👥', titleKey: 'home.friends',        descKey: 'home.friendsDesc',        route: ROUTES.FRIENDS_HUB,    watermark: '🤝', featureKey: 'friends' },
+  { emoji: '📸', titleKey: 'home.myStory',        descKey: 'home.myStoryDesc',        route: ROUTES.STORY_FEED,     watermark: '🌟', featureKey: 'my_story' },
+  { emoji: '🎉', titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, watermark: '🎆', featureKey: 'whats_happening' },
+  { emoji: '🗺️', titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️', featureKey: 'where_to_go' },
+  { emoji: '⚡', titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡', featureKey: 'spur_of_moment' },
+  { emoji: '💬', titleKey: 'home.openChat',        descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      watermark: '💭', featureKey: 'open_chat' },
+  { emoji: '📍', titleKey: 'home.atVenue',         descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       watermark: '👥', featureKey: 'at_venue' },
+  { emoji: '🏛️', titleKey: 'home.clubGroups',      descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    watermark: '🎭', featureKey: 'club_groups' },
+  { emoji: '🧩', titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    watermark: '🌐', featureKey: 'open_groups' },
+  { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍', featureKey: 'venue_hub' },
+  { emoji: '🛍️', titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         watermark: '🏷️', featureKey: 'market' },
+  { emoji: '🎟️', titleKey: 'home.events',          descKey: 'home.eventsDesc',         route: ROUTES.EVENTS,         watermark: '🚀', featureKey: 'events' },
 ];
 
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
@@ -59,14 +59,15 @@ const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { profile } = useUser();
+  const { profile, isFeatureEnabled } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const isRestricted = profile?.status === 'restricted';
   const needsProfile = profile && !profile.profile_completed;
-  const visibleFeatures = isRestricted
+  const visibleFeatures = (isRestricted
     ? FEATURES.filter((f) => RESTRICTED_ROUTES.has(f.route))
-    : FEATURES;
+    : FEATURES
+  ).filter((f) => isFeatureEnabled(f.featureKey));
 
   return (
     <View style={styles.safe}>

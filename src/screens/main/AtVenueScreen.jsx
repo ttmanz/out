@@ -8,6 +8,7 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import { getSession } from '../../lib/auth';
 import { upsertCheckin, getRecentCheckins } from '../../lib/checkins';
@@ -25,6 +26,7 @@ const MemberPin = ({ photoUrl, name }) => (
 );
 
 const AtVenueScreen = ({ navigation }) => {
+  useFeatureGate('at_venue');
   const { t } = useTranslation();
 
   const [myLocation, setMyLocation] = useState(null);

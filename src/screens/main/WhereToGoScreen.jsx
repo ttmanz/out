@@ -8,6 +8,7 @@ import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { fetchNearbyVenues, getPinColor } from '../../lib/venues';
 import { getHappenings } from '../../lib/happenings';
 import AdBanner from '../../components/common/AdBanner';
@@ -22,6 +23,7 @@ const DEFAULT_REGION = {
 };
 
 const WhereToGoScreen = ({ navigation }) => {
+  useFeatureGate('where_to_go');
   const { t } = useTranslation();
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [venues, setVenues] = useState([]);

@@ -6,6 +6,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import { getOpenGroups } from '../../lib/groups';
 import AdBanner from '../../components/common/AdBanner';
@@ -26,6 +27,7 @@ const GroupCard = ({ group, onPress }) => (
 );
 
 const OpenGroupsScreen = ({ navigation }) => {
+  useFeatureGate('open_groups');
   const { t } = useTranslation();
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);

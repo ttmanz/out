@@ -6,6 +6,7 @@ import {
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import {
   getClub, getClubMembers, getMemberStatus, requestToJoin, approveMember, rejectMember,
   getClubPosts, createClubPost, adminDeleteClubPost, deleteClubPost, adminDeleteClub,
@@ -26,6 +27,7 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const ClubDetailScreen = ({ navigation, route }) => {
+  useFeatureGate('club_groups');
   const { clubId } = route.params;
   const { profile } = useUser();
   const isSiteAdmin = profile?.is_admin === true;

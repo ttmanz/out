@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { getActivityEvents, deriveWhen, getActivityEventReplies, createActivityEventReply, adminDeleteActivityEvent, deleteActivityEvent } from '../../lib/activityEvents';
 import { getSession } from '../../lib/auth';
 import { formatAgo } from '../../utils/format';
@@ -115,6 +116,7 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
 };
 
 const ActivityEventsScreen = ({ navigation, route }) => {
+  useFeatureGate('whats_happening');
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;

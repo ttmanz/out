@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
@@ -15,6 +16,7 @@ const OPTIONS = [
 ];
 
 const VenueHubScreen = ({ navigation }) => {
+  useFeatureGate('venue_hub');
   const { t } = useTranslation();
 
   return (

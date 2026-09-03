@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
+import { useFeatureGate } from '../../hooks/useFeatureGate';
 import {
   getEvents, getEventReplies, createEventReply, adminDeleteEvent, deleteEvent,
   getMyEventLikes, getMyEventSaves, likeEvent, unlikeEvent, saveEvent, unsaveEvent,
@@ -134,6 +135,7 @@ const EventCard = ({
 };
 
 const EventFeedScreen = ({ navigation, route }) => {
+  useFeatureGate('events');
   const { t } = useTranslation();
   const { profile } = useUser();
   const isAdmin = profile?.is_admin === true;

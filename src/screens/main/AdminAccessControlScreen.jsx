@@ -8,7 +8,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS } from '../../constants/colors';
 import { getSubscriptionSettings, updateSubscriptionSettings, getFeatureAccess, updateFeatureAccess } from '../../lib/subscription';
+import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
+
+// Messages is core plumbing (conversations, "Message" buttons across the app),
+// not a Home tab — keep it out of the on/off list.
+const TOGGLEABLE = (f) => f.feature_key !== 'messages';
 
 const MODES = [
   { key: 'free', label: 'Free', desc: 'Everyone has full access to every feature' },
@@ -18,6 +23,7 @@ const MODES = [
 ];
 
 const AdminAccessControlScreen = ({ navigation }) => {
+  const { refreshFeatureConfig } = useUser();
   const [mode, setMode] = useState('free');
   const [freeUntil, setFreeUntil] = useState(null);
   const [showPicker, setShowPicker] = useState(false);
@@ -37,6 +43,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
     }
     setFeatures((featureData ?? []).map((f) => ({
       ...f,
+      enabled: f.enabled !== false,
       one_off_price_draft: f.one_off_price != null ? String(f.one_off_price) : '',
     })));
     setLoading(false);
@@ -59,6 +66,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
     });
     const results = await Promise.all(features.map((f) =>
       updateFeatureAccess(f.feature_key, {
+        enabled: f.enabled,
         is_paid: f.is_paid,
         one_off_price: f.is_paid ? (parseFloat(f.one_off_price_draft) || null) : null,
       })
@@ -70,6 +78,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
       return;
     }
     Alert.alert('Saved', 'Access control settings updated.');
+    refreshFeatureConfig();
     load();
   };
 
@@ -138,6 +147,29 @@ const AdminAccessControlScreen = ({ navigation }) => {
             )}
           </>
         )}
+
+        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>App Features</Text>
+        <Text style={styles.sectionHint}>
+          Turn a feature off to hide it from everyone — its Home card disappears and
+          its screen becomes unreachable. Turn it back on to release it. Everything
+          is on by default.
+        </Text>
+
+        {features.filter(TOGGLEABLE).map((f) => (
+          <View key={`toggle-${f.feature_key}`} style={styles.featureRow}>
+            <View style={styles.featureHeaderRow}>
+              <Text style={styles.featureLabel}>{f.label}</Text>
+              <TouchableOpacity
+                style={[styles.paidToggle, f.enabled && styles.paidToggleActive]}
+                onPress={() => setFeatureField(f.feature_key, 'enabled', !f.enabled)}
+              >
+                <Text style={[styles.paidToggleText, f.enabled && styles.paidToggleTextActive]}>
+                  {f.enabled ? 'On' : 'Off'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
 
         <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Paid / Premium Features</Text>
         <Text style={styles.sectionHint}>
