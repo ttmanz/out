@@ -1,42 +1,55 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { signOut } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
 import LanguagePicker from '../../components/common/LanguagePicker';
+import { GradientIconCircle } from '../../components/common/GradientIcon';
 
 const FEATURES = [
-  { emoji: '👥', titleKey: 'home.friends',        descKey: 'home.friendsDesc',        route: ROUTES.FRIENDS_HUB,    watermark: '🤝', featureKey: 'friends' },
-  { emoji: '📸', titleKey: 'home.myStory',        descKey: 'home.myStoryDesc',        route: ROUTES.STORY_FEED,     watermark: '🌟', featureKey: 'my_story' },
-  { emoji: '🎉', titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, watermark: '🎆', featureKey: 'whats_happening' },
-  { emoji: '🗺️', titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    watermark: '🏙️', featureKey: 'where_to_go' },
-  { emoji: '⚡', titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, watermark: '⚡', featureKey: 'spur_of_moment' },
-  { emoji: '💬', titleKey: 'home.openChat',        descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      watermark: '💭', featureKey: 'open_chat' },
-  { emoji: '📍', titleKey: 'home.atVenue',         descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       watermark: '👥', featureKey: 'at_venue' },
-  { emoji: '🏛️', titleKey: 'home.clubGroups',      descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    watermark: '🎭', featureKey: 'club_groups' },
-  { emoji: '🧩', titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    watermark: '🌐', featureKey: 'open_groups' },
-  { emoji: '🍸', titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      watermark: '📍', featureKey: 'venue_hub' },
-  { emoji: '🛍️', titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         watermark: '🏷️', featureKey: 'market' },
-  { emoji: '🎟️', titleKey: 'home.events',          descKey: 'home.eventsDesc',         route: ROUTES.EVENTS,         watermark: '🚀', featureKey: 'events' },
+  { icon: 'people',          titleKey: 'home.friends',        descKey: 'home.friendsDesc',        route: ROUTES.FRIENDS_HUB,    featureKey: 'friends' },
+  { icon: 'camera',          titleKey: 'home.myStory',        descKey: 'home.myStoryDesc',        route: ROUTES.STORY_FEED,     featureKey: 'my_story' },
+  { icon: 'sparkles',        titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, featureKey: 'whats_happening' },
+  { icon: 'map',             titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    featureKey: 'where_to_go' },
+  { icon: 'flash',           titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, featureKey: 'spur_of_moment' },
+  { icon: 'chatbubbles',     titleKey: 'home.openChat',       descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      featureKey: 'open_chat' },
+  { icon: 'location',        titleKey: 'home.atVenue',        descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       featureKey: 'at_venue' },
+  { icon: 'people-circle',   titleKey: 'home.clubGroups',     descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    featureKey: 'club_groups' },
+  { icon: 'grid',            titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    featureKey: 'open_groups' },
+  { icon: 'wine',            titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      featureKey: 'venue_hub' },
+  { icon: 'pricetags',       titleKey: 'home.market',          descKey: 'home.marketDesc',         route: ROUTES.MARKET,         featureKey: 'market' },
+  { icon: 'ticket',          titleKey: 'home.events',          descKey: 'home.eventsDesc',         route: ROUTES.EVENTS,         featureKey: 'events' },
 ];
 
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
-const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
-  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={styles.card}>
-    <View style={styles.watermarkContainer}>
-      <Text style={styles.watermark}>{watermark}</Text>
-    </View>
-    <View style={styles.iconRing}>
-      <Text style={styles.cardEmoji}>{emoji}</Text>
-    </View>
-    <View style={styles.textWrap}>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardDesc}>{description}</Text>
-    </View>
-    <Text style={styles.chevron}>›</Text>
+const FeatureCard = ({ icon, title, description, onPress }) => (
+  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={styles.cardWrap}>
+    {/* luminous gradient stroke: cyan → blue → violet */}
+    <LinearGradient
+      colors={['#4FD9FF', '#295DFF', '#8A3FFC']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.cardBorder}
+    >
+      {/* glassy blue → violet fill */}
+      <LinearGradient
+        colors={COLORS.cardGradient}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.card}
+      >
+        <GradientIconCircle name={icon} size={54} iconSize={24} style={styles.iconRing} />
+        <View style={styles.textWrap}>
+          <Text style={styles.cardTitle} numberOfLines={1}>{title}</Text>
+          <Text style={styles.cardDesc} numberOfLines={2}>{description}</Text>
+        </View>
+        <Text style={styles.chevron}>›</Text>
+      </LinearGradient>
+    </LinearGradient>
   </TouchableOpacity>
 );
 
@@ -101,10 +114,9 @@ const HomeScreen = ({ navigation }) => {
           {visibleFeatures.map((f) => (
             <FeatureCard
               key={f.route}
-              emoji={f.emoji}
+              icon={f.icon}
               title={t(f.titleKey)}
               description={t(f.descKey)}
-              watermark={f.watermark}
               onPress={() => navigation.navigate(f.route)}
             />
           ))}
@@ -131,7 +143,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 38, height: 38,
     borderRadius: 10,
-    backgroundColor: 'rgba(212,175,55,0.12)',
+    backgroundColor: 'rgba(41,93,255,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
     justifyContent: 'center', alignItems: 'center',
@@ -143,7 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(212,175,55,0.12)',
+    backgroundColor: 'rgba(41,93,255,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
   },
@@ -197,7 +209,7 @@ const styles = StyleSheet.create({
   profileBanner: {
     marginHorizontal: 28,
     marginBottom: 14,
-    backgroundColor: 'rgba(212,175,55,0.12)',
+    backgroundColor: 'rgba(41,93,255,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
     borderRadius: 14,
@@ -208,41 +220,30 @@ const styles = StyleSheet.create({
   profileBannerCta: { fontSize: 12, color: COLORS.textMuted },
 
   cards: { paddingHorizontal: 28 },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    marginBottom: 14,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
+  cardWrap: {
+    borderRadius: 20,
+    marginBottom: 16,
+    // subtle outer bloom
+    shadowColor: COLORS.glow,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 4,
   },
-  watermarkContainer: {
-    position: 'absolute',
-    right: 8,
-    top: 0,
-    bottom: 0,
-    width: 90,
-    justifyContent: 'center',
+  cardBorder: {
+    borderRadius: 20,
+    padding: 1.5,   // this is the visible gradient stroke width
+  },
+  card: {
+    flexDirection: 'row',
     alignItems: 'center',
+    borderRadius: 18.5,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    minHeight: 88,   // uniform card height regardless of description length
+    overflow: 'hidden',
   },
-  watermark: { fontSize: 60, opacity: 0.22 },
-  iconRing: {
-    width: 58, height: 58, borderRadius: 29,
-    borderWidth: 1.5,
-    borderColor: COLORS.cardGoldBorder,
-    justifyContent: 'center', alignItems: 'center',
-    marginRight: 14,
-  },
-  cardEmoji: { fontSize: 26 },
+  iconRing: { marginRight: 14 },
   textWrap: { flex: 1 },
   cardTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text, marginBottom: 3 },
   cardDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 16 },

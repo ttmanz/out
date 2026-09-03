@@ -130,7 +130,7 @@
     "whatsHappeningDesc": "Share your plans & itinerary",
     "whereToGo": "Where to Go",
     "whereToGoDesc": "Find venues near you on the map",
-    "spurOfMoment": "Spur of the Moment",
+    "spurOfMoment": "Let's Go Now",
     "spurOfMomentDesc": "Spontaneous meetups, right now",
     "openChat": "Open Chat",
     "openChatDesc": "Chat with members nearby",
@@ -182,7 +182,7 @@
     }
   },
   "spur": {
-    "title": "Spur of the Moment",
+    "title": "Let's Go Now",
     "noSpur": "Nothing spontaneous yet — be the first!",
     "goingTo": "Going to",
     "forWhat": "for",

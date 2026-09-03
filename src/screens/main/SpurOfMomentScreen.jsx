@@ -22,6 +22,7 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabBar } from '../../components/common/LiveTabButton';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const SpurOfMomentScreen = ({ navigation, route }) => {
   useFeatureGate('spur_of_moment');
@@ -110,6 +111,7 @@ const SpurOfMomentScreen = ({ navigation, route }) => {
     const ps = replyState[item.id] ?? {};
     const replyCount = ps.replies?.length ?? 0;
     return (
+     <GradientBorder radius={14} style={styles.cardOuter}>
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Avatar
@@ -190,6 +192,7 @@ const SpurOfMomentScreen = ({ navigation, route }) => {
           </View>
         )}
       </View>
+     </GradientBorder>
     );
   };
 
@@ -250,13 +253,11 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   list: { padding: 16, paddingBottom: 100 },
   empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
+  cardOuter: { marginBottom: 14 },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: { marginRight: 10 },

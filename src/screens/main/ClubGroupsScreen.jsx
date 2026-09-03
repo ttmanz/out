@@ -13,24 +13,27 @@ import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const ClubCard = ({ club, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-    {club.photo_url
-      ? <Image source={{ uri: club.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
-      : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🏛️</Text></View>
-    }
-    <View style={styles.cardBody}>
-      <View style={styles.cardTitleRow}>
-        <Text style={styles.cardName}>{club.name}</Text>
-        {club.status === 'suspended' && (
-          <View style={styles.suspendedBadge}><Text style={styles.suspendedBadgeText}>Suspended</Text></View>
-        )}
+  <GradientBorder radius={16} style={styles.cardOuter}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+      {club.photo_url
+        ? <Image source={{ uri: club.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
+        : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🏛️</Text></View>
+      }
+      <View style={styles.cardBody}>
+        <View style={styles.cardTitleRow}>
+          <Text style={styles.cardName}>{club.name}</Text>
+          {club.status === 'suspended' && (
+            <View style={styles.suspendedBadge}><Text style={styles.suspendedBadgeText}>Suspended</Text></View>
+          )}
+        </View>
+        {!!club.description && <Text style={styles.cardDesc} numberOfLines={2}>{club.description}</Text>}
+        <Text style={styles.cardMeta}>by {club.admin?.full_name ?? 'Unknown'} · {formatAgo(club.created_at)}</Text>
       </View>
-      {!!club.description && <Text style={styles.cardDesc} numberOfLines={2}>{club.description}</Text>}
-      <Text style={styles.cardMeta}>by {club.admin?.full_name ?? 'Unknown'} · {formatAgo(club.created_at)}</Text>
-    </View>
-  </TouchableOpacity>
+    </TouchableOpacity>
+  </GradientBorder>
 );
 
 const ClubGroupsScreen = ({ navigation }) => {
@@ -142,15 +145,15 @@ const styles = StyleSheet.create({
   tabTextActive: { color: COLORS.primary },
   list: { padding: 16, paddingBottom: 100 },
   empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
+  cardOuter: { marginBottom: 14 },
   card: {
-    backgroundColor: COLORS.surface, borderRadius: 14,
-    marginBottom: 14, overflow: 'hidden',
-    borderWidth: 1, borderColor: COLORS.borderAccent,
+    backgroundColor: COLORS.surface, borderRadius: 12,
+    overflow: 'hidden',
   },
   cardPhoto: { width: '100%', height: 140 },
   cardPhotoPlaceholder: {
     width: '100%', height: 100,
-    backgroundColor: 'rgba(212,175,55,0.08)',
+    backgroundColor: 'rgba(41,93,255,0.08)',
     justifyContent: 'center', alignItems: 'center',
   },
   cardPhotoEmoji: { fontSize: 40 },
@@ -158,7 +161,7 @@ const styles = StyleSheet.create({
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   cardName: { fontSize: 17, fontWeight: '800', color: COLORS.text },
   suspendedBadge: {
-    backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 8,
+    backgroundColor: 'rgba(41,93,255,0.12)', borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },

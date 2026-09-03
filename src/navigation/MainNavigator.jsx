@@ -217,7 +217,7 @@ const MainNavigator = () => {
           shadowRadius: 12,
           elevation: 20,
         },
-        tabBarActiveTintColor: COLORS.primary,
+        tabBarActiveTintColor: COLORS.glow,
         tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: {
           fontSize: 10,
@@ -244,7 +244,7 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Messages',
             tabBarBadge: msgCount > 0 ? (msgCount > 99 ? '99+' : msgCount) : undefined,
-            tabBarBadgeStyle: { backgroundColor: COLORS.error, color: COLORS.white, fontSize: 10, fontWeight: '800' },
+            tabBarBadgeStyle: { backgroundColor: COLORS.notification, color: COLORS.white, fontSize: 10, fontWeight: '800' },
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} size={24} color={color} />
             ),
@@ -262,7 +262,7 @@ const MainNavigator = () => {
           options={{
             tabBarLabel: 'Alerts',
             tabBarBadge: notifCount > 0 ? (notifCount > 99 ? '99+' : notifCount) : undefined,
-            tabBarBadgeStyle: { backgroundColor: COLORS.error, color: COLORS.white, fontSize: 10, fontWeight: '800' },
+            tabBarBadgeStyle: { backgroundColor: COLORS.notification, color: COLORS.white, fontSize: 10, fontWeight: '800' },
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
             ),

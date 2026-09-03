@@ -13,6 +13,7 @@ import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import Avatar from '../../components/common/Avatar';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const MessagesScreen = ({ navigation }) => {
   const { t } = useTranslation();
@@ -85,23 +86,25 @@ const MessagesScreen = ({ navigation }) => {
         renderItem={({ item }) => {
           const partner = getPartner(item);
           return (
-            <TouchableOpacity style={styles.row} onPress={() => openChat(item)} activeOpacity={0.7}>
-              <Avatar uri={partner?.photo_url} name={partner?.full_name} size={48} style={styles.avatar} />
-              <View style={styles.rowContent}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.partnerName}>{partner?.full_name ?? t('messages.unknownMember')}</Text>
-                  {partner?.is_admin && (
-                    <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>🛡 Admin</Text></View>
+            <GradientBorder radius={14} glow={false} style={styles.rowOuter}>
+              <TouchableOpacity style={styles.row} onPress={() => openChat(item)} activeOpacity={0.7}>
+                <Avatar uri={partner?.photo_url} name={partner?.full_name} size={48} style={styles.avatar} />
+                <View style={styles.rowContent}>
+                  <View style={styles.nameRow}>
+                    <Text style={styles.partnerName}>{partner?.full_name ?? t('messages.unknownMember')}</Text>
+                    {partner?.is_admin && (
+                      <View style={styles.adminBadge}><Text style={styles.adminBadgeText}>🛡 Admin</Text></View>
+                    )}
+                  </View>
+                  {!!item.last_message_content && (
+                    <Text style={styles.lastMsg} numberOfLines={1}>{item.last_message_content}</Text>
                   )}
                 </View>
-                {!!item.last_message_content && (
-                  <Text style={styles.lastMsg} numberOfLines={1}>{item.last_message_content}</Text>
+                {!!item.last_message_at && (
+                  <Text style={styles.time}>{formatAgo(item.last_message_at)}</Text>
                 )}
-              </View>
-              {!!item.last_message_at && (
-                <Text style={styles.time}>{formatAgo(item.last_message_at)}</Text>
-              )}
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </GradientBorder>
           );
         }}
       />
@@ -128,24 +131,21 @@ const styles = StyleSheet.create({
   emptyWrap: { alignItems: 'center', marginTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   empty: { color: COLORS.textMuted, fontSize: 15 },
+  rowOuter: { marginHorizontal: 16, marginBottom: 10 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginBottom: 10,
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: COLORS.borderAccent,
+    borderRadius: 12,
   },
   avatar: { marginRight: 12 },
   rowContent: { flex: 1 },
   nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   partnerName: { fontSize: 16, fontWeight: '600', color: COLORS.text },
   adminBadge: {
-    backgroundColor: 'rgba(212,175,55,0.15)', borderRadius: 8,
+    backgroundColor: 'rgba(41,93,255,0.15)', borderRadius: 8,
     paddingHorizontal: 6, paddingVertical: 2,
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },

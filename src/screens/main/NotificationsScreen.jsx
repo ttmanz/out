@@ -12,6 +12,7 @@ import { resolveNotificationRoute } from '../../lib/pushNotifications';
 import { formatAgo } from '../../utils/format';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const TYPE_ICON = {
   friend_request: '👥',
@@ -100,20 +101,22 @@ const NotificationsScreen = ({ navigation }) => {
           </View>
         }
         renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[styles.row, !item.read && styles.rowUnread]}
-            onPress={() => handlePress(item)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.iconWrap, !item.read && styles.iconWrapUnread]}>
-              <Text style={styles.icon}>{TYPE_ICON[item.type] ?? '🔔'}</Text>
-            </View>
-            <View style={styles.content}>
-              <Text style={styles.message}>{formatMessage(item)}</Text>
-              <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
-            </View>
-            {!item.read && <View style={styles.dot} />}
-          </TouchableOpacity>
+          <GradientBorder radius={14} glow={false} style={styles.rowOuter}>
+            <TouchableOpacity
+              style={[styles.row, !item.read && styles.rowUnread]}
+              onPress={() => handlePress(item)}
+              activeOpacity={0.7}
+            >
+              <View style={[styles.iconWrap, !item.read && styles.iconWrapUnread]}>
+                <Text style={styles.icon}>{TYPE_ICON[item.type] ?? '🔔'}</Text>
+              </View>
+              <View style={styles.content}>
+                <Text style={styles.message}>{formatMessage(item)}</Text>
+                <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
+              </View>
+              {!item.read && <View style={styles.dot} />}
+            </TouchableOpacity>
+          </GradientBorder>
         )}
       />
     </View>
@@ -139,26 +142,23 @@ const styles = StyleSheet.create({
   emptyWrap: { alignItems: 'center', marginTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   empty: { color: COLORS.textMuted, fontSize: 15 },
+  rowOuter: { marginHorizontal: 16, marginBottom: 10 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginBottom: 10,
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: COLORS.borderAccent,
+    borderRadius: 12,
   },
-  rowUnread: { backgroundColor: 'rgba(212,175,55,0.10)' },
+  rowUnread: { backgroundColor: 'rgba(41,93,255,0.10)' },
   iconWrap: {
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: COLORS.surfaceAlt,
     justifyContent: 'center', alignItems: 'center',
     marginRight: 12,
   },
-  iconWrapUnread: { backgroundColor: 'rgba(212,175,55,0.18)' },
+  iconWrapUnread: { backgroundColor: 'rgba(41,93,255,0.18)' },
   icon: { fontSize: 20 },
   content: { flex: 1 },
   message: { fontSize: 14, color: COLORS.text, lineHeight: 20 },

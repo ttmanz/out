@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   venueType: { fontSize: 13, color: COLORS.textMuted, textTransform: 'capitalize', marginBottom: 16 },
   badge: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(212,175,55,0.12)',
+    backgroundColor: 'rgba(41,93,255,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
     borderRadius: 12,

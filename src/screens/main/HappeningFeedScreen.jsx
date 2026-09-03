@@ -22,11 +22,13 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabBar } from '../../components/common/LiveTabButton';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onReplyTextChange, onEmojiInsert, onSendReply, isAdmin, onAdminDelete, myId, onReport }) => {
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
+   <GradientBorder radius={14} style={styles.cardOuter}>
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Avatar uri={item.profiles?.photo_url} name={item.profiles?.full_name} size={40} style={styles.avatar} />
@@ -102,6 +104,7 @@ const HappeningCard = ({ item, navigation, t, replyState, onToggleReplies, onRep
         </View>
       )}
     </View>
+   </GradientBorder>
   );
 };
 
@@ -291,13 +294,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     lineHeight: 22,
   },
+  cardOuter: { marginBottom: 14 },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: { marginRight: 10 },

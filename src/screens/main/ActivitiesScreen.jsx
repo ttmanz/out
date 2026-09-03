@@ -7,20 +7,24 @@ import { useFeatureGate } from '../../hooks/useFeatureGate';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import GradientBorder from '../../components/common/GradientBorder';
+import { GradientIconCircle } from '../../components/common/GradientIcon';
 
 const ACTIVITY_CATEGORIES = [
-  { key: 'theaters', emoji: '🎭' },
-  { key: 'movies',   emoji: '🎬' },
-  { key: 'concerts', emoji: '🎸' },
-  { key: 'kids',     emoji: '🎡' },
+  { key: 'theaters', icon: 'ticket' },
+  { key: 'movies',   icon: 'film' },
+  { key: 'concerts', icon: 'musical-notes' },
+  { key: 'kids',     icon: 'happy' },
 ];
 
-const CategoryCard = ({ emoji, title, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
-    <Text style={styles.cardEmoji}>{emoji}</Text>
-    <Text style={styles.cardTitle}>{title}</Text>
-    <Text style={styles.chevron}>›</Text>
-  </TouchableOpacity>
+const CategoryCard = ({ icon, title, onPress }) => (
+  <GradientBorder radius={16} style={styles.cardOuter}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.75}>
+      <GradientIconCircle name={icon} size={46} iconSize={22} style={styles.icon} />
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.chevron}>›</Text>
+    </TouchableOpacity>
+  </GradientBorder>
 );
 
 const ActivitiesScreen = ({ navigation }) => {
@@ -34,10 +38,10 @@ const ActivitiesScreen = ({ navigation }) => {
       <ScrollView contentContainerStyle={styles.scroll}>
         <AdBanner page="WhatHappening" />
         <ProfileBanner navigation={navigation} />
-        {ACTIVITY_CATEGORIES.map(({ key, emoji }) => (
+        {ACTIVITY_CATEGORIES.map(({ key, icon }) => (
           <CategoryCard
             key={key}
-            emoji={emoji}
+            icon={icon}
             title={t(`happenings.${key}`).toUpperCase()}
             onPress={() => navigation.navigate(ROUTES.ACTIVITY_EVENTS, { filter: key })}
           />
@@ -50,19 +54,15 @@ const ActivitiesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { padding: 20, paddingTop: 24 },
+  cardOuter: { marginBottom: 12 },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
     paddingHorizontal: 12,
-    paddingVertical: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
-    overflow: 'hidden',
+    paddingVertical: 12,
   },
-  cardEmoji: { fontSize: 24, marginRight: 14 },
+  icon: { marginRight: 14 },
   cardTitle: { flex: 1, fontSize: 15, fontWeight: '700', color: COLORS.text },
   chevron: { fontSize: 22, color: COLORS.primary, marginLeft: 4 },
 });

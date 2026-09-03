@@ -23,6 +23,7 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabBar } from '../../components/common/LiveTabButton';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const MarketScreen = ({ navigation, route }) => {
   useFeatureGate('market');
@@ -173,6 +174,7 @@ const MarketScreen = ({ navigation, route }) => {
           const ps = replyState[item.id] ?? {};
           const replyCount = ps.replies?.length ?? 0;
           return (
+           <GradientBorder radius={16} style={styles.cardOuter}>
             <View style={styles.card}>
               <FeedMedia photo={item.photo_url} video={item.video_url} style={styles.photo} />
               <View style={styles.cardBody}>
@@ -253,6 +255,7 @@ const MarketScreen = ({ navigation, route }) => {
                 )}
               </View>
             </View>
+           </GradientBorder>
           );
         }}
       />
@@ -286,11 +289,10 @@ const styles = StyleSheet.create({
   emptyWrap: { alignItems: 'center', marginTop: 80 },
   emptyIcon: { fontSize: 48, marginBottom: 12 },
   empty: { color: COLORS.textMuted, fontSize: 15, textAlign: 'center' },
+  cardOuter: { marginHorizontal: 16, marginTop: 12 },
   card: {
-    marginHorizontal: 16, marginTop: 12,
     backgroundColor: COLORS.surface,
-    borderRadius: 16, overflow: 'hidden',
-    borderWidth: 1, borderColor: COLORS.border,
+    borderRadius: 14, overflow: 'hidden',
   },
   photo: { width: '100%', height: 220 },
   cardBody: { padding: 14 },

@@ -12,18 +12,21 @@ import { getOpenGroups } from '../../lib/groups';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const GroupCard = ({ group, onPress }) => (
-  <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-    {group.photo_url
-      ? <Image source={{ uri: group.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
-      : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🧩</Text></View>
-    }
-    <View style={styles.cardBody}>
-      <Text style={styles.cardName}>{group.name}</Text>
-      {!!group.description && <Text style={styles.cardDesc} numberOfLines={2}>{group.description}</Text>}
-    </View>
-  </TouchableOpacity>
+  <GradientBorder radius={16} style={styles.cardOuter}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
+      {group.photo_url
+        ? <Image source={{ uri: group.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
+        : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🧩</Text></View>
+      }
+      <View style={styles.cardBody}>
+        <Text style={styles.cardName}>{group.name}</Text>
+        {!!group.description && <Text style={styles.cardDesc} numberOfLines={2}>{group.description}</Text>}
+      </View>
+    </TouchableOpacity>
+  </GradientBorder>
 );
 
 const OpenGroupsScreen = ({ navigation }) => {
@@ -85,16 +88,16 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   list: { padding: 16, paddingBottom: 100 },
   empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
+  cardOuter: { marginBottom: 14 },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 14,
-    marginBottom: 14, overflow: 'hidden',
-    borderWidth: 1, borderColor: COLORS.borderAccent,
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   cardPhoto: { width: '100%', height: 140 },
   cardPhotoPlaceholder: {
     width: '100%', height: 100,
-    backgroundColor: 'rgba(212,175,55,0.08)',
+    backgroundColor: 'rgba(41,93,255,0.08)',
     justifyContent: 'center', alignItems: 'center',
   },
   cardPhotoEmoji: { fontSize: 40 },

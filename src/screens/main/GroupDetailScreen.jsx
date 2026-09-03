@@ -29,6 +29,7 @@ import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const GroupDetailScreen = ({ navigation, route }) => {
   useFeatureGate('open_groups');
@@ -276,11 +277,13 @@ const GroupDetailScreen = ({ navigation, route }) => {
     const replyCount = ps.replies?.length ?? 0;
 
     return (
-      <View
+      <GradientBorder
         key={item.id}
-        style={styles.card}
+        radius={14}
+        style={styles.cardOuter}
         onLayout={(e) => { cardYPositions.current[item.id] = e.nativeEvent.layout.y; }}
       >
+       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Avatar
             uri={item.profiles?.photo_url}
@@ -376,7 +379,8 @@ const GroupDetailScreen = ({ navigation, route }) => {
             )}
           </View>
         )}
-      </View>
+       </View>
+      </GradientBorder>
     );
   };
 
@@ -498,9 +502,9 @@ const styles = StyleSheet.create({
   composeEmojiBtn: { marginLeft: 8 },
   postBtn: { backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 12, alignItems: 'center' },
   postBtnText: { fontSize: 14, fontWeight: '700', color: COLORS.black },
+  cardOuter: { marginBottom: 14 },
   card: {
-    backgroundColor: COLORS.surface, borderRadius: 14, padding: 16,
-    marginBottom: 14, borderWidth: 1, borderColor: COLORS.borderAccent,
+    backgroundColor: COLORS.surface, borderRadius: 12, padding: 16,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: { marginRight: 10 },
@@ -513,7 +517,7 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   actionBtn: { paddingVertical: 4, paddingRight: 14 },
   actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
-  actionTextLiked: { color: '#E05520' },
+  actionTextLiked: { color: '#FF3B8D' },
   actionTextSaved: { color: COLORS.primary },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },

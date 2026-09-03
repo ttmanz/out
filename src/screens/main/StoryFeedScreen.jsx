@@ -9,6 +9,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { useFeatureGate } from '../../hooks/useFeatureGate';
+import GradientBorder from '../../components/common/GradientBorder';
 import { ROUTES } from '../../constants/routes';
 import {
   getStories, getFriendStories, STORY_EXPIRY_DAYS, adminDeleteStory, deleteStory,
@@ -57,7 +58,8 @@ const StoryCard = ({
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
-    <View style={styles.card}>
+    <GradientBorder radius={14} style={styles.cardOuter}>
+     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <TouchableOpacity
           onPress={() => navigation.navigate(ROUTES.MEMBER_PROFILE, {
@@ -168,7 +170,8 @@ const StoryCard = ({
           )}
         </View>
       )}
-    </View>
+     </View>
+    </GradientBorder>
   );
 };
 
@@ -462,10 +465,10 @@ const styles = StyleSheet.create({
     textAlign: 'center', color: COLORS.textMuted, fontSize: 15,
     marginTop: 60, paddingHorizontal: 32, lineHeight: 22,
   },
+  cardOuter: { marginBottom: 14 },
   card: {
-    backgroundColor: COLORS.surface, borderRadius: 14,
-    padding: 16, marginBottom: 14,
-    borderWidth: 1, borderColor: COLORS.borderAccent,
+    backgroundColor: COLORS.surface, borderRadius: 12,
+    padding: 16,
   },
   cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
   avatar: { marginRight: 10 },
@@ -474,18 +477,18 @@ const styles = StyleSheet.create({
   adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4, marginLeft: 6 },
   adminDeleteBtnText: { fontSize: 18 },
   expiryBadge: {
-    backgroundColor: 'rgba(212,175,55,0.12)',
+    backgroundColor: 'rgba(41,93,255,0.12)',
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
   },
   expiryBadgeWarn: { backgroundColor: 'rgba(220,80,30,0.15)' },
   expiryText: { fontSize: 11, fontWeight: '700', color: COLORS.primary },
-  expiryTextWarn: { color: '#E05520' },
+  expiryTextWarn: { color: '#FF3B8D' },
   storyText: { fontSize: 15, color: COLORS.text, lineHeight: 22, marginBottom: 10 },
   media: { width: '100%', height: 200, borderRadius: 10, marginTop: 4 },
   actionsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 4 },
   actionBtn: { paddingVertical: 4, paddingRight: 14 },
   actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
-  actionTextLiked: { color: '#E05520' },
+  actionTextLiked: { color: '#FF3B8D' },
   actionTextSaved: { color: COLORS.primary },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },

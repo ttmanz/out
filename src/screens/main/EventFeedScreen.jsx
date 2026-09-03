@@ -24,6 +24,7 @@ import BackHeader from '../../components/common/BackHeader';
 import ReportModal from '../../components/common/ReportModal';
 import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabButton } from '../../components/common/LiveTabButton';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const formatEventDate = (iso) => {
   if (!iso) return null;
@@ -40,6 +41,7 @@ const EventCard = ({
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
+   <GradientBorder radius={16} style={styles.cardOuter}>
     <View style={styles.card}>
       <FeedMedia photo={event.photo_url} video={event.video_url} style={styles.cardPhoto} />
       <View style={styles.cardBody}>
@@ -131,6 +133,7 @@ const EventCard = ({
         )}
       </View>
     </View>
+   </GradientBorder>
   );
 };
 
@@ -384,12 +387,10 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: COLORS.black },
   list: { padding: 16, paddingBottom: 40 },
   empty: { textAlign: 'center', color: COLORS.textLight, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
+  cardOuter: { marginBottom: 14 },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   cardPhoto: { width: '100%', height: 180 },
@@ -403,7 +404,7 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 4 },
   actionBtn: { paddingVertical: 4, paddingRight: 14 },
   actionText: { fontSize: 13, color: COLORS.primary, fontWeight: '700' },
-  actionTextLiked: { color: '#E05520' },
+  actionTextLiked: { color: '#FF3B8D' },
   actionTextSaved: { color: COLORS.primary },
   repliesSection: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.border, paddingTop: 12 },
   noReplies: { fontSize: 13, color: COLORS.textMuted, marginBottom: 10 },

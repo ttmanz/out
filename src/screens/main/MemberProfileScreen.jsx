@@ -21,6 +21,7 @@ import ProfileBanner from '../../components/common/ProfileBanner';
 import ReportModal from '../../components/common/ReportModal';
 import BackHeader from '../../components/common/BackHeader';
 import Avatar from '../../components/common/Avatar';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const POST_TYPE_LABEL = {
   spur: '⚡ Spur',
@@ -198,12 +199,14 @@ const MemberProfileScreen = ({ navigation, route }) => {
         )}
         ListEmptyComponent={<Text style={styles.empty}>{t('profile.noPosts')}</Text>}
         renderItem={({ item }) => (
-          <View style={styles.postCard}>
-            <Text style={styles.postType}>{POST_TYPE_LABEL[item.happening_at] ?? '📌'}</Text>
-            <Text style={styles.postTitle}>{item.title}</Text>
-            {!!item.venue && <Text style={styles.postMeta}>📍 {item.venue}</Text>}
-            <Text style={styles.postTime}>{formatAgo(item.created_at)}</Text>
-          </View>
+          <GradientBorder radius={12} glow={false} style={styles.postCardOuter}>
+            <View style={styles.postCard}>
+              <Text style={styles.postType}>{POST_TYPE_LABEL[item.happening_at] ?? '📌'}</Text>
+              <Text style={styles.postTitle}>{item.title}</Text>
+              {!!item.venue && <Text style={styles.postMeta}>📍 {item.venue}</Text>}
+              <Text style={styles.postTime}>{formatAgo(item.created_at)}</Text>
+            </View>
+          </GradientBorder>
         )}
       />
       <ReportModal target={reportTarget} onClose={() => setReportTarget(null)} />
@@ -232,7 +235,7 @@ const styles = StyleSheet.create({
   },
   addFriendBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 14 },
   pendingBadge: {
-    backgroundColor: 'rgba(212,175,55,0.12)',
+    backgroundColor: 'rgba(41,93,255,0.12)',
     borderWidth: 1, borderColor: COLORS.borderAccent,
     borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8,
     marginBottom: 12,
@@ -251,13 +254,11 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase', letterSpacing: 0.8, alignSelf: 'flex-start',
   },
   empty: { color: COLORS.textMuted, fontSize: 14, textAlign: 'center', marginTop: 30 },
+  postCardOuter: { marginBottom: 10 },
   postCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
+    backgroundColor: COLORS.surface,
+    borderRadius: 10,
     padding: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   postType: { fontSize: 11, fontWeight: '600', color: COLORS.textMuted, marginBottom: 4 },
   postTitle: { fontSize: 15, fontWeight: '600', color: COLORS.text, marginBottom: 4 },

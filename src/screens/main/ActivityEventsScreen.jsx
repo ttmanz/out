@@ -20,6 +20,7 @@ import ReportModal from '../../components/common/ReportModal';
 import LinkPreviewCard from '../../components/common/LinkPreviewCard';
 import FeedMedia from '../../components/common/FeedMedia';
 import { LiveTabBar } from '../../components/common/LiveTabButton';
+import GradientBorder from '../../components/common/GradientBorder';
 
 const formatEventDate = (iso) => {
   if (!iso) return null;
@@ -33,6 +34,7 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
   const ps = replyState ?? {};
   const replyCount = ps.replies?.length ?? 0;
   return (
+   <GradientBorder radius={16} style={styles.cardOuter}>
     <View style={styles.card}>
       <FeedMedia photo={event.photo_url} video={event.video_url} style={styles.cardPhoto} />
       <View style={styles.cardBody}>
@@ -112,6 +114,7 @@ const EventCard = ({ event, onGoing, t, replyState, onToggleReplies, onReplyText
         )}
       </View>
     </View>
+   </GradientBorder>
   );
 };
 
@@ -263,12 +266,10 @@ const styles = StyleSheet.create({
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
   list: { padding: 16, paddingBottom: 40 },
   empty: { textAlign: 'center', color: COLORS.textMuted, fontSize: 15, marginTop: 60, paddingHorizontal: 32, lineHeight: 22 },
+  cardOuter: { marginBottom: 14 },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: COLORS.borderAccent,
+    borderRadius: 14,
     overflow: 'hidden',
   },
   cardPhoto: { width: '100%', height: 180 },

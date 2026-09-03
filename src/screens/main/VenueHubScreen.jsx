@@ -7,12 +7,14 @@ import { ROUTES } from '../../constants/routes';
 import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
+import GradientBorder from '../../components/common/GradientBorder';
+import { GradientIconCircle } from '../../components/common/GradientIcon';
 
 const OPTIONS = [
-  { emoji: '🔍', titleKey: 'venueHub.search',     descKey: 'venueHub.searchDesc',     route: ROUTES.VENUE_SEARCH,    watermark: '🗺️' },
-  { emoji: '👥', titleKey: 'venueHub.membersAt',  descKey: 'venueHub.membersAtDesc',  route: ROUTES.MEMBERS_AT,      watermark: '📍' },
-  { emoji: '🏆', titleKey: 'venueHub.topVenues',  descKey: 'venueHub.topVenuesDesc',  route: ROUTES.TOP_VENUES,      watermark: '⭐' },
-  { emoji: '⭐', titleKey: 'venueHub.reviews',    descKey: 'venueHub.reviewsDesc',    route: ROUTES.VENUE_REVIEWS,   watermark: '💬' },
+  { icon: 'search',   titleKey: 'venueHub.search',     descKey: 'venueHub.searchDesc',     route: ROUTES.VENUE_SEARCH },
+  { icon: 'people',   titleKey: 'venueHub.membersAt',  descKey: 'venueHub.membersAtDesc',  route: ROUTES.MEMBERS_AT },
+  { icon: 'trophy',   titleKey: 'venueHub.topVenues',  descKey: 'venueHub.topVenuesDesc',  route: ROUTES.TOP_VENUES },
+  { icon: 'star',     titleKey: 'venueHub.reviews',    descKey: 'venueHub.reviewsDesc',    route: ROUTES.VENUE_REVIEWS },
 ];
 
 const VenueHubScreen = ({ navigation }) => {
@@ -27,26 +29,20 @@ const VenueHubScreen = ({ navigation }) => {
         <AdBanner page="VenueHub" />
         <ProfileBanner navigation={navigation} />
         {OPTIONS.map((opt) => (
-          <TouchableOpacity
-            key={opt.route}
-            style={styles.card}
-            onPress={() => navigation.navigate(opt.route)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.watermarkContainer}>
-              <Text style={styles.watermark}>{opt.watermark}</Text>
-            </View>
-            <View style={styles.iconRing}>
-              <View style={styles.iconInner}>
-                <Text style={styles.emoji}>{opt.emoji}</Text>
+          <GradientBorder key={opt.route} radius={16} style={styles.cardOuter}>
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => navigation.navigate(opt.route)}
+              activeOpacity={0.8}
+            >
+              <GradientIconCircle name={opt.icon} size={54} iconSize={24} style={styles.icon} />
+              <View style={styles.textWrap}>
+                <Text style={styles.cardTitle}>{t(opt.titleKey)}</Text>
+                <Text style={styles.cardDesc}>{t(opt.descKey)}</Text>
               </View>
-            </View>
-            <View style={styles.textWrap}>
-              <Text style={styles.cardTitle}>{t(opt.titleKey)}</Text>
-              <Text style={styles.cardDesc}>{t(opt.descKey)}</Text>
-            </View>
-            <Text style={styles.chevron}>›</Text>
-          </TouchableOpacity>
+              <Text style={styles.chevron}>›</Text>
+            </TouchableOpacity>
+          </GradientBorder>
         ))}
       </ScrollView>
     </View>
@@ -56,28 +52,13 @@ const VenueHubScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { padding: 16, paddingBottom: 40 },
+  cardOuter: { marginBottom: 12 },
   card: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: COLORS.surface,
-    borderRadius: 16, paddingHorizontal: 12, paddingVertical: 16,
-    marginBottom: 12, borderWidth: 1, borderColor: COLORS.borderAccent,
-    overflow: 'hidden',
+    paddingHorizontal: 12, paddingVertical: 14,
   },
-  watermarkContainer: {
-    position: 'absolute', right: 8, top: 0, bottom: 0, width: 80,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  watermark: { fontSize: 55, opacity: 0.07 },
-  iconRing: {
-    width: 58, height: 58, borderRadius: 29,
-    borderWidth: 1.5, borderColor: COLORS.borderAccent,
-    justifyContent: 'center', alignItems: 'center', marginRight: 14,
-  },
-  iconInner: {
-    width: 48, height: 48, borderRadius: 24,
-    backgroundColor: '#0B132B', justifyContent: 'center', alignItems: 'center',
-  },
-  emoji: { fontSize: 24 },
+  icon: { marginRight: 14 },
   textWrap: { flex: 1 },
   cardTitle: { fontSize: 15, fontWeight: '700', color: COLORS.text, marginBottom: 2 },
   cardDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 16 },
