@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   cardPhoto: { width: '100%', height: 140 },
   cardPhotoPlaceholder: {
     width: '100%', height: 100,
-    backgroundColor: 'rgba(200,128,10,0.08)',
+    backgroundColor: 'rgba(212,175,55,0.08)',
     justifyContent: 'center', alignItems: 'center',
   },
   cardPhotoEmoji: { fontSize: 40 },

@@ -220,8 +220,8 @@ const styles = StyleSheet.create({
   profileCard: { alignItems: 'center', paddingVertical: 20, marginBottom: 8 },
   avatar: { marginBottom: 12 },
   profileName: { fontSize: 22, fontWeight: '800', color: COLORS.text, marginBottom: 6 },
-  badge: { backgroundColor: '#f0f0f0', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 },
-  badgeText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
+  badge: { backgroundColor: COLORS.surfaceAlt, borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4, marginBottom: 12 },
+  badgeText: { fontSize: 12, fontWeight: '600', color: COLORS.textLight },
   addFriendBtn: {
     backgroundColor: COLORS.primary,
     borderRadius: 10,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   addFriendBtnText: { color: COLORS.black, fontWeight: '700', fontSize: 14 },
   pendingBadge: {
-    backgroundColor: 'rgba(200,128,10,0.12)',
+    backgroundColor: 'rgba(212,175,55,0.12)',
     borderWidth: 1, borderColor: COLORS.borderAccent,
     borderRadius: 10, paddingHorizontal: 16, paddingVertical: 8,
     marginBottom: 12,

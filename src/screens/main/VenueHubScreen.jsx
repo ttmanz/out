@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   iconInner: {
     width: 48, height: 48, borderRadius: 24,
-    backgroundColor: '#080500', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#0B132B', justifyContent: 'center', alignItems: 'center',
   },
   emoji: { fontSize: 24 },
   textWrap: { flex: 1 },

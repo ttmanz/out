@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16,
     borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.surface,
   },
-  filterChipActive: { borderColor: COLORS.primary, backgroundColor: 'rgba(200,128,10,0.12)' },
+  filterChipActive: { borderColor: COLORS.primary, backgroundColor: 'rgba(212,175,55,0.12)' },
   filterText: { fontSize: 12, fontWeight: '600', color: COLORS.textMuted },
   filterTextActive: { color: COLORS.primary },
   list: { padding: 16, paddingBottom: 48 },

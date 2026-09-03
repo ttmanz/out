@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, StatusBar } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
@@ -26,34 +25,18 @@ const FEATURES = [
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
 const FeatureCard = ({ emoji, title, description, watermark, onPress }) => (
-  <TouchableOpacity onPress={onPress} activeOpacity={0.85}>
-    <LinearGradient
-      colors={['#d09c38', '#bb8b34', '#aa7f2f']}
-      locations={[0, 0.5, 1]}
-      start={{ x: 0, y: 0.5 }}
-      end={{ x: 1, y: 0.5 }}
-      style={styles.cardStroke}
-    >
-      <LinearGradient
-        colors={['#d09c38', '#815e1d', '#634a1d']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 1, y: 0.5 }}
-        end={{ x: 0, y: 0.5 }}
-        style={styles.card}
-      >
-        <View style={styles.watermarkContainer}>
-          <Text style={styles.watermark}>{watermark}</Text>
-        </View>
-        <View style={styles.iconRing}>
-          <Text style={styles.cardEmoji}>{emoji}</Text>
-        </View>
-        <View style={styles.textWrap}>
-          <Text style={styles.cardTitle}>{title}</Text>
-          <Text style={styles.cardDesc}>{description}</Text>
-        </View>
-        <Text style={styles.chevron}>›</Text>
-      </LinearGradient>
-    </LinearGradient>
+  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={styles.card}>
+    <View style={styles.watermarkContainer}>
+      <Text style={styles.watermark}>{watermark}</Text>
+    </View>
+    <View style={styles.iconRing}>
+      <Text style={styles.cardEmoji}>{emoji}</Text>
+    </View>
+    <View style={styles.textWrap}>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardDesc}>{description}</Text>
+    </View>
+    <Text style={styles.chevron}>›</Text>
   </TouchableOpacity>
 );
 
@@ -148,7 +131,7 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: 38, height: 38,
     borderRadius: 10,
-    backgroundColor: 'rgba(200,128,10,0.12)',
+    backgroundColor: 'rgba(212,175,55,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
     justifyContent: 'center', alignItems: 'center',
@@ -160,7 +143,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: 'rgba(200,128,10,0.12)',
+    backgroundColor: 'rgba(212,175,55,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
   },
@@ -214,7 +197,7 @@ const styles = StyleSheet.create({
   profileBanner: {
     marginHorizontal: 28,
     marginBottom: 14,
-    backgroundColor: 'rgba(200,128,10,0.12)',
+    backgroundColor: 'rgba(212,175,55,0.12)',
     borderWidth: 1,
     borderColor: COLORS.borderAccent,
     borderRadius: 14,
@@ -225,23 +208,22 @@ const styles = StyleSheet.create({
   profileBannerCta: { fontSize: 12, color: COLORS.textMuted },
 
   cards: { paddingHorizontal: 28 },
-  cardStroke: {
-    borderRadius: 28,
-    padding: 2,
-    marginBottom: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 26,
+    backgroundColor: COLORS.surface,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     paddingHorizontal: 16,
     paddingVertical: 18,
+    marginBottom: 14,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
   },
   watermarkContainer: {
     position: 'absolute',
@@ -262,9 +244,9 @@ const styles = StyleSheet.create({
   },
   cardEmoji: { fontSize: 26 },
   textWrap: { flex: 1 },
-  cardTitle: { fontSize: 18, fontWeight: '800', color: COLORS.white, marginBottom: 3 },
-  cardDesc: { fontSize: 12, color: 'rgba(255,255,255,0.75)', lineHeight: 16 },
-  chevron: { fontSize: 24, color: COLORS.white, marginLeft: 4 },
+  cardTitle: { fontSize: 18, fontWeight: '800', color: COLORS.text, marginBottom: 3 },
+  cardDesc: { fontSize: 12, color: COLORS.textLight, lineHeight: 16 },
+  chevron: { fontSize: 24, color: COLORS.primary, marginLeft: 4 },
 });
 
 export default HomeScreen;

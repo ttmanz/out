@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
   },
   inputMulti: { height: 90, textAlignVertical: 'top' },
   adminNote: {
-    backgroundColor: 'rgba(200,128,10,0.08)',
+    backgroundColor: 'rgba(212,175,55,0.08)',
     borderRadius: 12, padding: 14, marginTop: 8,
     borderLeftWidth: 3, borderLeftColor: COLORS.primary,
   },

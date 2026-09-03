@@ -205,9 +205,9 @@ const MainNavigator = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#0A0D16',
+          backgroundColor: COLORS.tabBar,
           borderTopWidth: 1,
-          borderTopColor: '#1A1500',
+          borderTopColor: COLORS.border,
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom + 4,
           paddingTop: 8,
@@ -218,7 +218,7 @@ const MainNavigator = () => {
           elevation: 20,
         },
         tabBarActiveTintColor: COLORS.primary,
-        tabBarInactiveTintColor: COLORS.textLight,
+        tabBarInactiveTintColor: COLORS.textMuted,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',

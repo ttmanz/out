@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   refreshBtn: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(200,128,10,0.18)',
+    backgroundColor: 'rgba(212,175,55,0.18)',
     borderWidth: 1, borderColor: COLORS.primary,
     borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6,
   },

@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 // the Top Venues list. `types` holds the raw OpenStreetMap amenity/natural values
 // that map onto each category; the `all` chip is the unfiltered view.
 export const VENUE_CATEGORIES = [
-  { id: 'all',     labelKey: 'venues.catAll',     emoji: '✨',  pinColor: '#D4943A', types: [] },
+  { id: 'all',     labelKey: 'venues.catAll',     emoji: '✨',  pinColor: '#D4AF37', types: [] },
   { id: 'eat',     labelKey: 'venues.catEat',     emoji: '🍽️', pinColor: '#FF8C42', types: ['restaurant', 'fast_food'] },
   { id: 'bars',    labelKey: 'venues.catBars',    emoji: '🍸',  pinColor: '#C47AFF', types: ['bar', 'pub'] },
   { id: 'clubs',   labelKey: 'venues.catClubs',   emoji: '🎶',  pinColor: '#FF4FA8', types: ['nightclub'] },
@@ -13,7 +13,7 @@ export const VENUE_CATEGORIES = [
 ];
 
 export const getPinColor = (categoryId) =>
-  VENUE_CATEGORIES.find((c) => c.id === categoryId)?.pinColor ?? '#D4943A';
+  VENUE_CATEGORIES.find((c) => c.id === categoryId)?.pinColor ?? '#D4AF37';
 
 const TYPE_TO_CATEGORY = VENUE_CATEGORIES.reduce((map, cat) => {
   cat.types.forEach((type) => { map[type] = cat.id; });

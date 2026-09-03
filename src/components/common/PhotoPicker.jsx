@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 20,
     marginBottom: 16,
-    backgroundColor: 'rgba(200,128,10,0.04)',
+    backgroundColor: 'rgba(212,175,55,0.04)',
   },
   addBtnIcon: { fontSize: 22 },
   addBtnText: { fontSize: 15, fontWeight: '600', color: COLORS.primary },

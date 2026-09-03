@@ -474,7 +474,7 @@ const styles = StyleSheet.create({
   adminDeleteBtn: { paddingHorizontal: 8, paddingVertical: 4, marginLeft: 6 },
   adminDeleteBtnText: { fontSize: 18 },
   expiryBadge: {
-    backgroundColor: 'rgba(200,128,10,0.12)',
+    backgroundColor: 'rgba(212,175,55,0.12)',
     borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4,
   },
   expiryBadgeWarn: { backgroundColor: 'rgba(220,80,30,0.15)' },

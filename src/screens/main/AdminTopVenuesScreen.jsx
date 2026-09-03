@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   empty: { color: COLORS.textMuted, fontSize: 14, textAlign: 'center' },
 
   addBtn: {
-    backgroundColor: 'rgba(200,128,10,0.12)',
+    backgroundColor: 'rgba(212,175,55,0.12)',
     borderRadius: 16, paddingHorizontal: 12, paddingVertical: 6,
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },

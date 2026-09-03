@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   cardPhoto: { width: '100%', height: 140 },
   cardPhotoPlaceholder: {
     width: '100%', height: 100,
-    backgroundColor: 'rgba(200,128,10,0.08)',
+    backgroundColor: 'rgba(212,175,55,0.08)',
     justifyContent: 'center', alignItems: 'center',
   },
   cardPhotoEmoji: { fontSize: 40 },
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
   cardTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
   cardName: { fontSize: 17, fontWeight: '800', color: COLORS.text },
   suspendedBadge: {
-    backgroundColor: 'rgba(200,128,10,0.12)', borderRadius: 8,
+    backgroundColor: 'rgba(212,175,55,0.12)', borderRadius: 8,
     paddingHorizontal: 8, paddingVertical: 3,
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
