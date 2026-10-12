@@ -4,7 +4,9 @@ module.exports = () => {
     slug: "find-mee",
     scheme: "outandaround",
     version: "1.0.0",
-    orientation: "portrait",
+    // "default" so large-screen Android (tablets/foldables) is not orientation-locked;
+    // iPhone stays portrait via UISupportedInterfaceOrientations below.
+    orientation: "default",
     icon: "./assets/icon.png",
     userInterfaceStyle: "dark",
     primaryColor: "#c8800a",
@@ -19,6 +21,7 @@ module.exports = () => {
       buildNumber: "1",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
+        UISupportedInterfaceOrientations: ["UIInterfaceOrientationPortrait"],
         NSLocationWhenInUseUsageDescription: "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area.",
         NSLocationAlwaysAndWhenInUseUsageDescription: "Find-Mee uses your location to show nearby members on the At Venue map and tag posts with your area.",
         NSCameraUsageDescription: "Find-Mee uses your camera to take profile photos and post images.",
@@ -55,6 +58,16 @@ module.exports = () => {
     },
     plugins: [
       "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            // R8 code shrinking/obfuscation + resource shrinking (Play flagged 2% obfuscation).
+            enableProguardInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true
+          }
+        }
+      ],
       "expo-apple-authentication",
       [
         "expo-location",
