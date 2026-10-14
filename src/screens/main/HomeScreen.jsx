@@ -12,6 +12,7 @@ import { GradientIconCircle } from '../../components/common/GradientIcon';
 const FEATURES = [
   { icon: 'people',          titleKey: 'home.friends',        descKey: 'home.friendsDesc',        route: ROUTES.FRIENDS_HUB,    featureKey: 'friends' },
   { icon: 'camera',          titleKey: 'home.myStory',        descKey: 'home.myStoryDesc',        route: ROUTES.STORY_FEED,     featureKey: 'my_story' },
+  { icon: 'videocam',        titleKey: 'home.clipOfDay',       descKey: 'home.clipOfDayDesc',      route: ROUTES.CLIP_OF_DAY,    featureKey: 'clip_of_day' },
   { icon: 'sparkles',        titleKey: 'home.whatsHappening', descKey: 'home.whatsHappeningDesc', route: ROUTES.WHAT_HAPPENING, featureKey: 'whats_happening' },
   { icon: 'map',             titleKey: 'home.whereToGo',      descKey: 'home.whereToGoDesc',      route: ROUTES.WHERE_TO_GO,    featureKey: 'where_to_go' },
   { icon: 'flash',           titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, featureKey: 'spur_of_moment' },

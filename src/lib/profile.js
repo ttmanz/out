@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export const getProfile = (userId) =>
   supabase
     .from('profiles')
-    .select('id, full_name, visibility, venue_visibility, allow_friend_requests, push_notifications_enabled, status, is_admin, is_staff, account_type, photo_url, dob, gender, city, bio, interests, phone, instagram, profile_completed, subscription_plan, subscription_expires_at, created_at')
+    .select('id, full_name, visibility, venue_visibility, allow_friend_requests, push_notifications_enabled, status, is_admin, is_staff, account_type, photo_url, dob, gender, city, bio, interests, phone, instagram, participation, profile_completed, subscription_plan, subscription_expires_at, created_at')
     .eq('id', userId)
     .single();
 
@@ -12,3 +12,8 @@ export const updateProfileSettings = (userId, { visibility, allow_friend_request
 
 export const updateFullProfile = (userId, fields) =>
   supabase.from('profiles').update({ ...fields, profile_completed: true }).eq('id', userId);
+
+// Which rewards a venue owner takes part in (cash, credit, discount). Customers
+// are only offered ticked rewards, and the server enforces it on every claim.
+export const setParticipation = (userId, participation) =>
+  supabase.from('profiles').update({ participation }).eq('id', userId);

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Alert, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { claimReferral } from '../../lib/referrals';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { signUpWithEmail, signInWithGoogle, signInWithApple } from '../../lib/auth';
@@ -24,6 +25,7 @@ const RegisterScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const [fieldError, setFieldError] = useState('');
   const [loading, setLoading] = useState(false);
   const [socialLoading, setSocialLoading] = useState(null);
@@ -33,7 +35,7 @@ const RegisterScreen = ({ navigation }) => {
     if (error) { setFieldError(error); return; }
     setFieldError('');
     setLoading(true);
-    const { error: authError } = await signUpWithEmail(email, password, fullName);
+    const { error: authError } = await signUpWithEmail(email, password, fullName, referralCode);
     setLoading(false);
     if (authError) {
       Alert.alert(t('auth.errors.registerFailed'), authError.message);
@@ -51,7 +53,17 @@ const RegisterScreen = ({ navigation }) => {
     setSocialLoading(provider);
     const { error } = await loginFn();
     setSocialLoading(null);
-    if (error) Alert.alert(t('common.error'), error.message);
+    if (error) {
+      Alert.alert(t('common.error'), error.message);
+      return;
+    }
+    // Google/Apple sign-in doesn't carry the referral code entered above the
+    // way email signup does, so claim it as a separate step. Quietly a no-op
+    // server-side for a returning user or an empty code (claim_referral guards).
+    if (referralCode.trim()) {
+      const { error: referralError } = await claimReferral(referralCode.trim());
+      if (!referralError) Alert.alert(t('auth.referralBonusTitle'), t('auth.referralBonusBody'));
+    }
   };
 
   return (
@@ -92,6 +104,13 @@ const RegisterScreen = ({ navigation }) => {
 
       <Divider label={t('common.or')} />
 
+      <AuthInput
+        label={t('auth.referralCode')}
+        placeholder={t('auth.referralCodePlaceholder')}
+        value={referralCode}
+        onChangeText={(v) => setReferralCode(v.toUpperCase())}
+        autoCapitalize="characters"
+      />
       <SocialButton
         label={t('auth.continueWithGoogle')}
         color={COLORS.google}

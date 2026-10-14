@@ -9,11 +9,18 @@ import { getSession } from '../../lib/auth';
 import { getProfile, updateFullProfile } from '../../lib/profile';
 import { uploadAvatar } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
+import { resizeForUpload } from '../../lib/imageResize';
+import { PARTICIPATION_OPTIONS, rewardOptions } from '../../lib/cashback';
+import { useCashBackEnabled } from '../../hooks/useCashBackEnabled';
+import i18n from '../../lib/i18n';
+import { useTranslation } from 'react-i18next';
+// Module-level translate helper so every helper component in this file can use t().
+const t = (key, defaultValue, opts) => i18n.t(key, { defaultValue, ...opts });
 
-const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
+const GENDERS = ['Male', 'Female', 'Non-binary', t('rw.profile.prefer_not_to_say', 'Prefer not to say')];
 const ACCOUNT_TYPES = [
-  { key: 'member', label: 'Member' },
-  { key: 'venue_owner', label: 'Venue Owner' },
+  { key: 'member', label: t('rw.profile.member', 'Member') },
+  { key: 'venue_owner', label: t('rw.profile.venue_owner', 'Venue Owner') },
 ];
 const INTERESTS = [
   '🍸 Cocktail Bars', '🎵 Live Music', '💃 Dancing', '🍔 Food & Drinks',
@@ -37,7 +44,10 @@ const displayToISODob = (display) => {
   return m ? `${m[3]}-${m[2]}-${m[1]}` : display.trim();
 };
 
+const ALL_REWARDS = PARTICIPATION_OPTIONS.map((o) => o.key);
+
 const CompleteProfileScreen = ({ navigation }) => {
+  useTranslation();
   const { refreshProfile } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
@@ -61,6 +71,9 @@ const CompleteProfileScreen = ({ navigation }) => {
   // has deliberately picked one, so first-time setup can require a real
   // choice without retroactively blocking anyone who completed their
   // profile before this field existed.
+  const [participation, setParticipation] = useState([]);
+  const cashEnabled = useCashBackEnabled();
+  const [wasAlreadyCompleted, setWasAlreadyCompleted] = useState(false);
   const [accountTypeTouched, setAccountTypeTouched] = useState(false);
 
   useEffect(() => {
@@ -70,6 +83,8 @@ const CompleteProfileScreen = ({ navigation }) => {
       const { data } = await getProfile(session.user.id);
       if (data) {
         setPhotoUri(data.photo_url ?? null);
+        setParticipation(data.participation ?? []);
+        setWasAlreadyCompleted(data.profile_completed === true);
         setDob(isoToDisplayDob(data.dob));
         setGender(data.gender ?? '');
         setCity(data.city ?? '');
@@ -100,7 +115,7 @@ const CompleteProfileScreen = ({ navigation }) => {
     if (Platform.OS === 'android') {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission needed', 'Please allow access to your photo library.');
+        Alert.alert(t('rw.profile.permission_needed', 'Permission needed'), t('rw.profile.please_allow_access_to_your_', 'Please allow access to your photo library.'));
         return;
       }
     }
@@ -111,11 +126,11 @@ const CompleteProfileScreen = ({ navigation }) => {
       quality: 0.7,
     });
     if (result.canceled) return;
-    const uri = result.assets[0].uri;
+    const uri = await resizeForUpload(result.assets[0].uri);
     setUploadingPhoto(true);
     const { url, error } = await uploadAvatar(userId, uri);
     setUploadingPhoto(false);
-    if (error) { Alert.alert('Upload failed', error.message); return; }
+    if (error) { Alert.alert(t('rw.profile.upload_failed', 'Upload failed'), error.message); return; }
     setPhotoUri(url);
   };
 
@@ -125,9 +140,12 @@ const CompleteProfileScreen = ({ navigation }) => {
     );
   };
 
+  const toggleReward = (key) =>
+    setParticipation((prev) => ALL_REWARDS.filter((k) => (k === key ? !prev.includes(k) : prev.includes(k))));
+
   const handleSave = async () => {
     if (!dob.trim() || !gender || !city.trim() || !accountTypeTouched) {
-      Alert.alert('Required fields', 'Please fill in account type, date of birth, gender and city.');
+      Alert.alert(t('rw.profile.required_fields', 'Required fields'), t('rw.profile.please_fill_in_account_type_', 'Please fill in account type, date of birth, gender and city.'));
       return;
     }
     setSaving(true);
@@ -146,10 +164,14 @@ const CompleteProfileScreen = ({ navigation }) => {
       phone: phone.trim(),
       instagram: instagram.trim().replace(/^@/, ''),
       account_type: accountType,
+      participation: accountType === 'venue_owner' ? participation : null,
     });
     setSaving(false);
-    if (error) { Alert.alert('Error', error.message); return; }
+    if (error) { Alert.alert(t('rw.profile.error', 'Error'), error.message); return; }
     await refreshProfile();
+    if (!wasAlreadyCompleted) {
+      Alert.alert(t('rw.profile.profile_complete', 'Profile complete! 🎉'), t('rw.profile.you_ve_earned_20_points_for_', 'You\'ve earned +20 points for finishing your profile.'));
+    }
     navigation.goBack();
   };
 
@@ -171,7 +193,7 @@ const CompleteProfileScreen = ({ navigation }) => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.back}>
           <Text style={styles.backText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Complete Profile</Text>
+        <Text style={styles.headerTitle}>{t('rw.profile.complete_profile', 'Complete Profile')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -185,14 +207,14 @@ const CompleteProfileScreen = ({ navigation }) => {
           ) : (
             <View style={styles.photoPlaceholder}>
               <Text style={styles.photoPlaceholderText}>📷</Text>
-              <Text style={styles.photoPlaceholderLabel}>Add Photo</Text>
+              <Text style={styles.photoPlaceholderLabel}>{t('rw.profile.add_photo', 'Add Photo')}</Text>
             </View>
           )}
         </TouchableOpacity>
       </View>
 
       <View style={styles.form}>
-        <Field label="Account Type" required>
+        <Field label={t('rw.profile.account_type', 'Account Type')} required>
           <View style={styles.chipRow}>
             {ACCOUNT_TYPES.map(({ key, label }) => (
               <TouchableOpacity
@@ -206,18 +228,37 @@ const CompleteProfileScreen = ({ navigation }) => {
           </View>
         </Field>
 
-        <Field label="Date of Birth" hint="DD/MM/YYYY">
+        {accountType === 'venue_owner' && (
+          <Field label="Rewards you'll offer" hint={t('rw.profile.you_set_the_percentages_late', 'you set the percentages later under {{where}}', { where: cashEnabled ? t('rw.profile.cash_back_credit', 'Cash Back & Credit') : t('rw.profile.rewards', 'Rewards') })}>
+            <View style={styles.chipRow}>
+              {rewardOptions(cashEnabled).map((o) => {
+                const active = participation.includes(o.key);
+                return (
+                  <TouchableOpacity
+                    key={o.key}
+                    style={[styles.chip, active && styles.chipActive]}
+                    onPress={() => toggleReward(o.key)}
+                  >
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>{o.emoji} {o.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </Field>
+        )}
+
+        <Field label={t('rw.profile.date_of_birth', 'Date of Birth')} hint={t('rw.profile.dd_mm_yyyy', 'DD/MM/YYYY')}>
           <TextInput
             style={styles.input}
             value={dob}
             onChangeText={(text) => setDob(formatDob(text))}
-            placeholder="DD/MM/YYYY"
+            placeholder={t('rw.profile.dd_mm_yyyy', 'DD/MM/YYYY')}
             placeholderTextColor={COLORS.textMuted}
             keyboardType="numeric"
           />
         </Field>
 
-        <Field label="Gender" required>
+        <Field label={t('rw.profile.gender', 'Gender')} required>
           <View style={styles.chipRow}>
             {GENDERS.map((g) => (
               <TouchableOpacity
@@ -231,22 +272,22 @@ const CompleteProfileScreen = ({ navigation }) => {
           </View>
         </Field>
 
-        <Field label="City" required>
+        <Field label={t('rw.profile.city', 'City')} required>
           <TextInput
             style={styles.input}
             value={city}
             onChangeText={setCity}
-            placeholder="Your city"
+            placeholder={t('rw.profile.your_city', 'Your city')}
             placeholderTextColor={COLORS.textMuted}
           />
         </Field>
 
-        <Field label="About Me">
+        <Field label={t('rw.profile.about_me', 'About Me')}>
           <TextInput
             style={[styles.input, styles.multiline]}
             value={bio}
             onChangeText={setBio}
-            placeholder="A short bio..."
+            placeholder={t('rw.profile.a_short_bio', 'A short bio...')}
             placeholderTextColor={COLORS.textMuted}
             multiline
             numberOfLines={3}
@@ -255,7 +296,7 @@ const CompleteProfileScreen = ({ navigation }) => {
           <Text style={styles.charCount}>{bio.length}/200</Text>
         </Field>
 
-        <Field label="Interests">
+        <Field label={t('rw.profile.interests', 'Interests')}>
           <View style={styles.chipRow}>
             {INTERESTS.map((item) => {
               const active = selectedInterests.includes(item);
@@ -275,13 +316,13 @@ const CompleteProfileScreen = ({ navigation }) => {
               style={[styles.input, { marginTop: 10 }]}
               value={otherInterests}
               onChangeText={setOtherInterests}
-              placeholder="Type your interests, separated by commas"
+              placeholder={t('rw.profile.type_your_interests_separate', 'Type your interests, separated by commas')}
               placeholderTextColor={COLORS.textMuted}
             />
           )}
         </Field>
 
-        <Field label="Phone">
+        <Field label={t('rw.profile.phone', 'Phone')}>
           <TextInput
             style={styles.input}
             value={phone}
@@ -292,12 +333,12 @@ const CompleteProfileScreen = ({ navigation }) => {
           />
         </Field>
 
-        <Field label="Instagram">
+        <Field label={t('rw.profile.instagram', 'Instagram')}>
           <TextInput
             style={styles.input}
             value={instagram}
             onChangeText={setInstagram}
-            placeholder="@username"
+            placeholder={t('rw.profile.username', '@username')}
             placeholderTextColor={COLORS.textMuted}
             autoCapitalize="none"
           />
@@ -307,7 +348,7 @@ const CompleteProfileScreen = ({ navigation }) => {
       <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
         {saving
           ? <ActivityIndicator color={COLORS.black} />
-          : <Text style={styles.saveBtnText}>Save Profile</Text>
+          : <Text style={styles.saveBtnText}>{t('rw.profile.save_profile', 'Save Profile')}</Text>
         }
       </TouchableOpacity>
 

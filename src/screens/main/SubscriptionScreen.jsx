@@ -12,8 +12,21 @@ import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
 
 // Our 3 fixed plan durations map onto RevenueCat's predefined package slots.
-const packageForPlan = (offering, durationMonths) => {
+// Plans that carry a RevenueCat product id (tiered level plans, venue plans) are
+// matched on it; the original Find-Mee plans have none and use the fixed
+// monthly / sixMonth / annual package slots.
+const planProductIdFor = (plan, profile) =>
+  (profile?.account_type === 'venue_owner' && plan.venue_revenuecat_product_id)
+    ? plan.venue_revenuecat_product_id
+    : plan.revenuecat_product_id;
+
+const packageForPlan = (offering, plan, profile) => {
   if (!offering) return null;
+  const productId = planProductIdFor(plan, profile);
+  if (productId) {
+    return offering.availablePackages?.find((pkg) => pkg.product?.identifier === productId) ?? null;
+  }
+  const durationMonths = plan.duration_months;
   if (durationMonths === 1) return offering.monthly;
   if (durationMonths === 6) return offering.sixMonth;
   if (durationMonths === 12) return offering.annual;
@@ -22,7 +35,7 @@ const packageForPlan = (offering, durationMonths) => {
 
 const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const { t } = useTranslation();
-  const { profile, refreshProfile, settings } = useUser();
+  const { profile, refreshProfile, settings, venueAccess, isVenuePlan } = useUser();
   const [plans, setPlans] = useState([]);
   const [offering, setOffering] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,6 +44,19 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
   const [restoring, setRestoring] = useState(false);
 
   const status = subscriptionStatus(profile, settings);
+  const isVenue = profile?.account_type === 'venue_owner';
+  const isLevels = settings?.mode === 'levels';
+  // Which plans to list depends on the admin's subscription mode:
+  //  - venue_plan: members are free (no plans); venues see only the venue plans
+  //  - levels: the tiered level plans (a plan can be switched off for venues)
+  //  - every other (original Find-Mee) mode: the original untiered member plans
+  const visiblePlans = plans.filter((p) => {
+    if (isVenuePlan) return p.audience === 'venue';
+    if (p.audience === 'venue') return false;
+    if (isLevels) return !!p.tier_key && !(isVenue && p.venue_available === false);
+    return !p.tier_key;
+  });
+  const showPlans = !isVenuePlan || isVenue;
 
   useEffect(() => {
     getSession().then(({ data: { session } }) => {
@@ -45,7 +71,7 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
 
   const handleSubscribe = async (plan) => {
     if (!userId) return;
-    const pkg = packageForPlan(offering, plan.duration_months);
+    const pkg = packageForPlan(offering, plan, profile);
     if (!pkg) {
       Alert.alert(t('common.error'), t('subscription.notAvailable'));
       return;
@@ -83,6 +109,30 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
 
   const statusBanner = () => {
     if (!profile) return null;
+    if (isVenuePlan && !isVenue) {
+      return (
+        <View style={[styles.trialBanner, styles.activeBanner]}>
+          <Text style={styles.trialTitle}>🎉 {t('subscription.memberFreeTitle')}</Text>
+          <Text style={styles.trialSub}>{t('subscription.memberFreeSub')}</Text>
+        </View>
+      );
+    }
+    if (venueAccess?.inTrial) {
+      return (
+        <View style={styles.trialBanner}>
+          <Text style={styles.trialTitle}>🎉 {t('subscription.trialActive')}</Text>
+          <Text style={styles.trialSub}>{t('subscription.venueTrialSub', { days: venueAccess.trialDaysLeft })}</Text>
+        </View>
+      );
+    }
+    if (venueAccess?.locked) {
+      return (
+        <View style={[styles.trialBanner, styles.expiredBanner]}>
+          <Text style={styles.trialTitle}>⚠️ {t('subscription.venueLockedTitle')}</Text>
+          <Text style={styles.trialSub}>{t('subscription.venueLockedSub')}</Text>
+        </View>
+      );
+    }
     if (status.isOnTrial && status.daysLeft > 0) {
       return (
         <View style={styles.trialBanner}>
@@ -129,15 +179,21 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
       <ScrollView contentContainerStyle={styles.scroll}>
         {statusBanner()}
 
-        <Text style={styles.sectionLabel}>{t('subscription.choosePlan')}</Text>
+        {showPlans && <Text style={styles.sectionLabel}>{t('subscription.choosePlan')}</Text>}
 
-        {loading ? (
+        {!showPlans ? null : loading ? (
           <ActivityIndicator color={COLORS.primary} style={{ marginTop: 40 }} />
         ) : (
-          plans.map((plan) => {
+          (() => {
+            let lastTier = null;
+            return visiblePlans.map((plan) => {
             const isCurrentPlan = status.isActive && status.planId === plan.id;
+            const showTierHeader = !!plan.tier_key && plan.tier_key !== lastTier;
+            lastTier = plan.tier_key;
             return (
-              <View key={plan.id} style={[styles.planCard, isCurrentPlan && styles.planCardActive]}>
+              <React.Fragment key={plan.id}>
+              {showTierHeader && <Text style={styles.tierHeader}>{plan.tier_key.toUpperCase()}</Text>}
+              <View style={[styles.planCard, isCurrentPlan && styles.planCardActive]}>
                 <View style={styles.planHeader}>
                   <Text style={styles.planLabel}>{plan.label}</Text>
                   {plan.badge ? (
@@ -167,8 +223,10 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
                   </TouchableOpacity>
                 )}
               </View>
+              </React.Fragment>
             );
-          })
+            });
+          })()
         )}
 
         <TouchableOpacity style={styles.restoreBtn} onPress={handleRestore} disabled={restoring}>
@@ -201,6 +259,10 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
 };
 
 const styles = StyleSheet.create({
+  tierHeader: {
+    fontSize: 13, fontWeight: '800', color: COLORS.text,
+    letterSpacing: 1, marginTop: 12, marginBottom: 8,
+  },
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { padding: 20, paddingBottom: 60 },
   trialBanner: {

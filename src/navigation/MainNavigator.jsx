@@ -40,6 +40,23 @@ import MessagesScreen from '../screens/main/MessagesScreen';
 import ChatScreen from '../screens/main/ChatScreen';
 import NotificationsScreen from '../screens/main/NotificationsScreen';
 import AdminScreen from '../screens/main/AdminScreen';
+import VenueVouchersScreen from '../screens/main/VenueVouchersScreen';
+import CheckVoucherScreen from '../screens/main/CheckVoucherScreen';
+import MyPointsScreen from '../screens/main/MyPointsScreen';
+import MyCashbackScreen from '../screens/main/MyCashbackScreen';
+import SubmitReceiptScreen from '../screens/main/SubmitReceiptScreen';
+import ParticipationScreen from '../screens/main/ParticipationScreen';
+import VenueCashbackScreen from '../screens/main/VenueCashbackScreen';
+import RewardsScreen from '../screens/main/RewardsScreen';
+import InviteFriendsScreen from '../screens/main/InviteFriendsScreen';
+import GiveawaysScreen from '../screens/main/GiveawaysScreen';
+import CreateGiveawayScreen from '../screens/main/CreateGiveawayScreen';
+import ClipOfDayScreen from '../screens/main/ClipOfDayScreen';
+import AdminPointsScreen from '../screens/main/AdminPointsScreen';
+import AdminCashbackScreen from '../screens/main/AdminCashbackScreen';
+import AdminAgentsScreen from '../screens/main/AdminAgentsScreen';
+import AdminPayoutSetupScreen from '../screens/main/AdminPayoutSetupScreen';
+import AdminClipsScreen from '../screens/main/AdminClipsScreen';
 import AdminSubscriptionPlansScreen from '../screens/main/AdminSubscriptionPlansScreen';
 import AdminTopVenuesScreen from '../screens/main/AdminTopVenuesScreen';
 import SubscriptionScreen from '../screens/main/SubscriptionScreen';
@@ -65,12 +82,24 @@ import AdminFlaggedMembersScreen from '../screens/main/AdminFlaggedMembersScreen
 
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
+const GiveawaysStack = createNativeStackNavigator();
 const MessagesStack = createNativeStackNavigator();
 const NotificationsStack = createNativeStackNavigator();
 const AdminStack = createNativeStackNavigator();
 
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+    <HomeStack.Screen name={ROUTES.VENUE_VOUCHERS} component={VenueVouchersScreen} />
+    <HomeStack.Screen name={ROUTES.CHECK_VOUCHER} component={CheckVoucherScreen} />
+    <HomeStack.Screen name={ROUTES.MY_POINTS} component={MyPointsScreen} />
+    <HomeStack.Screen name={ROUTES.MY_CASHBACK} component={MyCashbackScreen} />
+    <HomeStack.Screen name={ROUTES.SUBMIT_RECEIPT} component={SubmitReceiptScreen} />
+    <HomeStack.Screen name={ROUTES.PARTICIPATION} component={ParticipationScreen} />
+    <HomeStack.Screen name={ROUTES.VENUE_CASHBACK} component={VenueCashbackScreen} />
+    <HomeStack.Screen name={ROUTES.REWARDS} component={RewardsScreen} />
+    <HomeStack.Screen name={ROUTES.INVITE_FRIENDS} component={InviteFriendsScreen} />
+    <HomeStack.Screen name={ROUTES.CLIP_OF_DAY} component={ClipOfDayScreen} />
+    <HomeStack.Screen name={ROUTES.CREATE_GIVEAWAY} component={CreateGiveawayScreen} />
     <HomeStack.Screen name={ROUTES.HOME} component={HomeScreen} />
     <HomeStack.Screen name={ROUTES.FRIENDS_HUB} component={FriendsHubScreen} />
     <HomeStack.Screen name={ROUTES.FRIENDS_LIST} component={FriendsListScreen} />
@@ -114,6 +143,13 @@ const HomeStackNavigator = () => (
   </HomeStack.Navigator>
 );
 
+const GiveawaysStackNavigator = () => (
+  <GiveawaysStack.Navigator screenOptions={{ headerShown: false }}>
+    <GiveawaysStack.Screen name={ROUTES.GIVEAWAYS} component={GiveawaysScreen} />
+    <GiveawaysStack.Screen name={ROUTES.CREATE_GIVEAWAY} component={CreateGiveawayScreen} />
+  </GiveawaysStack.Navigator>
+);
+
 const MessagesStackNavigator = () => (
   <MessagesStack.Navigator screenOptions={{ headerShown: false }}>
     <MessagesStack.Screen name={ROUTES.MESSAGES} component={MessagesScreen} />
@@ -131,6 +167,11 @@ const NotificationsStackNavigator = () => (
 
 const AdminStackNavigator = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+    <AdminStack.Screen name={ROUTES.ADMIN_CLIPS} component={AdminClipsScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_POINTS} component={AdminPointsScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_CASHBACK} component={AdminCashbackScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_AGENTS} component={AdminAgentsScreen} />
+    <AdminStack.Screen name={ROUTES.ADMIN_PAYOUT_SETUP} component={AdminPayoutSetupScreen} />
     <AdminStack.Screen name="Admin" component={AdminScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_TOP_VENUES} component={AdminTopVenuesScreen} />
@@ -146,7 +187,7 @@ const MainNavigator = () => {
   const [notifCount, setNotifCount] = useState(0);
   const [msgCount, setMsgCount] = useState(0);
   const insets = useSafeAreaInsets();
-  const { profile, settings } = useUser();
+  const { profile, settings, isFeatureEnabled } = useUser();
 
   const isRestricted = profile?.status === 'restricted';
   const isAdmin = profile?.is_admin === true;
@@ -265,6 +306,19 @@ const MainNavigator = () => {
             tabBarBadgeStyle: { backgroundColor: COLORS.notification, color: COLORS.white, fontSize: 10, fontWeight: '800' },
             tabBarIcon: ({ color, focused }) => (
               <Ionicons name={focused ? 'notifications' : 'notifications-outline'} size={24} color={color} />
+            ),
+          }}
+        />
+      )}
+
+      {!isRestricted && isFeatureEnabled && isFeatureEnabled('giveaways') !== false && (
+        <Tab.Screen
+          name="GiveawaysTab"
+          component={GiveawaysStackNavigator}
+          options={{
+            tabBarLabel: 'Give Away',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'gift' : 'gift-outline'} size={24} color={color} />
             ),
           }}
         />
