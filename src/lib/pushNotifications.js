@@ -194,6 +194,13 @@ export const resolveNotificationRoute = async (item, fallbackName = 'Someone') =
       params: { conversationId: item.reference_id, friendName: actorName },
     };
   }
+  if (item.type === 'cashback_pending') {
+    return { stack: 'HomeTab', screen: ROUTES.VENUE_CASHBACK };
+  }
+  if (item.type === 'cashback_result') {
+    const forVenue = item.reference_type?.startsWith('venue_');
+    return { stack: 'HomeTab', screen: forVenue ? ROUTES.VENUE_CASHBACK : ROUTES.MY_CASHBACK };
+  }
   if (item.type === 'content_report') {
     return { stack: 'AdminTab', screen: ROUTES.ADMIN_REPORTS, initial: false };
   }

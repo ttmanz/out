@@ -1,16 +1,20 @@
 import { Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import i18n from './i18n';
+import { resizeForUpload } from './imageResize';
+import { compressVideoForUpload } from './videoCompress';
 
-const launch = async (mediaType) => {
+const launch = async (mediaType, videoMaxDuration = 60) => {
   const result = await ImagePicker.launchCameraAsync({
     mediaTypes: [mediaType],
     quality: 0.8,
-    videoMaxDuration: 60,
+    videoMaxDuration,
   });
   const asset = result.assets?.[0];
   if (result.canceled || !asset?.uri) return null;
-  return { uri: asset.uri, isVideo: asset.type === 'video' };
+  const isVideo = asset.type === 'video';
+  const uri = isVideo ? await compressVideoForUpload(asset.uri) : await resizeForUpload(asset.uri);
+  return { uri, isVideo };
 };
 
 // Opens the phone's native camera so the user can shoot something right now.
@@ -40,4 +44,14 @@ export const captureLiveMedia = async () => {
   if (!mode) return null;
 
   return launch(mode);
+};
+
+// Clip of the Day is video-only, capped at 3 minutes — no photo/video prompt needed.
+export const captureClipVideo = async () => {
+  const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  if (status !== 'granted') {
+    Alert.alert(i18n.t('common.error'), i18n.t('common.cameraPermissionNeeded'));
+    return null;
+  }
+  return launch('videos', 180);
 };

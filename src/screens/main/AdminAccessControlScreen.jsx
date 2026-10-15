@@ -16,6 +16,16 @@ import BackHeader from '../../components/common/BackHeader';
 const TOGGLEABLE = (f) => f.feature_key !== 'messages';
 
 const MODES = [
+  {
+    key: 'levels',
+    label: 'Levels',
+    desc: 'Members are on the Free, Silver, Gold or Platinum level, and the daily post limit follows each level (set under Plans). No feature is blocked — every member keeps full access.',
+  },
+  {
+    key: 'venue_plan',
+    label: 'Venue Plan',
+    desc: 'Every member is free, with no levels. Venues get a free trial, then pay a venue plan (monthly, 6-month or yearly — prices under Plans) to use venue tools: offering rewards, confirming claims and vouchers. An unpaid venue still works like a member.',
+  },
   { key: 'free', label: 'Free', desc: 'Everyone has full access to every feature' },
   { key: 'free_until', label: 'Free Until…', desc: 'Free for everyone until a set date — after that, any active subscription (any plan, any tier) is required just to post anywhere. The paid list below does not apply in this mode.' },
   { key: 'free_except', label: 'Free Except…', desc: 'Everyone keeps full access, except the paid list below, which costs its one-off price unless subscribed (any plan, any tier)' },
@@ -26,6 +36,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
   const { refreshFeatureConfig } = useUser();
   const [mode, setMode] = useState('free');
   const [freeUntil, setFreeUntil] = useState(null);
+  const [trialDays, setTrialDays] = useState('30');
   const [showPicker, setShowPicker] = useState(false);
   const [features, setFeatures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,6 +51,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
     if (settings) {
       setMode(settings.mode ?? 'free');
       setFreeUntil(settings.free_until ? new Date(settings.free_until) : null);
+      setTrialDays(String(settings.venue_trial_days ?? 30));
     }
     setFeatures((featureData ?? []).map((f) => ({
       ...f,
@@ -55,6 +67,11 @@ const AdminAccessControlScreen = ({ navigation }) => {
     setFeatures((prev) => prev.map((f) => (f.feature_key === key ? { ...f, [field]: value } : f)));
 
   const handleSave = async () => {
+    const days = parseInt(trialDays, 10);
+    if (mode === 'venue_plan' && (!Number.isFinite(days) || days < 0 || days > 365)) {
+      Alert.alert('Error', 'Enter the free trial length as a number of days between 0 and 365.');
+      return;
+    }
     if (mode === 'free_until' && !freeUntil) {
       Alert.alert('Error', 'Pick a date for "Free Until".');
       return;
@@ -63,6 +80,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
     const { error: settingsError } = await updateSubscriptionSettings({
       mode,
       free_until: mode === 'free_until' ? freeUntil.toISOString() : null,
+      venue_trial_days: Number.isFinite(days) ? Math.min(365, Math.max(0, days)) : 30,
     });
     const results = await Promise.all(features.map((f) =>
       updateFeatureAccess(f.feature_key, {
@@ -146,6 +164,29 @@ const AdminAccessControlScreen = ({ navigation }) => {
               </TouchableOpacity>
             )}
           </>
+        )}
+
+        {mode === 'venue_plan' && (
+          <View style={styles.trialRow}>
+            <Text style={styles.trialLabel}>Free trial for new venues</Text>
+            <View style={styles.trialInputWrap}>
+              <TextInput
+                style={styles.trialInput}
+                value={trialDays}
+                onChangeText={(v) => setTrialDays(v.replace(/[^0-9]/g, ''))}
+                keyboardType="number-pad"
+                maxLength={3}
+                placeholder="30"
+                placeholderTextColor={COLORS.textMuted}
+              />
+              <Text style={styles.trialUnit}>days from signup</Text>
+            </View>
+            <Text style={styles.sectionHint}>
+              A venue can use every venue tool free for this long after it signs up, then needs a
+              venue plan. Use 0 for no trial. Changing it applies to every venue straight away,
+              including ones already signed up.
+            </Text>
+          </View>
         )}
 
         <Text style={[styles.sectionLabel, { marginTop: 24 }]}>App Features</Text>

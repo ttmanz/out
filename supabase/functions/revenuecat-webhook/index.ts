@@ -11,9 +11,11 @@ const json = (body: unknown, status = 200) =>
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 
-// Subscription product id -> our own subscription_plans.id. Both the member
-// and venue-owner tier of a plan grant the same access, just at a different
-// store price, so they collapse to the same plan id here.
+const SUBSCRIPTION_EVENTS = new Set(['INITIAL_PURCHASE', 'RENEWAL', 'UNCANCELLATION', 'PRODUCT_CHANGE']);
+
+// Original Find-Mee product ids -> subscription_plans.id. Used as a fallback when a
+// product id isn't found on any plan row, so the existing member/venue products keep
+// working even if their ids were never entered under Admin -> Plans.
 const PLAN_BY_PRODUCT: Record<string, string> = {
   monthly_member: 'monthly',
   monthly_venue: 'monthly',
@@ -23,7 +25,15 @@ const PLAN_BY_PRODUCT: Record<string, string> = {
   yearly_venue: 'yearly',
 };
 
-const SUBSCRIPTION_EVENTS = new Set(['INITIAL_PURCHASE', 'RENEWAL', 'UNCANCELLATION', 'PRODUCT_CHANGE']);
+// Subscriber points reward, per month the payment covers — scaled by tier
+// so an annual purchase isn't shortchanged against monthly renewals of the
+// same tier. Only awarded on an event that means a fresh payment period
+// just started (not UNCANCELLATION or PRODUCT_CHANGE, neither of which
+// necessarily means a new charge happened). Rate is admin-editable via
+// points_rules (rule_key `subscription_reward_<tier>`), not a constant —
+// these fallbacks only cover a missing/deleted rule row.
+const TIER_POINTS_FALLBACK: Record<string, number> = { silver: 20, gold: 50, platinum: 100 };
+const POINTS_EVENTS = new Set(['INITIAL_PURCHASE', 'RENEWAL']);
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -43,20 +53,69 @@ Deno.serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
 
+  // Webhook delivery is at-least-once — a retry resends the same event.
+  // Dedupe on RevenueCat's own event.id before any side effect runs, so a
+  // resend can't double-apply a subscription change or double-pay points.
+  const eventId = event.id as string | undefined;
+  if (eventId) {
+    const { error: dedupeError } = await admin
+      .from('revenuecat_processed_events')
+      .insert({ event_id: eventId });
+    if (dedupeError) return json({ ok: true }); // already processed (or a transient issue) — ack and stop
+  }
+
   const userId = event.app_user_id as string;
   const productId = event.product_id as string | undefined;
 
   if (SUBSCRIPTION_EVENTS.has(event.type)) {
-    const planId = productId ? PLAN_BY_PRODUCT[productId] : undefined;
-    if (!planId) {
+    // Both the member and venue-owner price of a plan grant the same
+    // access, just at a different store price — either product id on a
+    // plan row resolves to that same plan. Looked up from
+    // subscription_plans directly (admin-configured) rather than a
+    // hardcoded map, so new tiers/plans just work once the admin fills in
+    // their RevenueCat product ids.
+    let { data: plan } = productId
+      ? await admin
+          .from('subscription_plans')
+          .select('id, tier_key, duration_months')
+          .or(`revenuecat_product_id.eq.${productId},venue_revenuecat_product_id.eq.${productId}`)
+          .maybeSingle()
+      : { data: null };
+    if (!plan && productId && PLAN_BY_PRODUCT[productId]) {
+      // Fall back to the original Find-Mee product map.
+      const { data: legacy } = await admin
+        .from('subscription_plans')
+        .select('id, tier_key, duration_months')
+        .eq('id', PLAN_BY_PRODUCT[productId])
+        .maybeSingle();
+      plan = legacy;
+    }
+    if (!plan) {
       console.error(`Unknown subscription product_id: ${productId}`);
       return json({ ok: true });
     }
     const expiresAt = event.expiration_at_ms ? new Date(event.expiration_at_ms).toISOString() : null;
     await admin
       .from('profiles')
-      .update({ subscription_plan: planId, subscription_expires_at: expiresAt })
+      .update({ subscription_plan: plan.id, subscription_expires_at: expiresAt })
       .eq('id', userId);
+
+    if (POINTS_EVENTS.has(event.type) && plan.tier_key) {
+      const tierKey = plan.tier_key as string;
+      const { data: rule } = await admin
+        .from('points_rules')
+        .select('amount')
+        .eq('rule_key', `subscription_reward_${tierKey}`)
+        .maybeSingle();
+      const perMonth = rule?.amount ?? TIER_POINTS_FALLBACK[tierKey];
+      if (perMonth) {
+        const amount = perMonth * (plan.duration_months ?? 1);
+        await admin
+          .from('points_ledger')
+          .insert({ user_id: userId, amount, reason: 'subscription_reward' });
+      }
+    }
+
     return json({ ok: true });
   }
 

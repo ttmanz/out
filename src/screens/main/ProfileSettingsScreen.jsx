@@ -4,6 +4,9 @@ import {
   ActivityIndicator, Alert, ScrollView,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useUser } from '../../contexts/UserContext';
+import { participationSummary } from '../../lib/cashback';
+import { useCashBackEnabled } from '../../hooks/useCashBackEnabled';
 import { COLORS } from '../../constants/colors';
 import { getSession, deleteAccount } from '../../lib/auth';
 import { ROUTES } from '../../constants/routes';
@@ -13,6 +16,9 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
 import Avatar from '../../components/common/Avatar';
+import i18n from '../../lib/i18n';
+// Module-level translate helper so every helper component in this file can use t().
+const t = (key, defaultValue, opts) => i18n.t(key, { defaultValue, ...opts });
 
 const VISIBILITY_OPTIONS = [
   { key: 'everyone',      emoji: '🌍', labelKey: 'profileSettings.everyone',     descKey: 'profileSettings.everyoneDesc' },
@@ -30,6 +36,8 @@ const VENUE_VISIBILITY_OPTIONS = [
 
 const ProfileSettingsScreen = ({ navigation }) => {
   const { t } = useTranslation();
+  const { profile: myProfile } = useUser();
+  const cashEnabled = useCashBackEnabled();
   const [userId, setUserId] = useState(null);
   const [fullName, setFullName] = useState('');
   const [visibility, setVisibility] = useState('everyone');
@@ -173,11 +181,100 @@ const ProfileSettingsScreen = ({ navigation }) => {
         >
           <Text style={styles.editProfileEmoji}>👤</Text>
           <View style={styles.editProfileText}>
-            <Text style={styles.editProfileLabel}>Edit My Profile</Text>
-            <Text style={styles.editProfileDesc}>Photo, bio, interests, city & more</Text>
+            <Text style={styles.editProfileLabel}>{t('rw.settings.edit_my_profile', 'Edit My Profile')}</Text>
+            <Text style={styles.editProfileDesc}>{t('rw.settings.photo_bio_interests_city_mor', 'Photo, bio, interests, city & more')}</Text>
           </View>
           <Text style={styles.editProfileChevron}>›</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.editProfileBtn}
+          onPress={() => navigation.navigate(ROUTES.MY_POINTS)}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.editProfileEmoji}>🏆</Text>
+          <View style={styles.editProfileText}>
+            <Text style={styles.editProfileLabel}>{t('rw.settings.my_points', 'My Points')}</Text>
+            <Text style={styles.editProfileDesc}>{t('rw.settings.earn_points_by_checking_in_a', 'Earn points by checking in at venues')}</Text>
+          </View>
+          <Text style={styles.editProfileChevron}>›</Text>
+        </TouchableOpacity>
+
+        {myProfile?.account_type === 'venue_owner' && (
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate(ROUTES.VENUE_VOUCHERS)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.editProfileEmoji}>🎟️</Text>
+            <View style={styles.editProfileText}>
+              <Text style={styles.editProfileLabel}>{t('rw.settings.my_vouchers', 'My Vouchers')}</Text>
+              <Text style={styles.editProfileDesc}>{t('rw.settings.create_discount_codes_for_cu', 'Create discount codes for customers to share')}</Text>
+            </View>
+            <Text style={styles.editProfileChevron}>›</Text>
+          </TouchableOpacity>
+        )}
+
+        {myProfile?.account_type === 'venue_owner' && (
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate(ROUTES.CREATE_GIVEAWAY)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.editProfileEmoji}>🎁</Text>
+            <View style={styles.editProfileText}>
+              <Text style={styles.editProfileLabel}>{t('rw.settings.post_a_giveaway', 'Post a Giveaway')}</Text>
+              <Text style={styles.editProfileDesc}>{t('rw.settings.offer_something_free_members', 'Offer something free — members see it in the Give Away tab')}</Text>
+            </View>
+            <Text style={styles.editProfileChevron}>›</Text>
+          </TouchableOpacity>
+        )}
+
+        {myProfile?.account_type === 'venue_owner' ? (
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate(ROUTES.VENUE_CASHBACK)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.editProfileEmoji}>{cashEnabled ? '💸' : '🏷️'}</Text>
+            <View style={styles.editProfileText}>
+              <Text style={styles.editProfileLabel}>{cashEnabled ? t('rw.settings.cash_back_credit', 'Cash Back & Credit') : t('rw.settings.rewards', 'Rewards')}</Text>
+              <Text style={styles.editProfileDesc}>{t('rw.settings.set_your_offer_and_confirm_c', 'Set your offer and confirm customer receipts')}</Text>
+            </View>
+            <Text style={styles.editProfileChevron}>›</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate(ROUTES.MY_CASHBACK)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.editProfileEmoji}>{cashEnabled ? '💸' : '🏷️'}</Text>
+            <View style={styles.editProfileText}>
+              <Text style={styles.editProfileLabel}>{cashEnabled ? t('rw.settings.cash_back', 'Cash Back') : t('rw.settings.venue_rewards', 'Venue Rewards')}</Text>
+              <Text style={styles.editProfileDesc}>
+                {cashEnabled ? t('rw.settings.snap_a_receipt_earn_cash_bac', 'Snap a receipt, earn cash back or store credit') : t('rw.settings.snap_a_receipt_earn_store_cr', 'Snap a receipt, earn store credit or a discount')}
+              </Text>
+            </View>
+            <Text style={styles.editProfileChevron}>›</Text>
+          </TouchableOpacity>
+        )}
+
+        {myProfile?.account_type === 'venue_owner' && (
+          <TouchableOpacity
+            style={styles.editProfileBtn}
+            onPress={() => navigation.navigate(ROUTES.PARTICIPATION)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.editProfileEmoji}>🎁</Text>
+            <View style={styles.editProfileText}>
+              <Text style={styles.editProfileLabel}>{t('rw.settings.participation', 'Participation')}</Text>
+              <Text style={styles.editProfileDesc}>{participationSummary(myProfile?.participation, cashEnabled)}</Text>
+            </View>
+            <Text style={styles.editProfileChevron}>›</Text>
+          </TouchableOpacity>
+        )}
+
 
         <TouchableOpacity
           style={styles.editProfileBtn}

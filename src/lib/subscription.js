@@ -3,7 +3,7 @@ import { supabase } from './supabase';
 export const getSubscriptionPlans = () =>
   supabase
     .from('subscription_plans')
-    .select('id, label, price_display, venue_price_display, duration_months, badge, description, sort_order')
+    .select('id, tier_key, label, price_display, venue_price_display, duration_months, badge, description, sort_order, revenuecat_product_id, venue_revenuecat_product_id, audience, venue_available')
     .eq('is_active', true)
     .order('sort_order');
 
@@ -11,8 +11,18 @@ export const getSubscriptionPlans = () =>
 export const getAllSubscriptionPlans = () =>
   supabase
     .from('subscription_plans')
-    .select('id, label, price_display, venue_price_display, duration_months, badge, description, sort_order, revenuecat_product_id, venue_revenuecat_product_id')
+    .select('id, tier_key, label, price_display, venue_price_display, duration_months, badge, description, sort_order, revenuecat_product_id, venue_revenuecat_product_id, audience, venue_available')
     .order('sort_order');
+
+// Membership tiers (Free/Silver/Gold/Platinum) — each carries the daily
+// post limit enforced server-side by the enforce_daily_post_limit trigger
+// (only while the subscription mode is 'levels').
+export const getMembershipTiers = () =>
+  supabase.from('membership_tiers').select('*').order('sort_order');
+
+// Admin-only: RLS restricts this to profiles.is_admin = true
+export const updateMembershipTier = (tierKey, fields) =>
+  supabase.from('membership_tiers').update(fields).eq('tier_key', tierKey);
 
 // A venue owner sees their own price where the admin has set one;
 // otherwise everyone sees the regular member price.
@@ -100,7 +110,9 @@ export const canAccessFeature = (featureKey, { profile, settings, featureMap, un
     return isVenueLocked(profile) ? { allowed: false, venueLocked: true } : { allowed: true };
   }
 
-  if (mode === 'free') return { allowed: true };
+  // 'levels' and 'venue_plan' never block a feature — levels only differ by
+  // daily post limit (DB trigger) and venue_plan locks venue tools separately.
+  if (mode === 'free' || mode === 'levels' || mode === 'venue_plan') return { allowed: true };
 
   if (mode === 'free_until') {
     const stillFree = settings?.free_until && new Date(settings.free_until) > new Date();
@@ -139,4 +151,28 @@ export const subscriptionStatus = (profile, settings) => {
   // happen to have one).
   if (activePlan) return { hasAccess: true, isOnTrial: false, isActive: true, daysLeft: activeDaysLeft, planId: plan };
   return { hasAccess: true, isOnTrial: false, isActive: false, daysLeft: 0, planId: null };
+};
+
+// Mirrors the tier resolution the enforce_daily_post_limit() DB trigger does:
+// the active plan's tier if one exists and hasn't expired, otherwise 'free'.
+export const resolveTierKey = (profile, plans) => {
+  if (!hasActivePlan(profile)) return 'free';
+  const plan = plans?.find((p) => p.id === profile.subscription_plan);
+  return plan?.tier_key ?? 'free';
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+// Venue Plan mode: members are free, with no levels. A venue account has a free
+// trial (settings.venue_trial_days from signup, editable by an admin) and then
+// needs a paid venue plan to use the venue tools. This mirrors venue_has_access()
+// in the database, which is what actually enforces it — this is for the screens.
+export const venueAccessStatus = (profile, settings) => {
+  const none = { applies: false, locked: false, inTrial: false, subscribed: false, trialDaysLeft: 0 };
+  if (settings?.mode !== 'venue_plan' || profile?.account_type !== 'venue_owner' || isBypassRole(profile)) return none;
+  if (hasActivePlan(profile)) return { applies: true, locked: false, inTrial: false, subscribed: true, trialDaysLeft: 0 };
+  const trialDays = settings?.venue_trial_days ?? 30;
+  const trialEnd = new Date(profile.created_at).getTime() + trialDays * DAY_MS;
+  const trialDaysLeft = Math.max(0, Math.ceil((trialEnd - Date.now()) / DAY_MS));
+  return { applies: true, locked: trialDaysLeft <= 0, inTrial: trialDaysLeft > 0, subscribed: false, trialDaysLeft };
 };
