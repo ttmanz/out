@@ -89,6 +89,7 @@ const AdminStack = createNativeStackNavigator();
 
 const HomeStackNavigator = () => (
   <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+    <HomeStack.Screen name={ROUTES.HOME} component={HomeScreen} />
     <HomeStack.Screen name={ROUTES.VENUE_VOUCHERS} component={VenueVouchersScreen} />
     <HomeStack.Screen name={ROUTES.CHECK_VOUCHER} component={CheckVoucherScreen} />
     <HomeStack.Screen name={ROUTES.MY_POINTS} component={MyPointsScreen} />
@@ -100,7 +101,6 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.INVITE_FRIENDS} component={InviteFriendsScreen} />
     <HomeStack.Screen name={ROUTES.CLIP_OF_DAY} component={ClipOfDayScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_GIVEAWAY} component={CreateGiveawayScreen} />
-    <HomeStack.Screen name={ROUTES.HOME} component={HomeScreen} />
     <HomeStack.Screen name={ROUTES.FRIENDS_HUB} component={FriendsHubScreen} />
     <HomeStack.Screen name={ROUTES.FRIENDS_LIST} component={FriendsListScreen} />
     <HomeStack.Screen name={ROUTES.PENDING_REQUESTS} component={PendingRequestsScreen} />
@@ -167,12 +167,12 @@ const NotificationsStackNavigator = () => (
 
 const AdminStackNavigator = () => (
   <AdminStack.Navigator screenOptions={{ headerShown: false }}>
+    <AdminStack.Screen name="Admin" component={AdminScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_CLIPS} component={AdminClipsScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_POINTS} component={AdminPointsScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_CASHBACK} component={AdminCashbackScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_AGENTS} component={AdminAgentsScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_PAYOUT_SETUP} component={AdminPayoutSetupScreen} />
-    <AdminStack.Screen name="Admin" component={AdminScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_TOP_VENUES} component={AdminTopVenuesScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_OPEN_GROUPS} component={AdminOpenGroupsScreen} />
