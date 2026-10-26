@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
   ActivityIndicator, Alert, Modal,
@@ -8,44 +8,32 @@ import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import {
-  getMyCashbackBalances, getMyCashbackHistory, getMyCashbackPayoutRequests, requestCashbackPayout, listPayoutMethods,
   getMyCashbackClaims, cancelCashbackClaim, getMyVenueCredits, requestCreditRedemption,
   getMyPendingCreditRedemptions, cancelCreditRedemption,
-  formatAmount, CASHBACK_REASON_LABEL, CLAIM_STATUS_LABEL, REWARD_LABEL,
+  formatAmount, CLAIM_STATUS_LABEL, REWARD_LABEL,
 } from '../../lib/cashback';
 import { formatAgo } from '../../utils/format';
-import { useCashBackEnabled } from '../../hooks/useCashBackEnabled';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
-import GradientBorder from '../../components/common/GradientBorder';
 import i18n from '../../lib/i18n';
 import { useTranslation } from 'react-i18next';
 // Module-level translate helper so every helper component in this file can use t().
 const t = (key, defaultValue, opts) => i18n.t(key, { defaultValue, ...opts });
 
-const PAYOUT_STATUS_LABEL = { pending: 'Pending', paid: 'Paid', rejected: 'Declined' };
 const STATUS_COLOR = {
-  pending: COLORS.textSecondary, paid: COLORS.success, confirmed: COLORS.success,
+  pending: COLORS.textSecondary, confirmed: COLORS.success,
   rejected: COLORS.error, cancelled: COLORS.textMuted,
 };
 
+// A member's store credit, pending receipts and recent receipts. (Cash back and
+// cash-outs were removed from the app — only store credit and discounts remain.)
 const MyCashbackScreen = ({ navigation }) => {
   useTranslation();
   const { profile } = useUser();
-  const cashEnabled = useCashBackEnabled();
-  const [balances, setBalances] = useState([]);
-  const [history, setHistory] = useState([]);
-  const [requests, setRequests] = useState([]);
   const [claims, setClaims] = useState([]);
   const [credits, setCredits] = useState([]);
   const [redemptions, setRedemptions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCashOut, setShowCashOut] = useState(false);
-  const [amountDraft, setAmountDraft] = useState('');
-  const [numberDraft, setNumberDraft] = useState('');
-  const [cashOutCurrency, setCashOutCurrency] = useState(null);
-  const [methods, setMethods] = useState([]);
-  const [methodKey, setMethodKey] = useState(null);
   const [creditTarget, setCreditTarget] = useState(null);
   const [creditDraft, setCreditDraft] = useState('');
   const [saving, setSaving] = useState(false);
@@ -54,17 +42,11 @@ const MyCashbackScreen = ({ navigation }) => {
   const load = useCallback(async () => {
     if (!profile?.id) return;
     setLoading(true);
-    const [balancesRes, historyRes, requestsRes, claimsRes, creditsRes, redemptionsRes] = await Promise.all([
-      getMyCashbackBalances(),
-      getMyCashbackHistory(profile.id),
-      getMyCashbackPayoutRequests(profile.id),
+    const [claimsRes, creditsRes, redemptionsRes] = await Promise.all([
       getMyCashbackClaims(profile.id),
       getMyVenueCredits(),
       getMyPendingCreditRedemptions(profile.id),
     ]);
-    if (!balancesRes.error) setBalances(balancesRes.data ?? []);
-    if (!historyRes.error) setHistory(historyRes.data ?? []);
-    if (!requestsRes.error) setRequests(requestsRes.data ?? []);
     if (!claimsRes.error) setClaims(claimsRes.data ?? []);
     if (!creditsRes.error) setCredits(creditsRes.data ?? []);
     if (!redemptionsRes.error) setRedemptions(redemptionsRes.data ?? []);
@@ -72,49 +54,6 @@ const MyCashbackScreen = ({ navigation }) => {
   }, [profile?.id]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  const balanceOf = (currency) => Number(balances.find((b) => b.currency_code === currency)?.balance ?? 0);
-
-  const chooseCurrency = (currency) => {
-    setCashOutCurrency(currency);
-    setAmountDraft(String(balanceOf(currency)));
-    setMethodKey(null);
-  };
-
-  const openCashOut = () => {
-    setNumberDraft('');
-    chooseCurrency(balances[0]?.currency_code ?? null);
-    setShowCashOut(true);
-  };
-
-  // The payout methods that can pay the chosen currency, from the server.
-  useEffect(() => {
-    if (!showCashOut || !cashOutCurrency) return;
-    let cancelled = false;
-    setMethods([]);
-    listPayoutMethods(cashOutCurrency).then(({ data }) => {
-      if (cancelled) return;
-      setMethods(data ?? []);
-      if ((data ?? []).length === 1) setMethodKey(data[0].method_key);
-    });
-    return () => { cancelled = true; };
-  }, [showCashOut, cashOutCurrency]);
-
-  const selectedMethod = methods.find((m) => m.method_key === methodKey) ?? null;
-
-  const handleCashOut = async () => {
-    const amount = parseFloat(amountDraft);
-    if (!amount || amount <= 0) return Alert.alert(t('rw.mycashback.error', 'Error'), t('rw.mycashback.enter_a_positive_amount', 'Enter a positive amount.'));
-    if (amount > balanceOf(cashOutCurrency)) return Alert.alert(t('rw.mycashback.error', 'Error'), t('rw.mycashback.that_s_more_than_your_cash_b', 'That\'s more than your cash back balance.'));
-    if (!selectedMethod) return Alert.alert(t('rw.mycashback.error', 'Error'), t('rw.mycashback.choose_how_you_d_like_to_be_', 'Choose how you\'d like to be paid.'));
-    if (!numberDraft.trim()) return Alert.alert(t('rw.mycashback.error', 'Error'), t('rw.mycashback.enter_your_payout_details', 'Enter your payout details.'));
-    setSaving(true);
-    const { error } = await requestCashbackPayout(amount, numberDraft.trim(), cashOutCurrency, selectedMethod.method_key);
-    setSaving(false);
-    if (error) return Alert.alert(t('rw.mycashback.error', 'Error'), error.message ?? t('rw.mycashback.could_not_submit_your_reques', 'Could not submit your request. Please try again.'));
-    setShowCashOut(false);
-    load();
-  };
 
   const handleUseCredit = async () => {
     const amount = parseFloat(creditDraft);
@@ -136,10 +75,6 @@ const MyCashbackScreen = ({ navigation }) => {
     load();
   };
 
-  // Cash back is hidden while it is switched off — unless this member already has
-  // some, so money they hold is never out of sight or out of reach.
-  const showCash = cashEnabled || balances.length > 0 || history.length > 0 || requests.length > 0;
-
   const pendingClaims = claims.filter((c) => c.status === 'pending');
   const doneClaims = claims.filter((c) => c.status !== 'pending').slice(0, 5);
 
@@ -153,39 +88,16 @@ const MyCashbackScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <BackHeader title={showCash ? t('rw.mycashback.cash_back', 'Cash Back') : t('rw.mycashback.rewards', 'Rewards')} onBack={() => navigation.goBack()} />
-
-      {showCash && (
-      <GradientBorder radius={18} style={styles.balanceOuter}>
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>{t('rw.mycashback.your_cash_back_balance', 'Your cash back balance')}</Text>
-          {balances.length === 0
-            ? <Text style={styles.balanceValue}>{formatAmount(0)}</Text>
-            : balances.map((b) => (
-                <Text key={b.currency_code} style={styles.balanceValue}>{formatAmount(b.balance, b.currency_code)}</Text>
-              ))}
-          <Text style={styles.balanceHint}>{t('rw.mycashback.real_money_paid_out_to_you', 'real money, paid out to you')}</Text>
-        </View>
-      </GradientBorder>
-      )}
+      <BackHeader title={t('rw.mycashback.rewards', 'Rewards')} onBack={() => navigation.goBack()} />
 
       <View style={styles.actionRow}>
         <TouchableOpacity style={[styles.primaryBtn, styles.actionHalf]} onPress={() => navigation.navigate(ROUTES.SUBMIT_RECEIPT)}>
           <Text style={styles.primaryBtnText}>{t('rw.mycashback.submit_receipt', '🧾 Submit receipt')}</Text>
         </TouchableOpacity>
-        {showCash && (
-          <TouchableOpacity
-            style={[styles.outlineBtn, styles.actionHalf, balances.length === 0 && styles.btnDisabled]}
-            onPress={openCashOut}
-            disabled={balances.length === 0}
-          >
-            <Text style={styles.outlineBtnText}>{t('rw.mycashback.cash_out', '💸 Cash out')}</Text>
-          </TouchableOpacity>
-        )}
       </View>
 
       <FlatList
-        data={showCash ? history : []}
+        data={[]}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         ListHeaderComponent={
@@ -253,122 +165,15 @@ const MyCashbackScreen = ({ navigation }) => {
                 ))}
               </>
             )}
-
-            {requests.length > 0 && (
-              <>
-                <Text style={styles.sectionLabel}>{t('rw.mycashback.payout_requests', 'Payout Requests')}</Text>
-                {requests.map((r) => (
-                  <View key={r.id} style={styles.requestRow}>
-                    <View style={styles.rowText}>
-                      <Text style={styles.reason}>{formatAmount(r.amount, r.currency_code)} via {r.method_label} · {r.mobile_money_number}</Text>
-                      <Text style={styles.time}>{formatAgo(r.requested_at)}</Text>
-                    </View>
-                    <Text style={[styles.statusBadge, { color: STATUS_COLOR[r.status] }]}>{PAYOUT_STATUS_LABEL[r.status]}</Text>
-                  </View>
-                ))}
-              </>
-            )}
-            {showCash && <Text style={styles.sectionLabel}>{t('rw.mycashback.history', 'History')}</Text>}
           </>
         }
         ListEmptyComponent={
-          showCash
-            ? <Text style={styles.empty}>{t('rw.mycashback.no_cash_back_yet_submit_a_re', 'No cash back yet — submit a receipt from a partner venue to start earning.')}</Text>
-            : credits.length + claims.length + redemptions.length === 0
-              ? <Text style={styles.empty}>{t('rw.mycashback.submit_a_receipt_from_a_part', 'Submit a receipt from a partner venue to earn store credit or a discount.')}</Text>
-              : null
+          credits.length + claims.length + redemptions.length === 0
+            ? <Text style={styles.empty}>{t('rw.mycashback.submit_a_receipt_from_a_part', 'Submit a receipt from a partner venue to earn store credit or a discount.')}</Text>
+            : null
         }
-        renderItem={({ item }) => (
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.reason}>{CASHBACK_REASON_LABEL[item.reason] ?? item.reason}</Text>
-              <Text style={styles.time}>{formatAgo(item.created_at)}</Text>
-            </View>
-            <Text style={[styles.amount, item.amount < 0 && styles.amountNegative]}>
-              {item.amount > 0 ? '+' : ''}{formatAmount(item.amount, item.currency_code)}
-            </Text>
-          </View>
-        )}
+        renderItem={() => null}
       />
-
-      <Modal visible={showCashOut} transparent animationType="fade" onRequestClose={() => setShowCashOut(false)}>
-        <KeyboardAvoidingView style={styles.modalBackdrop} behavior="padding">
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('rw.mycashback.cash_out_2', 'Cash Out')}</Text>
-            <Text style={styles.modalHint}>{t('rw.mycashback.we_ll_send_this_to_the_payou', 'We\'ll send this to the payout details you enter — an admin fulfils requests manually for now, usually within a day or two.')}</Text>
-
-            {balances.length > 1 && (
-              <>
-                <Text style={styles.modalLabel}>{t('rw.mycashback.currency', 'Currency')}</Text>
-                <View style={styles.chipRow}>
-                  {balances.map((b) => (
-                    <TouchableOpacity
-                      key={b.currency_code}
-                      style={[styles.chip, b.currency_code === cashOutCurrency && styles.chipActive]}
-                      onPress={() => chooseCurrency(b.currency_code)}
-                    >
-                      <Text style={[styles.chipText, b.currency_code === cashOutCurrency && styles.chipTextActive]}>{b.currency_code}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </>
-            )}
-
-            <Text style={styles.modalLabel}>Amount (max {formatAmount(balanceOf(cashOutCurrency), cashOutCurrency)})</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={amountDraft}
-              onChangeText={(v) => setAmountDraft(v.replace(/[^0-9.]/g, ''))}
-              placeholder="e.g. 50"
-              placeholderTextColor={COLORS.textMuted}
-              keyboardType="decimal-pad"
-            />
-
-            <Text style={styles.modalLabel}>{t('rw.mycashback.pay_me_by', 'Pay me by')}</Text>
-            {methods.length === 0
-              ? <Text style={styles.modalHint}>{t('rw.mycashback.loading_payout_methods', 'Loading payout methods…')}</Text>
-              : (
-                <View style={styles.chipRow}>
-                  {methods.map((m) => (
-                    <TouchableOpacity
-                      key={m.method_key}
-                      style={[styles.chip, m.method_key === methodKey && styles.chipActive]}
-                      onPress={() => setMethodKey(m.method_key)}
-                    >
-                      <Text style={[styles.chipText, m.method_key === methodKey && styles.chipTextActive]}>{m.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-            {selectedMethod && (
-              <>
-                <Text style={styles.modalLabel}>{selectedMethod.detail_label}</Text>
-                <TextInput
-                  style={styles.modalInput}
-                  value={numberDraft}
-                  onChangeText={setNumberDraft}
-                  placeholder={selectedMethod.detail_label}
-                  placeholderTextColor={COLORS.textMuted}
-                  autoCapitalize="none"
-                />
-              </>
-            )}
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.modalCancel} onPress={() => setShowCashOut(false)} disabled={saving}>
-                <Text style={styles.modalCancelText}>{t('rw.mycashback.cancel', 'Cancel')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalConfirm} onPress={handleCashOut} disabled={saving}>
-                {saving
-                  ? <ActivityIndicator color={COLORS.black} />
-                  : <Text style={styles.modalConfirmText}>{t('rw.mycashback.request_payout', 'Request Payout')}</Text>
-                }
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
 
       <Modal visible={!!creditTarget} transparent animationType="fade" onRequestClose={() => setCreditTarget(null)}>
         <KeyboardAvoidingView style={styles.modalBackdrop} behavior="padding">
@@ -407,18 +212,10 @@ const MyCashbackScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: COLORS.background },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: COLORS.background },
-  balanceOuter: { margin: 20, marginBottom: 8 },
-  balanceCard: { backgroundColor: COLORS.surface, borderRadius: 16.5, padding: 24, alignItems: 'center' },
-  balanceLabel: { fontSize: 13, color: COLORS.textMuted, marginBottom: 6 },
-  balanceValue: { fontSize: 40, fontWeight: '800', color: COLORS.primary },
-  balanceHint: { fontSize: 12, color: COLORS.textMuted, marginTop: 2 },
-  actionRow: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginBottom: 8 },
+  actionRow: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginTop: 20, marginBottom: 8 },
   actionHalf: { flex: 1 },
   primaryBtn: { backgroundColor: COLORS.primary, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
   primaryBtnText: { fontSize: 13, fontWeight: '800', color: COLORS.black },
-  outlineBtn: { borderWidth: 1, borderColor: COLORS.primary, borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
-  outlineBtnText: { fontSize: 13, fontWeight: '800', color: COLORS.primary },
-  btnDisabled: { opacity: 0.4 },
   sectionLabel: {
     fontSize: 13, fontWeight: '700', color: COLORS.primary,
     textTransform: 'uppercase', letterSpacing: 0.8,
@@ -436,16 +233,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceAlt, borderRadius: 12, padding: 14, marginBottom: 8,
     borderWidth: 1, borderColor: COLORS.borderAccent,
   },
-  requestRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: COLORS.surfaceAlt, borderRadius: 12, padding: 14, marginBottom: 8,
-    borderWidth: 1, borderColor: COLORS.borderAccent,
-  },
   rowText: { flex: 1 },
   reason: { fontSize: 14, fontWeight: '600', color: COLORS.text },
   time: { fontSize: 12, color: COLORS.textMuted, marginTop: 2 },
-  amount: { fontSize: 16, fontWeight: '800', color: COLORS.success },
-  amountNegative: { color: COLORS.error },
   credit: { fontSize: 15, fontWeight: '800', color: COLORS.primary, marginHorizontal: 10 },
   useBtn: { backgroundColor: COLORS.primary, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 7 },
   useBtnText: { fontSize: 12, fontWeight: '800', color: COLORS.black },
@@ -461,14 +251,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 10, fontSize: 14,
     color: COLORS.text, backgroundColor: COLORS.surfaceAlt,
   },
-  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 16,
-    paddingHorizontal: 12, paddingVertical: 7, backgroundColor: COLORS.surfaceAlt,
-  },
-  chipActive: { backgroundColor: COLORS.primary },
-  chipText: { fontSize: 12, fontWeight: '700', color: COLORS.textLight },
-  chipTextActive: { color: COLORS.black },
   modalActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
   modalCancel: { flex: 1, paddingVertical: 12, alignItems: 'center', borderRadius: 10, borderWidth: 1, borderColor: COLORS.borderAccent },
   modalCancelText: { color: COLORS.textMuted, fontWeight: '700' },

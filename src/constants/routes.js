@@ -16,7 +16,6 @@ export const ROUTES = {
   VENUE_CASHBACK: 'VenueCashback',
   ADMIN_CASHBACK: 'AdminCashback',
   ADMIN_AGENTS: 'AdminAgents',
-  ADMIN_PAYOUT_SETUP: 'AdminPayoutSetup',
   LOGIN: 'Login',
   REGISTER: 'Register',
   HOME: 'Home',

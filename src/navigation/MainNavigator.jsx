@@ -55,7 +55,6 @@ import ClipOfDayScreen from '../screens/main/ClipOfDayScreen';
 import AdminPointsScreen from '../screens/main/AdminPointsScreen';
 import AdminCashbackScreen from '../screens/main/AdminCashbackScreen';
 import AdminAgentsScreen from '../screens/main/AdminAgentsScreen';
-import AdminPayoutSetupScreen from '../screens/main/AdminPayoutSetupScreen';
 import AdminClipsScreen from '../screens/main/AdminClipsScreen';
 import AdminSubscriptionPlansScreen from '../screens/main/AdminSubscriptionPlansScreen';
 import AdminTopVenuesScreen from '../screens/main/AdminTopVenuesScreen';
@@ -172,7 +171,6 @@ const AdminStackNavigator = () => (
     <AdminStack.Screen name={ROUTES.ADMIN_POINTS} component={AdminPointsScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_CASHBACK} component={AdminCashbackScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_AGENTS} component={AdminAgentsScreen} />
-    <AdminStack.Screen name={ROUTES.ADMIN_PAYOUT_SETUP} component={AdminPayoutSetupScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_SUBSCRIPTION_PLANS} component={AdminSubscriptionPlansScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_TOP_VENUES} component={AdminTopVenuesScreen} />
     <AdminStack.Screen name={ROUTES.ADMIN_OPEN_GROUPS} component={AdminOpenGroupsScreen} />

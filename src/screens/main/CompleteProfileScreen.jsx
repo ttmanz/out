@@ -11,7 +11,6 @@ import { uploadAvatar } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import { resizeForUpload } from '../../lib/imageResize';
 import { PARTICIPATION_OPTIONS, rewardOptions } from '../../lib/cashback';
-import { useCashBackEnabled } from '../../hooks/useCashBackEnabled';
 import i18n from '../../lib/i18n';
 import { useTranslation } from 'react-i18next';
 // Module-level translate helper so every helper component in this file can use t().
@@ -72,7 +71,6 @@ const CompleteProfileScreen = ({ navigation }) => {
   // choice without retroactively blocking anyone who completed their
   // profile before this field existed.
   const [participation, setParticipation] = useState([]);
-  const cashEnabled = useCashBackEnabled();
   const [wasAlreadyCompleted, setWasAlreadyCompleted] = useState(false);
   const [accountTypeTouched, setAccountTypeTouched] = useState(false);
 
@@ -229,9 +227,9 @@ const CompleteProfileScreen = ({ navigation }) => {
         </Field>
 
         {accountType === 'venue_owner' && (
-          <Field label="Rewards you'll offer" hint={t('rw.profile.you_set_the_percentages_late', 'you set the percentages later under {{where}}', { where: cashEnabled ? t('rw.profile.cash_back_credit', 'Cash Back & Credit') : t('rw.profile.rewards', 'Rewards') })}>
+          <Field label="Rewards you'll offer" hint={t('rw.profile.you_set_the_percentages_late', 'you set the percentages later under {{where}}', { where: t('rw.profile.rewards', 'Rewards') })}>
             <View style={styles.chipRow}>
-              {rewardOptions(cashEnabled).map((o) => {
+              {rewardOptions().map((o) => {
                 const active = participation.includes(o.key);
                 return (
                   <TouchableOpacity

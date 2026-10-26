@@ -255,7 +255,7 @@ const AdminScreen = ({ navigation }) => {
           activeOpacity={0.75}
         >
           <Text style={styles.navCardEmoji}>💸</Text>
-          <Text style={styles.navCardText}>Cash Back</Text>
+          <Text style={styles.navCardText}>Rewards</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.navCard}

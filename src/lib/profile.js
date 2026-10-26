@@ -13,7 +13,7 @@ export const updateProfileSettings = (userId, { visibility, allow_friend_request
 export const updateFullProfile = (userId, fields) =>
   supabase.from('profiles').update({ ...fields, profile_completed: true }).eq('id', userId);
 
-// Which rewards a venue owner takes part in (cash, credit, discount). Customers
+// Which rewards a venue owner takes part in (credit, discount). Customers
 // are only offered ticked rewards, and the server enforces it on every claim.
 export const setParticipation = (userId, participation) =>
   supabase.from('profiles').update({ participation }).eq('id', userId);

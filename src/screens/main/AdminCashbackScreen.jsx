@@ -1,98 +1,41 @@
 import React, { useState, useCallback } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
-  ActivityIndicator, Alert, Switch,
+  View, Text, FlatList, TouchableOpacity, StyleSheet,
+  ActivityIndicator, Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
-import { ROUTES } from '../../constants/routes';
 import {
-  getCashbackSettings, updateCashbackSettings, getPendingCashbackPayoutRequests,
-  getRecentCashbackPayoutRequests, resolveCashbackPayout, getRecentCashbackClaims,
-  getVenueOwners, getVenueCountries, getCountries, setVenueApproved, getCashBackEnabled, setCashBackEnabled,
+  getRecentCashbackClaims, getVenueOwners, getVenueCountries, getCountries, setVenueApproved,
   formatAmount, CLAIM_STATUS_LABEL, REWARD_LABEL,
 } from '../../lib/cashback';
 import { formatAgo } from '../../utils/format';
 import BackHeader from '../../components/common/BackHeader';
 
+// Admin: approve venues for rewards (store credit and discounts) and see recent receipts.
 const AdminCashbackScreen = ({ navigation }) => {
-  const [percentDraft, setPercentDraft] = useState('');
-  const [savingSettings, setSavingSettings] = useState(false);
-  const [pending, setPending] = useState([]);
-  const [resolved, setResolved] = useState([]);
   const [claims, setClaims] = useState([]);
   const [venues, setVenues] = useState([]);
   const [countryOf, setCountryOf] = useState({});
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState(null);
-  const [cashEnabled, setCashEnabled] = useState(false);
-  const [savingCash, setSavingCash] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: settingsData }, { data: pendingData }, { data: resolvedData }, { data: claimsData }, { data: venuesData }, { data: venueCountries }, { data: countriesData }, cashOn] = await Promise.all([
-      getCashbackSettings(),
-      getPendingCashbackPayoutRequests(),
-      getRecentCashbackPayoutRequests(),
+    const [{ data: claimsData }, { data: venuesData }, { data: venueCountries }, { data: countriesData }] = await Promise.all([
       getRecentCashbackClaims(),
       getVenueOwners(),
       getVenueCountries(),
       getCountries(),
-      getCashBackEnabled(),
     ]);
-    setCashEnabled(cashOn);
     setVenues(venuesData ?? []);
-    setPercentDraft(String(settingsData?.max_cash_percent ?? ''));
     const names = Object.fromEntries((countriesData ?? []).map((c) => [c.code, `${c.name} · ${c.currency_code}`]));
     setCountryOf(Object.fromEntries((venueCountries ?? []).map((o) => [o.venue_owner_id, names[o.country_code] ?? o.country_code])));
-    setPending(pendingData ?? []);
-    setResolved(resolvedData ?? []);
     setClaims(claimsData ?? []);
     setLoading(false);
   }, []);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
-
-  const handleSaveSettings = async () => {
-    const percent = parseFloat(percentDraft);
-    if (!Number.isFinite(percent) || percent <= 0) {
-      Alert.alert('Error', 'Enter a positive percentage.');
-      return;
-    }
-    setSavingSettings(true);
-    const { error } = await updateCashbackSettings(percent);
-    setSavingSettings(false);
-    if (error) {
-      Alert.alert('Error', 'Could not save. Please try again.');
-      return;
-    }
-    load();
-  };
-
-  const handleToggleCash = (next) => {
-    Alert.alert(
-      next ? 'Switch cash back on?' : 'Switch cash back off?',
-      next
-        ? 'Venues that have ticked cash back will offer it again, and customers can claim it. You pay members by hand, so only switch this on when you are ready to handle payouts.'
-        : 'Customers can no longer claim cash back and venues stop offering it. Their saved cash back settings are kept. Members who already hold a cash back balance can still cash it out.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: next ? 'Switch on' : 'Switch off',
-          onPress: async () => {
-            setSavingCash(true);
-            const { error } = await setCashBackEnabled(next);
-            setSavingCash(false);
-            if (error) {
-              Alert.alert('Error', error.message ?? 'Could not change this. Please try again.');
-              return;
-            }
-            setCashEnabled(next);
-          },
-        },
-      ],
-    );
-  };
 
   const handleVenue = (venue, approve) => {
     const name = venue.full_name ?? 'this venue';
@@ -121,33 +64,6 @@ const AdminCashbackScreen = ({ navigation }) => {
     );
   };
 
-  const handleResolve = (request, approve) => {
-    const verb = approve ? 'Mark this paid' : 'Decline this request';
-    Alert.alert(
-      verb,
-      approve
-        ? `Confirm you've sent ${formatAmount(request.amount, request.currency_code)} to ${request.mobile_money_number} (${request.method_label}).`
-        : `${request.member?.full_name ?? 'This member'}'s balance will be refunded.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: approve ? 'Mark Paid' : 'Decline',
-          style: approve ? 'default' : 'destructive',
-          onPress: async () => {
-            setBusyId(request.id);
-            const { error } = await resolveCashbackPayout(request.id, approve);
-            setBusyId(null);
-            if (error) {
-              Alert.alert('Error', error.message ?? 'Could not update this request.');
-              return;
-            }
-            load();
-          },
-        },
-      ],
-    );
-  };
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -158,12 +74,13 @@ const AdminCashbackScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <BackHeader title={cashEnabled ? 'Cash Back' : 'Rewards'} onBack={() => navigation.goBack()} />
+      <BackHeader title="Rewards" onBack={() => navigation.goBack()} />
 
       <FlatList
-        data={pending}
+        data={[]}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
+        renderItem={() => null}
         ListHeaderComponent={
           <>
             <Text style={styles.sectionLabel}>Venues ({venues.filter((v) => !v.venue_approved).length} waiting)</Text>
@@ -192,88 +109,7 @@ const AdminCashbackScreen = ({ navigation }) => {
               </View>
             ))}
 
-            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Cash back</Text>
-            <Text style={styles.sectionHint}>
-              Off for now, until there is market feedback: customers can't claim cash back and venues don't offer it. Store credit and discounts are not affected. Nothing is deleted, so switching it back on restores venues' saved cash back settings.
-            </Text>
-            <View style={styles.switchRow}>
-              <Text style={styles.ruleLabel}>{cashEnabled ? 'Cash back is ON' : 'Cash back is OFF'}</Text>
-              <Switch value={cashEnabled} onValueChange={handleToggleCash} disabled={savingCash} />
-            </View>
-
-            {cashEnabled && (
-              <>
-            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Cash Back Rate</Text>
-            <Text style={styles.sectionHint}>
-              Venues set their own cash back and store credit rates. This caps how much cash back any venue can offer (you pay members before recovering it from the venue). Minimum receipt size is set per country.
-            </Text>
-            <View style={styles.settingsRow}>
-              <View style={styles.settingsField}>
-                <Text style={styles.ruleLabel}>Max cash back %</Text>
-                <TextInput
-                  style={styles.settingsInput}
-                  value={percentDraft}
-                  onChangeText={setPercentDraft}
-                  keyboardType="decimal-pad"
-                />
-              </View>
-            </View>
-            <TouchableOpacity style={styles.saveBtn} onPress={handleSaveSettings} disabled={savingSettings}>
-              {savingSettings ? <ActivityIndicator color={COLORS.black} /> : <Text style={styles.saveBtnText}>Save Rate</Text>}
-            </TouchableOpacity>
-              </>
-            )}
-
-            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Countries and payout methods</Text>
-            <Text style={styles.sectionHint}>
-              Each venue's country sets its currency. Payout methods decide how members can be paid in each currency.
-            </Text>
-            <TouchableOpacity style={styles.saveBtn} onPress={() => navigation.navigate(ROUTES.ADMIN_PAYOUT_SETUP)}>
-              <Text style={styles.saveBtnText}>Manage countries and payout methods</Text>
-            </TouchableOpacity>
-
-            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Pending Payouts ({pending.length})</Text>
-            {pending.length === 0 && <Text style={styles.empty}>Nothing pending.</Text>}
-          </>
-        }
-        renderItem={({ item }) => {
-          const busy = busyId === item.id;
-          return (
-            <View style={styles.requestRow}>
-              <View style={styles.info}>
-                <Text style={styles.name}>{item.member?.full_name ?? 'Member'}</Text>
-                <Text style={styles.meta}>{formatAmount(item.amount, item.currency_code)} via {item.method_label}</Text>
-                <Text style={styles.meta}>{item.mobile_money_number}</Text>
-                <Text style={styles.time}>{formatAgo(item.requested_at)}</Text>
-              </View>
-              <View style={styles.requestActions}>
-                <TouchableOpacity style={styles.payBtn} onPress={() => handleResolve(item, true)} disabled={busy}>
-                  {busy ? <ActivityIndicator size="small" color={COLORS.black} /> : <Text style={styles.payBtnText}>Mark Paid</Text>}
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.declineBtn} onPress={() => handleResolve(item, false)} disabled={busy}>
-                  <Text style={styles.declineBtnText}>Decline</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          );
-        }}
-        ListFooterComponent={
-          <>
-            <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Resolved Payouts</Text>
-            {resolved.length === 0 && <Text style={styles.empty}>Nothing yet.</Text>}
-            {resolved.map((r) => (
-              <View key={r.id} style={styles.activityRow}>
-                <View style={styles.activityText}>
-                  <Text style={styles.activityName}>{r.member?.full_name ?? 'Member'}</Text>
-                  <Text style={styles.activityTime}>{formatAgo(r.resolved_at ?? r.requested_at)}</Text>
-                </View>
-                <Text style={[styles.activityAmount, r.status === 'rejected' && styles.activityAmountNegative]}>
-                  {formatAmount(r.amount, r.currency_code)} · {r.status === 'paid' ? 'Paid' : 'Declined'}
-                </Text>
-              </View>
-            ))}
-
-            <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Recent Receipts</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Recent Receipts</Text>
             {claims.length === 0 && <Text style={styles.empty}>Nothing yet.</Text>}
             {claims.map((c) => (
               <View key={c.id} style={styles.activityRow}>
@@ -303,21 +139,6 @@ const styles = StyleSheet.create({
   },
   sectionHint: { fontSize: 12, color: COLORS.textLight, lineHeight: 17, marginHorizontal: 20, marginBottom: 12 },
   list: { paddingBottom: 48 },
-  switchRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, marginBottom: 6 },
-  settingsRow: { flexDirection: 'row', gap: 10, marginHorizontal: 20, marginBottom: 10 },
-  settingsField: { flex: 1 },
-  ruleLabel: { fontSize: 12, color: COLORS.textMuted, marginBottom: 4 },
-  settingsInput: {
-    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, fontWeight: '700',
-    color: COLORS.primary, backgroundColor: COLORS.surfaceAlt,
-  },
-  saveBtn: {
-    backgroundColor: COLORS.primary, borderRadius: 10,
-    paddingVertical: 12, alignItems: 'center',
-    marginHorizontal: 20, marginTop: 4,
-  },
-  saveBtnText: { fontSize: 13, fontWeight: '800', color: COLORS.black },
   empty: { fontSize: 13, color: COLORS.textMuted, marginHorizontal: 20 },
   venueBtn: { flex: 0, paddingHorizontal: 14, marginLeft: 8 },
   venueRow: {
@@ -325,15 +146,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface, borderRadius: 12, padding: 12,
     marginHorizontal: 20, marginBottom: 8, borderWidth: 1, borderColor: COLORS.border,
   },
-  requestRow: {
-    backgroundColor: COLORS.surface, borderRadius: 12, padding: 14,
-    marginHorizontal: 20, marginBottom: 8, borderWidth: 1, borderColor: COLORS.borderAccent,
-  },
-  info: { marginBottom: 10 },
   name: { fontSize: 14, fontWeight: '700', color: COLORS.text },
-  meta: { fontSize: 13, color: COLORS.textLight, marginTop: 2 },
   time: { fontSize: 11, color: COLORS.textMuted, marginTop: 2 },
-  requestActions: { flexDirection: 'row', gap: 8 },
   payBtn: { flex: 1, backgroundColor: COLORS.primary, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },
   payBtnText: { fontSize: 12, fontWeight: '800', color: COLORS.black },
   declineBtn: { flex: 1, borderWidth: 1, borderColor: COLORS.error, borderRadius: 10, paddingVertical: 10, alignItems: 'center' },

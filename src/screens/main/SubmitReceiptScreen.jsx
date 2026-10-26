@@ -23,7 +23,6 @@ const RECEIPT_MAX_EDGE = 1600;
 const offersFor = (venue) => {
   if (!venue) return [];
   const list = [];
-  if (Number(venue.cash_percent) > 0) list.push({ type: 'cash', label: t('rw.receipt.cash_back', 'Cash back'), percent: Number(venue.cash_percent) });
   if (Number(venue.credit_percent) > 0) list.push({ type: 'credit', label: t('rw.receipt.store_credit_at', 'Store credit at {{venue_name}}', { venue_name: venue.venue_name }), percent: Number(venue.credit_percent) });
   if (Number(venue.discount_percent) > 0) list.push({ type: 'discount', label: t('rw.receipt.discount_off_your_bill', 'Discount off your bill'), percent: Number(venue.discount_percent) });
   return list;
@@ -130,7 +129,6 @@ const SubmitReceiptScreen = ({ navigation }) => {
           venues.map((v) => {
             const selected = v.venue_owner_id === venueId;
             const parts = [];
-            if (Number(v.cash_percent) > 0) parts.push(t('rw.receipt.cash_back_2', '{{cash_percent}}% cash back', { cash_percent: Number(v.cash_percent) }));
             if (Number(v.credit_percent) > 0) parts.push(t('rw.receipt.store_credit', '{{credit_percent}}% store credit', { credit_percent: Number(v.credit_percent) }));
             if (Number(v.discount_percent) > 0) parts.push(t('rw.receipt.off_your_bill', '{{discount_percent}}% off your bill', { discount_percent: Number(v.discount_percent) }));
             return (
@@ -213,9 +211,7 @@ const SubmitReceiptScreen = ({ navigation }) => {
               <Text style={styles.summaryText}>
                 {isDiscount
                   ? t('rw.receipt.you_ll_get_off_your_bill_onc', 'You\'ll get {{currency}} off your {{currency2}} bill once {{venue_name}} confirms.', { currency: formatAmount(reward, currency), currency2: formatAmount(spend, currency), venue_name: venue.venue_name })
-                  : chosen.type === 'cash'
-                    ? t('rw.receipt.you_ll_get_cash_back_once_th', 'You\'ll get {{currency}} cash back once they confirm.', { currency: formatAmount(reward, currency) })
-                    : t('rw.receipt.you_ll_get_store_credit_at_o', 'You\'ll get {{currency}} store credit at {{venue_name}} once they confirm.', { currency: formatAmount(reward, currency), venue_name: venue.venue_name })}
+                  : t('rw.receipt.you_ll_get_store_credit_at_o', 'You\'ll get {{currency}} store credit at {{venue_name}} once they confirm.', { currency: formatAmount(reward, currency), venue_name: venue.venue_name })}
               </Text>
             </View>
           </GradientBorder>

@@ -7,11 +7,10 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import { COLORS } from '../../constants/colors';
 import {
-  getCountries, getMyVenueStatus, getMyVenueOffer, setVenueCashbackOffer, getCashbackSettings, getVenueClaims, resolveCashbackClaim,
+  getCountries, getMyVenueStatus, getMyVenueOffer, setVenueCashbackOffer, getVenueClaims, resolveCashbackClaim,
   getVenuePendingRedemptions, resolveCreditRedemption, getVenueCreditOutstanding,
   formatAmount, PARTICIPATION_OPTIONS, rewardOptions, CLAIM_STATUS_LABEL, REWARD_LABEL,
 } from '../../lib/cashback';
-import { useCashBackEnabled } from '../../hooks/useCashBackEnabled';
 import { getSignedUrl } from '../../lib/storage';
 import { useUser } from '../../contexts/UserContext';
 import { formatAgo } from '../../utils/format';
@@ -29,14 +28,12 @@ const VenueCashbackScreen = ({ navigation }) => {
   useTranslation();
   useVenueToolsGate();
   const { profile } = useUser();
-  const cashEnabled = useCashBackEnabled();
   const [offered, setOffered] = useState([]);
-  const [percents, setPercents] = useState({ cash: '', credit: '', discount: '' });
+  const [percents, setPercents] = useState({ credit: '', discount: '' });
   const [approved, setApproved] = useState(true);
   const [countries, setCountries] = useState([]);
   const [countryCode, setCountryCode] = useState(null);
   const [showCountries, setShowCountries] = useState(false);
-  const [maxCash, setMaxCash] = useState(0);
   const [claims, setClaims] = useState([]);
   const [redemptions, setRedemptions] = useState([]);
   const [receiptUrls, setReceiptUrls] = useState({});
@@ -49,11 +46,10 @@ const VenueCashbackScreen = ({ navigation }) => {
   const load = useCallback(async () => {
     if (!profile?.id) return;
     setLoading(true);
-    const [countriesRes, statusRes, offerRes, settingsRes, claimsRes, redemptionsRes, outstandingRes] = await Promise.all([
+    const [countriesRes, statusRes, offerRes, claimsRes, redemptionsRes, outstandingRes] = await Promise.all([
       getCountries(),
       getMyVenueStatus(profile.id),
       getMyVenueOffer(profile.id),
-      getCashbackSettings(),
       getVenueClaims(profile.id),
       getVenuePendingRedemptions(profile.id),
       getVenueCreditOutstanding(),
@@ -65,11 +61,9 @@ const VenueCashbackScreen = ({ navigation }) => {
     setOffered(statusRes.data?.participation ?? []);
     const show = (n) => (Number(n) > 0 ? String(n) : '');
     setPercents({
-      cash: show(offerRes.data?.cash_percent),
       credit: show(offerRes.data?.credit_percent),
       discount: show(offerRes.data?.discount_percent),
     });
-    setMaxCash(Number(settingsRes.data?.max_cash_percent ?? 0));
     setClaims(claimsData);
     setRedemptions(redemptionsRes.data ?? []);
     setOutstanding(Number(outstandingRes.data ?? 0));
@@ -89,7 +83,7 @@ const VenueCashbackScreen = ({ navigation }) => {
     if (!countryCode) return Alert.alert(t('rw.venuerewards.choose_your_country', 'Choose your country'), t('rw.venuerewards.your_country_sets_the_curren', 'Your country sets the currency your customers\' rewards are in.'));
     setSavingOffer(true);
     const { error } = await setVenueCashbackOffer(
-      parseFloat(percents.cash) || 0, parseFloat(percents.credit) || 0, parseFloat(percents.discount) || 0,
+      parseFloat(percents.credit) || 0, parseFloat(percents.discount) || 0,
       countryCode, offered,
     );
     setSavingOffer(false);
@@ -100,7 +94,7 @@ const VenueCashbackScreen = ({ navigation }) => {
   const toggleOffered = (key) =>
     setOffered((prev) => PARTICIPATION_OPTIONS.map((o) => o.key).filter((k) => (k === key ? !prev.includes(k) : prev.includes(k))));
 
-  const percentLabel = { cash: 'Cash back %  (up to ' + maxCash + '%)', credit: t('rw.venuerewards.store_credit_2', 'Store credit %'), discount: t('rw.venuerewards.discount_2', 'Discount %') };
+  const percentLabel = { credit: t('rw.venuerewards.store_credit_2', 'Store credit %'), discount: t('rw.venuerewards.discount_2', 'Discount %') };
 
   const resolve = async (id, action) => {
     setBusyId(id);
@@ -156,7 +150,7 @@ const VenueCashbackScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView style={styles.safe} behavior="padding">
-      <BackHeader title={cashEnabled ? t('rw.venuerewards.cash_back', 'Cash Back') : t('rw.venuerewards.rewards', 'Rewards')} onBack={() => navigation.goBack()} />
+      <BackHeader title={t('rw.venuerewards.rewards', 'Rewards')} onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {!loading && !approved && (
@@ -170,7 +164,7 @@ const VenueCashbackScreen = ({ navigation }) => {
 
         <Text style={styles.sectionLabel}>{t('rw.venuerewards.your_offer', 'Your offer')}</Text>
         <Text style={styles.sectionHint}>
-          Tick the rewards you take part in, then give each a percentage. Customers only see what you tick. {cashEnabled ? t('rw.venuerewards.cash_back_is_paid_to_the_cus', 'Cash back is paid to the customer in money, store credit') : t('rw.venuerewards.store_credit', 'Store credit')} can only be spent at your venue, and a discount comes off
+          Tick the rewards you take part in, then give each a percentage. Customers only see what you tick. {t('rw.venuerewards.store_credit', 'Store credit')} can only be spent at your venue, and a discount comes off
           the customer's bill at the till.
         </Text>
         <Text style={styles.fieldLabel}>{t('rw.venuerewards.your_country', 'Your country')}</Text>
@@ -181,7 +175,7 @@ const VenueCashbackScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.sectionHint}>{t('rw.venuerewards.it_sets_the_currency_for_you', 'It sets the currency for your customers\' rewards and can\'t be changed once customers have claimed with you.')}</Text>
         <Text style={[styles.fieldLabel, { marginTop: 10 }]}>{t('rw.venuerewards.participation', 'Participation')}</Text>
-        {rewardOptions(cashEnabled).map((o) => {
+        {rewardOptions().map((o) => {
           const on = offered.includes(o.key);
           return (
             <View key={o.key} style={[styles.rewardCard, on && styles.rewardCardOn]}>
