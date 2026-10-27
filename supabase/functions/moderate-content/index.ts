@@ -26,6 +26,42 @@ Respond ONLY with valid JSON in this exact shape:
 "reason" should be a short phrase (e.g. "hate speech", "harassment") or null if not flagged.
 "score" is your confidence 0.0–1.0 that the content violates guidelines.`;
 
+// Model: Claude Haiku 5.5 (the cheapest current Haiku). Override with the MODERATION_MODEL
+// secret to change it without redeploying. If the API rejects the primary model or its
+// settings, retry once on Haiku 4.5 so a bad setting never silently turns the checks off.
+const PRIMARY_MODEL = Deno.env.get('MODERATION_MODEL') ?? 'claude-haiku-5-5';
+const FALLBACK_MODEL = 'claude-haiku-4-5';
+
+const callClaude = async (apiKey: string, text: string): Promise<Response> => {
+  const send = (model: string, extra: Record<string, unknown>) =>
+    fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 128,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: text }],
+        ...extra,
+      }),
+    });
+
+  // Haiku 5.5 thinks by default; a one-line classification needs no thinking.
+  const res = await send(PRIMARY_MODEL, { thinking: { type: 'disabled' }, output_config: { effort: 'low' } });
+  if (res.status === 400 || res.status === 404) {
+    console.error('Primary model rejected, falling back to Haiku 4.5', res.status, await res.text());
+    return send(FALLBACK_MODEL, {});
+  }
+  return res;
+};
+
+// The model sometimes wraps its JSON in a code fence — strip it before parsing.
+const cleanJson = (raw: string) => raw.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS });
@@ -50,20 +86,7 @@ serve(async (req) => {
       );
     }
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': anthropicKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 128,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: text }],
-      }),
-    });
+    const res = await callClaude(anthropicKey, text);
 
     if (!res.ok) {
       console.error('Anthropic error', res.status, await res.text());
@@ -74,7 +97,8 @@ serve(async (req) => {
     }
 
     const json = await res.json();
-    const raw = json.content?.[0]?.text ?? '{}';
+    const textBlock = (json.content ?? []).find((b: { type: string }) => b.type === 'text');
+    const raw = cleanJson(textBlock?.text ?? '{}');
 
     let result = { flagged: false, reason: null, score: 0 };
     try {
