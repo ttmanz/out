@@ -69,7 +69,9 @@
     "venueLockedTitle": "Free trial ended",
     "venueLockedSub": "Subscribe to a venue plan to keep using venue tools: offering rewards, confirming claims and vouchers.",
     "venueBannerTrial": "Venue free trial: {{days}} day(s) left — tap to see plans",
-    "venueBannerLocked": "Your venue free trial has ended — tap to subscribe and keep using venue tools"
+    "venueBannerLocked": "Your venue free trial has ended — tap to subscribe and keep using venue tools",
+    "lockedTitle": "{{feature}} is locked",
+    "lockedBody": "{{feature}} is included from the {{level}} level. Choose a plan below to unlock it."
   },
   "auth": {
     "login": "Log In",
@@ -163,7 +165,8 @@
     "friends": "Friends",
     "friendsDesc": "Your people — list, requests & search",
     "clipOfDay": "Clip of the Day",
-    "clipOfDayDesc": "Share a video clip with everyone this week"
+    "clipOfDayDesc": "Share a video clip with everyone this week",
+    "unlockWith": "Unlock with {{level}}"
   },
   "atVenue": {
     "locationRequired": "Location access is required to see members nearby.",

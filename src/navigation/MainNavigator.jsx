@@ -146,6 +146,7 @@ const GiveawaysStackNavigator = () => (
   <GiveawaysStack.Navigator screenOptions={{ headerShown: false }}>
     <GiveawaysStack.Screen name={ROUTES.GIVEAWAYS} component={GiveawaysScreen} />
     <GiveawaysStack.Screen name={ROUTES.CREATE_GIVEAWAY} component={CreateGiveawayScreen} />
+    <GiveawaysStack.Screen name={ROUTES.SUBSCRIPTION} component={SubscriptionScreen} />
   </GiveawaysStack.Navigator>
 );
 

@@ -6,6 +6,7 @@ import { COLORS } from '../../constants/colors';
 import { ROUTES } from '../../constants/routes';
 import { signOut } from '../../lib/auth';
 import { useUser } from '../../contexts/UserContext';
+import { tierLabel } from '../../lib/subscription';
 import LanguagePicker from '../../components/common/LanguagePicker';
 import { GradientIconCircle } from '../../components/common/GradientIcon';
 
@@ -27,8 +28,8 @@ const FEATURES = [
 
 const RESTRICTED_ROUTES = new Set([ROUTES.WHERE_TO_GO, ROUTES.VENUE_HUB]);
 
-const FeatureCard = ({ icon, title, description, onPress }) => (
-  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={styles.cardWrap}>
+const FeatureCard = ({ icon, title, description, onPress, lockLabel }) => (
+  <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[styles.cardWrap, !!lockLabel && styles.cardLocked]}>
     {/* luminous gradient stroke: cyan → blue → violet */}
     <LinearGradient
       colors={['#4FD9FF', '#295DFF', '#8A3FFC']}
@@ -47,6 +48,7 @@ const FeatureCard = ({ icon, title, description, onPress }) => (
         <View style={styles.textWrap}>
           <Text style={styles.cardTitle} numberOfLines={1}>{title}</Text>
           <Text style={styles.cardDesc} numberOfLines={2}>{description}</Text>
+          {!!lockLabel && <Text style={styles.lockPill}>🔒 {lockLabel}</Text>}
         </View>
         <Text style={styles.chevron}>›</Text>
       </LinearGradient>
@@ -56,7 +58,7 @@ const FeatureCard = ({ icon, title, description, onPress }) => (
 
 const HomeScreen = ({ navigation }) => {
   const { t } = useTranslation();
-  const { profile, isFeatureEnabled } = useUser();
+  const { profile, isFeatureEnabled, canAccessFeature } = useUser();
   const statusBarHeight = StatusBar.currentHeight ?? 44;
 
   const isRestricted = profile?.status === 'restricted';
@@ -112,15 +114,23 @@ const HomeScreen = ({ navigation }) => {
         )}
 
         <View style={styles.cards}>
-          {visibleFeatures.map((f) => (
-            <FeatureCard
-              key={f.route}
-              icon={f.icon}
-              title={t(f.titleKey)}
-              description={t(f.descKey)}
-              onPress={() => navigation.navigate(f.route)}
-            />
-          ))}
+          {visibleFeatures.map((f) => {
+            // Under the 'levels' mode a feature can need a higher membership level.
+            const access = canAccessFeature(f.featureKey);
+            const locked = access.locked === true;
+            return (
+              <FeatureCard
+                key={f.route}
+                icon={f.icon}
+                title={t(f.titleKey)}
+                description={t(f.descKey)}
+                lockLabel={locked ? t('home.unlockWith', { level: tierLabel(access.requiredTier) }) : null}
+                onPress={() => (locked
+                  ? navigation.navigate(ROUTES.SUBSCRIPTION, { lockedFeature: f.featureKey, requiredTier: access.requiredTier })
+                  : navigation.navigate(f.route))}
+              />
+            );
+          })}
         </View>
 
       </ScrollView>
@@ -129,6 +139,8 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  cardLocked: { opacity: 0.8 },
+  lockPill: { marginTop: 4, fontSize: 11, fontWeight: '800', color: COLORS.textSecondary },
   safe: { flex: 1, backgroundColor: COLORS.background },
   scroll: { paddingBottom: 40 },
 

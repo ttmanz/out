@@ -7,7 +7,7 @@ import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useFocusEffect } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { COLORS } from '../../constants/colors';
-import { getSubscriptionSettings, updateSubscriptionSettings, getFeatureAccess, updateFeatureAccess } from '../../lib/subscription';
+import { getSubscriptionSettings, updateSubscriptionSettings, getFeatureAccess, updateFeatureAccess, TIER_ORDER, tierLabel } from '../../lib/subscription';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
 
@@ -85,6 +85,7 @@ const AdminAccessControlScreen = ({ navigation }) => {
     const results = await Promise.all(features.map((f) =>
       updateFeatureAccess(f.feature_key, {
         enabled: f.enabled,
+        min_tier: f.min_tier ?? 'free',
         is_paid: f.is_paid,
         one_off_price: f.is_paid ? (parseFloat(f.one_off_price_draft) || null) : null,
       })
@@ -212,6 +213,28 @@ const AdminAccessControlScreen = ({ navigation }) => {
           </View>
         ))}
 
+        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Level needed per feature</Text>
+        <Text style={styles.sectionHint}>
+          Used when the mode is "Levels": a member below the level you pick sees the feature with a
+          lock and can't use it (the database enforces this too). Admins and staff are never limited.
+        </Text>
+        {features.filter(TOGGLEABLE).map((f) => (
+          <View key={`level-${f.feature_key}`} style={styles.featureRow}>
+            <Text style={styles.featureLabel}>{f.label}</Text>
+            <View style={styles.levelRow}>
+              {TIER_ORDER.map((tier) => (
+                <TouchableOpacity
+                  key={tier}
+                  style={[styles.levelChip, (f.min_tier ?? 'free') === tier && styles.levelChipActive]}
+                  onPress={() => setFeatureField(f.feature_key, 'min_tier', tier)}
+                >
+                  <Text style={[styles.levelChipText, (f.min_tier ?? 'free') === tier && styles.levelChipTextActive]}>{tierLabel(tier)}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ))}
+
         <Text style={[styles.sectionLabel, { marginTop: 24 }]}>Paid / Premium Features</Text>
         <Text style={styles.sectionHint}>
           {mode === 'free_except'
@@ -308,6 +331,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface, borderRadius: 12, padding: 14, marginBottom: 8,
     borderWidth: 1, borderColor: COLORS.border,
   },
+  levelRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 },
+  levelChip: {
+    borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 16,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  levelChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  levelChipText: { fontSize: 12, fontWeight: '700', color: COLORS.textMuted },
+  levelChipTextActive: { color: COLORS.black },
   featureHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   featureLabel: { fontSize: 14, fontWeight: '600', color: COLORS.text },
   paidToggle: {

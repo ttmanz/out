@@ -14,9 +14,8 @@ export const getAllSubscriptionPlans = () =>
     .select('id, tier_key, label, price_display, venue_price_display, duration_months, badge, description, sort_order, revenuecat_product_id, venue_revenuecat_product_id, audience, venue_available')
     .order('sort_order');
 
-// Membership tiers (Free/Silver/Gold/Platinum) — each carries the daily
-// post limit enforced server-side by the enforce_daily_post_limit trigger
-// (only while the subscription mode is 'levels').
+// Membership levels (Free/Silver/Gold/Platinum). Under the 'levels' mode each feature has a
+// minimum level; see canAccessFeature() and feature_allowed() in the database.
 export const getMembershipTiers = () =>
   supabase.from('membership_tiers').select('*').order('sort_order');
 
@@ -70,6 +69,11 @@ const hasActivePlan = (profile) => {
 // from signup (timed off profiles.created_at, since there's no separate
 // trial-start column), then need an active subscription for the whole app.
 const VENUE_TRIAL_DAYS = 30;
+// Order of the membership levels, lowest first.
+export const TIER_ORDER = ['free', 'silver', 'gold', 'platinum'];
+export const tierRank = (tier) => Math.max(0, TIER_ORDER.indexOf(tier ?? 'free'));
+export const tierLabel = (tier) => (tier ? tier.charAt(0).toUpperCase() + tier.slice(1) : '');
+
 const isBypassRole = (profile) => profile?.is_staff || profile?.is_admin;
 
 const venueDaysLeftInTrial = (profile) => {
@@ -97,7 +101,7 @@ const isVenueLocked = (profile) =>
 // - 'free_except_venue': members have full free access, same as 'free'.
 //   Venue accounts (account_type = 'venue_owner') get a 30-day trial from
 //   signup, then need an active subscription for the whole app.
-export const canAccessFeature = (featureKey, { profile, settings, featureMap, unlockedFeatureKeys }) => {
+export const canAccessFeature = (featureKey, { profile, settings, featureMap, unlockedFeatureKeys, myTier }) => {
   // Admin-disabled feature: hidden for everyone, staff/admin included.
   if (featureMap?.[featureKey]?.enabled === false) return { allowed: false, disabled: true };
 
@@ -110,9 +114,16 @@ export const canAccessFeature = (featureKey, { profile, settings, featureMap, un
     return isVenueLocked(profile) ? { allowed: false, venueLocked: true } : { allowed: true };
   }
 
-  // 'levels' and 'venue_plan' never block a feature — levels only differ by
-  // daily post limit (DB trigger) and venue_plan locks venue tools separately.
-  if (mode === 'free' || mode === 'levels' || mode === 'venue_plan') return { allowed: true };
+  // Levels: each feature has a minimum level (feature_access.min_tier). A member below it
+  // is locked out (the database refuses the action too, see feature_allowed()).
+  if (mode === 'levels') {
+    const min = featureMap?.[featureKey]?.min_tier ?? 'free';
+    if (tierRank(myTier) >= tierRank(min)) return { allowed: true };
+    return { allowed: false, locked: true, requiredTier: min, featureKey };
+  }
+
+  // 'venue_plan' never blocks a feature (it locks venue tools separately).
+  if (mode === 'free' || mode === 'venue_plan') return { allowed: true };
 
   if (mode === 'free_until') {
     const stillFree = settings?.free_until && new Date(settings.free_until) > new Date();

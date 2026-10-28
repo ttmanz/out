@@ -32,7 +32,7 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
       setTiers(tiersRes.data);
       const tierInitial = {};
       tiersRes.data.forEach((t) => {
-        tierInitial[t.tier_key] = { label: t.label, daily_post_limit: t.daily_post_limit != null ? String(t.daily_post_limit) : '' };
+        tierInitial[t.tier_key] = { label: t.label };
       });
       setTierDrafts(tierInitial);
     }
@@ -59,7 +59,6 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
     setSavingTier(tier.tier_key);
     const { error } = await updateMembershipTier(tier.tier_key, {
       label: d.label.trim(),
-      daily_post_limit: d.daily_post_limit.trim() ? parseInt(d.daily_post_limit, 10) : null,
     });
     setSavingTier(null);
     if (error) Alert.alert('Error', error.message);
@@ -207,11 +206,10 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <Text style={styles.sectionTitle}>Membership Tiers & Daily Post Limits</Text>
+          <Text style={styles.sectionTitle}>Membership Levels</Text>
           <Text style={styles.sectionHint}>
-            Leave the limit blank for unlimited posting. This caps posting across every feature
-            combined (Stories, Happenings, Market, Events, Clubs, Clip of the Day, etc.) and is
-            enforced automatically, not just displayed.
+            Rename the levels here. What each level can use is set per feature under Access Control
+            ("Level needed per feature") — there is no daily post limit any more.
           </Text>
 
           {tiers.map((tier) => {
@@ -230,15 +228,6 @@ const AdminSubscriptionPlansScreen = ({ navigation }) => {
                   placeholder="e.g. Gold"
                 />
 
-                <Text style={styles.fieldLabel}>Daily Post Limit (blank = unlimited)</Text>
-                <TextInput
-                  style={styles.input}
-                  value={d.daily_post_limit ?? ''}
-                  onChangeText={(v) => setTierField(tier.tier_key, 'daily_post_limit', v.replace(/[^0-9]/g, ''))}
-                  placeholderTextColor={COLORS.textMuted}
-                  placeholder="e.g. 20"
-                  keyboardType="number-pad"
-                />
 
                 <TouchableOpacity
                   style={styles.saveBtn}
