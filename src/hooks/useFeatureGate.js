@@ -7,14 +7,20 @@ import { useUser } from '../contexts/UserContext';
 // for deep links, notification taps and stale navigation state — the Home card
 // is already hidden, this covers every other way in.
 export const useFeatureGate = (featureKey) => {
-  const { isFeatureEnabled } = useUser();
+  const { isFeatureEnabled, canAccessFeature } = useUser();
   const navigation = useNavigation();
 
   useFocusEffect(
     useCallback(() => {
       if (isFeatureEnabled(featureKey) === false) {
         navigation.navigate(ROUTES.HOME);
+        return;
       }
-    }, [featureKey, isFeatureEnabled, navigation])
+      // Locked by membership level: explain which level unlocks it.
+      const access = canAccessFeature(featureKey);
+      if (access.locked) {
+        navigation.navigate(ROUTES.SUBSCRIPTION, { lockedFeature: featureKey, requiredTier: access.requiredTier });
+      }
+    }, [featureKey, isFeatureEnabled, canAccessFeature, navigation])
   );
 };

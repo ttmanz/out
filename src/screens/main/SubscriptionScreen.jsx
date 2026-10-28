@@ -6,7 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../constants/colors';
 import { getSession, signOut } from '../../lib/auth';
-import { getSubscriptionPlans, subscriptionStatus, planPriceFor } from '../../lib/subscription';
+import { getSubscriptionPlans, subscriptionStatus, planPriceFor, tierLabel } from '../../lib/subscription';
 import { getOfferings, purchasePackage, restorePurchases } from '../../lib/purchases';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
@@ -33,9 +33,11 @@ const packageForPlan = (offering, plan, profile) => {
   return null;
 };
 
-const SubscriptionScreen = ({ navigation, standalone = false }) => {
+const SubscriptionScreen = ({ navigation, route, standalone = false }) => {
   const { t } = useTranslation();
-  const { profile, refreshProfile, settings, venueAccess, isVenuePlan } = useUser();
+  const { profile, refreshProfile, settings, venueAccess, isVenuePlan, featureMap } = useUser();
+  const lockedFeature = route?.params?.lockedFeature;
+  const requiredTier = route?.params?.requiredTier;
   const [plans, setPlans] = useState([]);
   const [offering, setOffering] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -177,6 +179,12 @@ const SubscriptionScreen = ({ navigation, standalone = false }) => {
       />
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        {!!lockedFeature && !!requiredTier && (
+          <View style={[styles.trialBanner, styles.expiredBanner]}>
+            <Text style={styles.trialTitle}>🔒 {t('subscription.lockedTitle', { feature: featureMap?.[lockedFeature]?.label ?? lockedFeature })}</Text>
+            <Text style={styles.trialSub}>{t('subscription.lockedBody', { feature: featureMap?.[lockedFeature]?.label ?? lockedFeature, level: tierLabel(requiredTier) })}</Text>
+          </View>
+        )}
         {statusBanner()}
 
         {showPlans && <Text style={styles.sectionLabel}>{t('subscription.choosePlan')}</Text>}
