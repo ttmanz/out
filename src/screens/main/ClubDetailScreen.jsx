@@ -18,7 +18,9 @@ import {
   getSavedClubPosts, getClubPostReplies, createClubPostReply,
 } from '../../lib/clubs';
 import { getSession } from '../../lib/auth';
-import { uploadPostPhoto } from '../../lib/storage';
+import { uploadPostPhoto, uploadPostMedia } from '../../lib/storage';
+import { captureLiveMedia } from '../../lib/liveCapture';
+import FeedMedia from '../../components/common/FeedMedia';
 import { formatAgo } from '../../utils/format';
 import { useUser } from '../../contexts/UserContext';
 import BackHeader from '../../components/common/BackHeader';
@@ -29,13 +31,15 @@ import Avatar from '../../components/common/Avatar';
 import EmojiPickerButton from '../../components/common/EmojiPickerButton';
 
 const ClubDetailScreen = ({ navigation, route }) => {
-  useFeatureGate('club_groups');
   const { clubId } = route.params;
   const { profile } = useUser();
   const isSiteAdmin = profile?.is_admin === true;
 
   const [userId, setUserId] = useState(null);
   const [club, setClub] = useState(null);
+  const [postIsVideo, setPostIsVideo] = useState(false);
+  // A community (kind 'watch') is gated by Community Watch, a club by Club Groups.
+  useFeatureGate(club?.kind === 'watch' ? 'community_watch' : 'club_groups');
   const [members, setMembers] = useState([]);
   const [myStatus, setMyStatus] = useState(null); // null | 'pending' | 'approved'
   const [posts, setPosts] = useState([]);
@@ -106,6 +110,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
   }, [postsMode]);
 
   const isAdmin = club?.admin_id === userId;
+  const isWatch = club?.kind === 'watch';
   const canModerate = isAdmin || isSiteAdmin;
   const isSuspended = club?.status === 'suspended';
   const canPost = (isAdmin || myStatus === 'approved') && !isSuspended;
@@ -157,18 +162,23 @@ const ClubDetailScreen = ({ navigation, route }) => {
     if (!text && !postPhotoUri) return;
     setPosting(true);
     let photo_url = null;
+    let video_url = null;
     if (postPhotoUri) {
-      const { url, error } = await uploadPostPhoto(userId, postPhotoUri);
+      // Communities accept a live photo or video; clubs stay photo-only.
+      const { url, isVideo, error } = isWatch
+        ? await uploadPostMedia(userId, postPhotoUri)
+        : await uploadPostPhoto(userId, postPhotoUri);
       if (error) {
         Alert.alert('Error', 'Could not upload photo.');
         setPosting(false);
         return;
       }
-      photo_url = url;
+      if (isWatch && isVideo) video_url = url; else photo_url = url;
     }
     const { error } = await createClubPost(clubId, userId, {
       text: text || null,
       photo_url,
+      video_url,
       link_url: linkPreview?.url ?? null,
       link_title: linkPreview?.title ?? null,
       link_image: linkPreview?.image ?? null,
@@ -181,6 +191,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
     }
     setPostText('');
     setPostPhotoUri(null);
+    setPostIsVideo(false);
     setLinkPreview(null);
     await load();
   };
@@ -225,9 +236,19 @@ const ClubDetailScreen = ({ navigation, route }) => {
 
   // The administrator invites people by sharing a link: it opens the club in the app,
   // where the person taps "Request to Join" and the administrator approves them as usual.
+  // Shoot a photo or video right now and attach it to the post (communities only).
+  const handleLive = async () => {
+    const media = await captureLiveMedia();
+    if (!media) return;
+    setPostPhotoUri(media.uri);
+    setPostIsVideo(media.isVideo);
+  };
+
   const handleShareClub = async () => {
     const shareUrl = `https://find-mee.com/p/club/${club.id}`;
-    const message = t('club.inviteMessage', 'Join "{{name}}" on Find-Mee! Open the link, then tap "Request to Join".', { name: club.name }) + '\n\n' + shareUrl;
+    const message = (isWatch
+      ? t('watch.inviteMessage', 'Join the "{{name}}" community on Find-Mee! Open the link, then tap "Request to Join".', { name: club.name })
+      : t('club.inviteMessage', 'Join "{{name}}" on Find-Mee! Open the link, then tap "Request to Join".', { name: club.name })) + '\n\n' + shareUrl;
     try {
       await Share.share({ message, url: shareUrl });
     } catch {
@@ -376,7 +397,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
         {/* Club hero */}
         {club.photo_url
           ? <Image source={{ uri: club.photo_url }} style={styles.heroPhoto} resizeMode="cover" />
-          : <View style={styles.heroPlaceholder}><Text style={styles.heroEmoji}>🏛️</Text></View>
+          : <View style={styles.heroPlaceholder}><Text style={styles.heroEmoji}>{isWatch ? '🛡️' : '🏛️'}</Text></View>
         }
 
         <View style={styles.infoCard}>
@@ -409,7 +430,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
 
         {isSuspended && (
           <View style={styles.suspendedBanner}>
-            <Text style={styles.suspendedBannerText}>⏸ This club is suspended — posting and joining are disabled</Text>
+            <Text style={styles.suspendedBannerText}>{isWatch ? t('watch.suspendedBanner', '⏸ This community is suspended — posting and joining are disabled') : '⏸ This club is suspended — posting and joining are disabled'}</Text>
           </View>
         )}
 
@@ -431,7 +452,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
         )}
         {!isAdmin && myStatus === 'approved' && (
           <View style={styles.memberBanner}>
-            <Text style={styles.memberBannerText}>✅ You are a member of this club</Text>
+            <Text style={styles.memberBannerText}>{isWatch ? t('watch.memberBanner', '✅ You are a member of this community') : '✅ You are a member of this club'}</Text>
           </View>
         )}
 
@@ -565,7 +586,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
               <View style={styles.composeInputRow}>
                 <TextInput
                   style={styles.composeInput}
-                  placeholder="Share something with the club..."
+                  placeholder={isWatch ? t('watch.composePlaceholder', 'Share an update with the community...') : 'Share something with the club...'}
                   placeholderTextColor={COLORS.textMuted}
                   value={postText}
                   onChangeText={setPostText}
@@ -573,7 +594,16 @@ const ClubDetailScreen = ({ navigation, route }) => {
                 />
                 <EmojiPickerButton onEmojiSelected={(e) => setPostText((prev) => prev + e)} style={styles.composeEmojiBtn} />
               </View>
-              <PhotoPicker uri={postPhotoUri} onChange={setPostPhotoUri} />
+              <PhotoPicker
+                uri={postPhotoUri}
+                allowVideo={isWatch}
+                onChange={(uri, type) => { setPostPhotoUri(uri); setPostIsVideo(type === 'video'); }}
+              />
+              {isWatch && (
+                <TouchableOpacity style={styles.liveBtn} onPress={handleLive} disabled={posting}>
+                  <Text style={styles.liveBtnText}>📷 {t('common.live', 'Live')}</Text>
+                </TouchableOpacity>
+              )}
               <LinkInput preview={linkPreview} onPreviewChange={setLinkPreview} />
               <TouchableOpacity style={styles.postBtn} onPress={handlePost} disabled={posting}>
                 {posting
@@ -606,7 +636,7 @@ const ClubDetailScreen = ({ navigation, route }) => {
                     )}
                   </View>
                   {!!p.text && <Text style={styles.postText}>{p.text}</Text>}
-                  {!!p.photo_url && <Image source={{ uri: p.photo_url }} style={styles.postPhoto} resizeMode="cover" />}
+                  <FeedMedia photo={p.photo_url} video={p.video_url} style={styles.postPhoto} />
                   {!!p.link_url && (
                     <LinkPreviewCard url={p.link_url} title={p.link_title} image={p.link_image} domain={p.link_domain} />
                   )}
@@ -713,6 +743,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(231,76,60,0.08)',
   },
   deleteClubBtnText: { color: COLORS.error, fontWeight: '700', fontSize: 13 },
+  liveBtn: {
+    alignSelf: 'flex-start', marginTop: 8,
+    borderWidth: 1, borderColor: COLORS.primary, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 8,
+  },
+  liveBtnText: { fontSize: 13, fontWeight: '800', color: COLORS.primary },
   inviteClubBtn: {
     alignSelf: 'flex-start', marginTop: 10,
     backgroundColor: COLORS.primary, borderRadius: 10,

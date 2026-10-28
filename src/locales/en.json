@@ -168,7 +168,9 @@
     "friendsDesc": "Your people — list, requests & search",
     "clipOfDay": "Clip of the Day",
     "clipOfDayDesc": "Share a video clip with everyone this week",
-    "unlockWith": "Unlock with {{level}}"
+    "unlockWith": "Unlock with {{level}}",
+    "communityWatch": "Community Watch",
+    "communityWatchDesc": "Look out for each other, with live photos & video"
   },
   "atVenue": {
     "locationRequired": "Location access is required to see members nearby.",
@@ -889,5 +891,18 @@
     "uploadFailed": "Could not upload your clip. Please try again.",
     "removeTitle": "Remove clip?",
     "removeConfirm": "This will permanently remove this clip."
+  },
+  "watch": {
+    "title": "Community Watch",
+    "all": "All Communities",
+    "mine": "My Communities",
+    "empty": "No communities yet. Be the first to start one!",
+    "emptyMine": "You haven't joined any communities yet.",
+    "create": "Start a Community",
+    "adminNote": "You will be the administrator of this community and can approve or reject member requests.",
+    "inviteMessage": "Join the \"{{name}}\" community on Find-Mee! Open the link, then tap \"Request to Join\".",
+    "composePlaceholder": "Share an update with the community...",
+    "memberBanner": "✅ You are a member of this community",
+    "suspendedBanner": "⏸ This community is suspended — posting and joining are disabled"
   }
 }

@@ -1,9 +1,10 @@
 import { supabase } from './supabase';
 
-const CLUB_FIELDS = 'id, name, description, photo_url, admin_id, status, created_at, admin:profiles!clubs_admin_id_fkey(full_name)';
+const CLUB_FIELDS = 'id, name, description, photo_url, admin_id, status, kind, created_at, admin:profiles!clubs_admin_id_fkey(full_name)';
 
-export const getClubs = () =>
-  supabase.from('clubs').select(CLUB_FIELDS).order('created_at', { ascending: false });
+// kind: 'club' (Club Groups) or 'watch' (Community Watch)
+export const getClubs = (kind = 'club') =>
+  supabase.from('clubs').select(CLUB_FIELDS).eq('kind', kind).order('created_at', { ascending: false });
 
 export const getMyClubs = (userId) =>
   supabase.from('club_members').select('club_id').eq('user_id', userId).eq('status', 'approved');
@@ -18,10 +19,10 @@ export const getClubMembers = (clubId) =>
     .eq('club_id', clubId)
     .order('created_at', { ascending: true });
 
-export const createClub = (adminId, { name, description, photo_url }) =>
+export const createClub = (adminId, { name, description, photo_url, kind = 'club' }) =>
   supabase
     .from('clubs')
-    .insert({ admin_id: adminId, name, description: description || null, photo_url: photo_url || null })
+    .insert({ admin_id: adminId, name, description: description || null, photo_url: photo_url || null, kind })
     .select('id')
     .single();
 
@@ -60,8 +61,8 @@ export const getClubPosts = (clubId) =>
     .eq('club_id', clubId)
     .order('created_at', { ascending: false });
 
-export const createClubPost = (clubId, userId, { text, photo_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
-  supabase.from('club_posts').insert({ club_id: clubId, user_id: userId, text, photo_url, link_url, link_title, link_image, link_domain });
+export const createClubPost = (clubId, userId, { text, photo_url = null, video_url = null, link_url = null, link_title = null, link_image = null, link_domain = null }) =>
+  supabase.from('club_posts').insert({ club_id: clubId, user_id: userId, text, photo_url, video_url, link_url, link_title, link_image, link_domain });
 
 // Admin-only: RLS restricts this to profiles.is_admin = true
 export const adminDeleteClubPost = (id) =>

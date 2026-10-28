@@ -24,6 +24,7 @@ import OpenChatScreen from '../screens/main/OpenChatScreen';
 import CreateOpenChatScreen from '../screens/main/CreateOpenChatScreen';
 import MemberProfileScreen from '../screens/main/MemberProfileScreen';
 import ClubGroupsScreen from '../screens/main/ClubGroupsScreen';
+import CommunityWatchScreen from '../screens/main/CommunityWatchScreen';
 import ClubDetailScreen from '../screens/main/ClubDetailScreen';
 import CreateClubScreen from '../screens/main/CreateClubScreen';
 import AtVenueScreen from '../screens/main/AtVenueScreen';
@@ -116,6 +117,7 @@ const HomeStackNavigator = () => (
     <HomeStack.Screen name={ROUTES.CREATE_OPEN_CHAT} component={CreateOpenChatScreen} />
     <HomeStack.Screen name={ROUTES.MEMBER_PROFILE} component={MemberProfileScreen} />
     <HomeStack.Screen name={ROUTES.CLUB_GROUPS}      component={ClubGroupsScreen} />
+    <HomeStack.Screen name={ROUTES.COMMUNITY_WATCH}  component={CommunityWatchScreen} />
     <HomeStack.Screen name={ROUTES.CLUB_DETAIL}      component={ClubDetailScreen} />
     <HomeStack.Screen name={ROUTES.CREATE_CLUB}      component={CreateClubScreen} />
     <HomeStack.Screen name={ROUTES.AT_VENUE}          component={AtVenueScreen} />
