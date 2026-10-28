@@ -160,6 +160,8 @@ export const resolvePostDeepLink = async (type, id) => {
   if (type === 'event') return resolveEventRoute(id);
   if (type === 'group_post') return resolveGroupPostRoute(id);
   if (type === 'club_post') return resolveClubPostRoute(id);
+  // An invite link an administrator shared: open the club so the person can request to join.
+  if (type === 'club') return { stack: 'HomeTab', screen: ROUTES.CLUB_DETAIL, params: { clubId: id } };
   return null;
 };
 

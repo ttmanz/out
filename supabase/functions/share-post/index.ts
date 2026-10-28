@@ -83,6 +83,17 @@ const loadContent = async (type: string, id: string) => {
       image: DEFAULT_IMAGE,
     };
   }
+  if (type === 'club') {
+    const { data } = await supabase.from('clubs').select('id').eq('id', id).maybeSingle();
+    if (!data) return null;
+    // An invitation from a club administrator. Club details are for members of the app, so the
+    // public page stays generic (the sender's message carries the club name).
+    return {
+      title: "You're invited to join a club on Find-Mee",
+      description: 'Open Find-Mee to see the club and request to join.',
+      image: DEFAULT_IMAGE,
+    };
+  }
   return null;
 };
 

@@ -31,7 +31,9 @@
     "submit": "Create Club",
     "nameRequired": "Please enter a club name.",
     "createFailed": "Could not create club. Please try again.",
-    "subscriptionRequired": "Subscribe to create clubs and connect with members."
+    "subscriptionRequired": "Subscribe to create clubs and connect with members.",
+    "inviteButton": "Invite people",
+    "inviteMessage": "Join \"{{name}}\" on Find-Mee! Open the link, then tap \"Request to Join\"."
   },
   "subscription": {
     "title": "My Subscription",

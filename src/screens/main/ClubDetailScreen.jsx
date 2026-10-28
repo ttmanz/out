@@ -1,4 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
+import i18n from '../../lib/i18n';
+// Module-level translate helper so every helper component in this file can use t().
+const t = (key, defaultValue, opts) => i18n.t(key, { defaultValue, ...opts });
 import {
   View, Text, Image, StyleSheet, TouchableOpacity, ScrollView,
   ActivityIndicator, Alert, RefreshControl, TextInput, Share,
@@ -220,6 +223,18 @@ const ClubDetailScreen = ({ navigation, route }) => {
     }
   };
 
+  // The administrator invites people by sharing a link: it opens the club in the app,
+  // where the person taps "Request to Join" and the administrator approves them as usual.
+  const handleShareClub = async () => {
+    const shareUrl = `https://find-mee.com/p/club/${club.id}`;
+    const message = t('club.inviteMessage', 'Join "{{name}}" on Find-Mee! Open the link, then tap "Request to Join".', { name: club.name }) + '\n\n' + shareUrl;
+    try {
+      await Share.share({ message, url: shareUrl });
+    } catch {
+      // user dismissed the share sheet
+    }
+  };
+
   const handleShare = async (post) => {
     const shareUrl = `https://find-mee.com/p/club_post/${post.id}`;
     const message = [post.text || 'Check out this post on Find-Mee!', post.link_url, shareUrl].filter(Boolean).join('\n\n');
@@ -373,6 +388,11 @@ const ClubDetailScreen = ({ navigation, route }) => {
           <Text style={styles.memberCount}>
             {approved.length} member{approved.length !== 1 ? 's' : ''}
           </Text>
+          {isAdmin && !isSuspended && (
+            <TouchableOpacity style={styles.inviteClubBtn} onPress={handleShareClub} activeOpacity={0.85}>
+              <Text style={styles.inviteClubBtnText}>📤  {t('club.inviteButton', 'Invite people')}</Text>
+            </TouchableOpacity>
+          )}
           {isSiteAdmin && (
             <View style={styles.adminBtnRow}>
               <TouchableOpacity style={styles.suspendClubBtn} onPress={handleSuspendToggle}>
@@ -693,6 +713,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(231,76,60,0.08)',
   },
   deleteClubBtnText: { color: COLORS.error, fontWeight: '700', fontSize: 13 },
+  inviteClubBtn: {
+    alignSelf: 'flex-start', marginTop: 10,
+    backgroundColor: COLORS.primary, borderRadius: 10,
+    paddingHorizontal: 14, paddingVertical: 9,
+  },
+  inviteClubBtnText: { fontSize: 13, fontWeight: '800', color: COLORS.black },
   suspendClubBtn: {
     alignSelf: 'flex-start',
     borderWidth: 1, borderColor: COLORS.borderAccent, borderRadius: 10,
