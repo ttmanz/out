@@ -14,13 +14,16 @@ import AdBanner from '../../components/common/AdBanner';
 import ProfileBanner from '../../components/common/ProfileBanner';
 import BackHeader from '../../components/common/BackHeader';
 import GradientBorder from '../../components/common/GradientBorder';
+import i18n from '../../lib/i18n';
+// Module-level translate helper so every helper component in this file can use t().
+const t = (key, defaultValue, opts) => i18n.t(key, { defaultValue, ...opts });
 
 const ClubCard = ({ club, onPress }) => (
   <GradientBorder radius={16} style={styles.cardOuter}>
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       {club.photo_url
         ? <Image source={{ uri: club.photo_url }} style={styles.cardPhoto} resizeMode="cover" />
-        : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>🏛️</Text></View>
+        : <View style={styles.cardPhotoPlaceholder}><Text style={styles.cardPhotoEmoji}>{club.kind === 'watch' ? '🛡️' : '🏛️'}</Text></View>
       }
       <View style={styles.cardBody}>
         <View style={styles.cardTitleRow}>
@@ -36,8 +39,10 @@ const ClubCard = ({ club, onPress }) => (
   </GradientBorder>
 );
 
-const ClubGroupsScreen = ({ navigation }) => {
-  useFeatureGate('club_groups');
+const ClubGroupsScreen = ({ navigation, route, kind: kindProp }) => {
+  const kind = kindProp ?? route?.params?.kind ?? 'club';
+  const isWatch = kind === 'watch';
+  useFeatureGate(isWatch ? 'community_watch' : 'club_groups');
   const [userId, setUserId] = useState(null);
   const [allClubs, setAllClubs] = useState([]);
   const [myClubIds, setMyClubIds] = useState(new Set());
@@ -49,7 +54,7 @@ const ClubGroupsScreen = ({ navigation }) => {
     if (isRefresh) setRefreshing(true);
     const [{ data: { session } }, clubsRes] = await Promise.all([
       getSession(),
-      getClubs(),
+      getClubs(kind),
     ]);
     const uid = session?.user?.id ?? null;
     setUserId(uid);
@@ -60,7 +65,7 @@ const ClubGroupsScreen = ({ navigation }) => {
     setMyClubIds(ids);
     setLoading(false);
     setRefreshing(false);
-  }, []);
+  }, [kind]);
 
   useFocusEffect(useCallback(() => { load(); }, [load]));
 
@@ -78,20 +83,20 @@ const ClubGroupsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.safe}>
-      <BackHeader title="Club Groups" onBack={() => navigation.goBack()} />
+      <BackHeader title={isWatch ? t('watch.title', 'Community Watch') : 'Club Groups'} onBack={() => navigation.goBack()} />
 
       <View style={styles.tabs}>
         <TouchableOpacity
           style={[styles.tab, tab === 'all' && styles.tabActive]}
           onPress={() => setTab('all')}
         >
-          <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>All Clubs</Text>
+          <Text style={[styles.tabText, tab === 'all' && styles.tabTextActive]}>{isWatch ? t('watch.all', 'All Communities') : 'All Clubs'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, tab === 'mine' && styles.tabActive]}
           onPress={() => setTab('mine')}
         >
-          <Text style={[styles.tabText, tab === 'mine' && styles.tabTextActive]}>My Clubs</Text>
+          <Text style={[styles.tabText, tab === 'mine' && styles.tabTextActive]}>{isWatch ? t('watch.mine', 'My Communities') : 'My Clubs'}</Text>
         </TouchableOpacity>
       </View>
 
@@ -110,7 +115,9 @@ const ClubGroupsScreen = ({ navigation }) => {
         )}
         ListEmptyComponent={
           <Text style={styles.empty}>
-            {tab === 'mine' ? 'You haven\'t joined any clubs yet.' : 'No clubs yet. Be the first to start one!'}
+            {isWatch
+              ? (tab === 'mine' ? t('watch.emptyMine', 'You haven\'t joined any communities yet.') : t('watch.empty', 'No communities yet. Be the first to start one!'))
+              : (tab === 'mine' ? 'You haven\'t joined any clubs yet.' : 'No clubs yet. Be the first to start one!')}
           </Text>
         }
         renderItem={({ item }) => (
@@ -123,7 +130,7 @@ const ClubGroupsScreen = ({ navigation }) => {
 
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate(ROUTES.CREATE_CLUB)}
+        onPress={() => navigation.navigate(ROUTES.CREATE_CLUB, { kind })}
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>

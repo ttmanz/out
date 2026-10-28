@@ -37,6 +37,7 @@ export const ROUTES = {
   CHAT: 'Chat',
   NOTIFICATIONS: 'Notifications',
   CLUB_GROUPS: 'ClubGroups',
+  COMMUNITY_WATCH: 'CommunityWatch',
   CLUB_DETAIL: 'ClubDetail',
   CREATE_CLUB: 'CreateClub',
   AT_VENUE: 'AtVenue',

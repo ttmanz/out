@@ -19,6 +19,7 @@ const FEATURES = [
   { icon: 'flash',           titleKey: 'home.spurOfMoment',   descKey: 'home.spurOfMomentDesc',   route: ROUTES.SPUR_OF_MOMENT, featureKey: 'spur_of_moment' },
   { icon: 'chatbubbles',     titleKey: 'home.openChat',       descKey: 'home.openChatDesc',       route: ROUTES.OPEN_CHAT,      featureKey: 'open_chat' },
   { icon: 'location',        titleKey: 'home.atVenue',        descKey: 'home.atVenueDesc',        route: ROUTES.AT_VENUE,       featureKey: 'at_venue' },
+  { icon: 'shield-checkmark', titleKey: 'home.communityWatch', descKey: 'home.communityWatchDesc', route: ROUTES.COMMUNITY_WATCH, featureKey: 'community_watch' },
   { icon: 'people-circle',   titleKey: 'home.clubGroups',     descKey: 'home.clubGroupsDesc',     route: ROUTES.CLUB_GROUPS,    featureKey: 'club_groups' },
   { icon: 'grid',            titleKey: 'home.openGroups',      descKey: 'home.openGroupsDesc',     route: ROUTES.OPEN_GROUPS,    featureKey: 'open_groups' },
   { icon: 'wine',            titleKey: 'home.venue',           descKey: 'home.venueDesc',          route: ROUTES.VENUE_HUB,      featureKey: 'venue_hub' },

@@ -15,8 +15,10 @@ import { useUser } from '../../contexts/UserContext';
 import PhotoPicker from '../../components/common/PhotoPicker';
 import BackHeader from '../../components/common/BackHeader';
 
-const CreateClubScreen = ({ navigation }) => {
+const CreateClubScreen = ({ navigation, route }) => {
   const { t } = useTranslation();
+  const kind = route?.params?.kind ?? 'club';
+  const isWatch = kind === 'watch';
   const { canAccessFeature } = useUser();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -24,7 +26,7 @@ const CreateClubScreen = ({ navigation }) => {
   const [saving, setSaving] = useState(false);
 
   const handleCreate = async () => {
-    const access = canAccessFeature('club_groups');
+    const access = canAccessFeature(isWatch ? 'community_watch' : 'club_groups');
     if (!access.allowed) {
       if (access.disabled) Alert.alert(t('common.error'), t('common.featureUnavailable'));
       else if (access.price) navigation.navigate(ROUTES.PAYWALL, { featureKey: access.featureKey });
@@ -55,6 +57,7 @@ const CreateClubScreen = ({ navigation }) => {
       name: name.trim(),
       description: description.trim(),
       photo_url,
+      kind,
     });
 
     setSaving(false);
@@ -68,7 +71,7 @@ const CreateClubScreen = ({ navigation }) => {
   return (
     <View style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-        <BackHeader title={t('club.create')} onBack={() => navigation.goBack()} />
+        <BackHeader title={isWatch ? t('watch.create', 'Start a Community') : t('club.create')} onBack={() => navigation.goBack()} />
 
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
           <Text style={styles.label}>{t('club.nameLabel')} *</Text>
@@ -98,7 +101,7 @@ const CreateClubScreen = ({ navigation }) => {
           <PhotoPicker uri={photoUri} onChange={setPhotoUri} />
 
           <View style={styles.adminNote}>
-            <Text style={styles.adminNoteText}>✦  {t('club.adminNote')}</Text>
+            <Text style={styles.adminNoteText}>✦  {(isWatch ? t('watch.adminNote', 'You will be the administrator of this community and can approve or reject member requests.') : t('club.adminNote'))}</Text>
           </View>
 
           <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={saving}>
